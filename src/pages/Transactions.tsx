@@ -10,6 +10,10 @@ const Transactions = () => {
   const [value, setValue] = useState('');
   const [type, setType] = useState<TransactionType>('receita');
   const [category, setCategory] = useState('Operacional');
+  const [productId, setProductId] = useState('');
+  const [quantity, setQuantity] = useState('');
+
+  const { products } = useAppContext();
 
   const handleEdit = (t: any) => {
     setEditingId(t.id);
@@ -17,6 +21,8 @@ const Transactions = () => {
     setValue(t.value.toString());
     setType(t.type);
     setCategory(t.category);
+    setProductId(t.productId || '');
+    setQuantity(t.quantity?.toString() || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -26,27 +32,36 @@ const Transactions = () => {
     setValue('');
     setType('receita');
     setCategory('Operacional');
+    setProductId('');
+    setQuantity('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!description || !value) return;
 
+    const transactionData: any = {
+      description,
+      value: parseFloat(value),
+      type,
+      category,
+    };
+
+    if (productId && quantity) {
+      transactionData.productId = productId;
+      transactionData.quantity = parseInt(quantity, 10);
+    } else {
+      transactionData.productId = null;
+      transactionData.quantity = null;
+    }
+
     if (editingId) {
-      updateTransaction(editingId, {
-        description,
-        value: parseFloat(value),
-        type,
-        category,
-      });
+      updateTransaction(editingId, transactionData);
       setEditingId(null);
     } else {
       addTransaction({
         date: new Date().toISOString().split('T')[0],
-        description,
-        value: parseFloat(value),
-        type,
-        category,
+        ...transactionData
       });
     }
 
@@ -54,6 +69,8 @@ const Transactions = () => {
     setValue('');
     setType('receita');
     setCategory('Operacional');
+    setProductId('');
+    setQuantity('');
   };
 
   const formatCurrency = (value: number) => {
@@ -72,8 +89,18 @@ const Transactions = () => {
     }).format(date);
   };
 
-  const totalReceitas = transactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
-  const totalDespesas = transactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
+  const getTransactionValue = (t: any) => {
+    if (t.productId && t.quantity) {
+      const product = products.find(p => p.id === t.productId);
+      if (product) {
+        return t.quantity * product.price;
+      }
+    }
+    return t.value;
+  };
+
+  const totalReceitas = transactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + getTransactionValue(curr), 0);
+  const totalDespesas = transactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + getTransactionValue(curr), 0);
   const saldoPrevisto = totalReceitas - totalDespesas;
 
   return (
@@ -106,8 +133,8 @@ const Transactions = () => {
       {/* Quick Entry Form Section */}
       <section className="bg-surface-container-low rounded-xl p-6 print:hidden">
         <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">Entrada Rápida</h3>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6 items-end">
-          <div className="space-y-2">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-6 items-end">
+          <div className="space-y-2 lg:col-span-2">
             <label className="text-xs font-bold text-on-surface-variant ml-1">Descrição</label>
             <input
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
@@ -154,15 +181,41 @@ const Transactions = () => {
               <option value="Infraestrutura">Infraestrutura</option>
               <option value="Serviços">Serviços</option>
               <option value="SaaS">SaaS</option>
+              <option value="Produto">Produto</option>
             </select>
           </div>
-          <div className="flex gap-2 w-full">
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-on-surface-variant ml-1">Produto (Opcional)</label>
+            <select
+              className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+            >
+              <option value="">Nenhum</option>
+              {products.map(p => (
+                <option key={p.id} value={p.id}>{p.name} (Stock: {p.stock})</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-on-surface-variant ml-1">Qtd</label>
+            <input
+              className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              placeholder="0"
+              type="number"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              disabled={!productId}
+              required={!!productId}
+            />
+          </div>
+          <div className="flex gap-2 w-full lg:col-span-7">
             {editingId && (
-              <button type="button" onClick={handleCancelEdit} className="w-full bg-surface-variant text-on-surface-variant py-3 rounded-lg font-bold text-sm hover:bg-outline-variant transition-colors">
+              <button type="button" onClick={handleCancelEdit} className="w-full md:w-auto bg-surface-variant text-on-surface-variant px-6 py-3 rounded-lg font-bold text-sm hover:bg-outline-variant transition-colors">
                 Cancelar
               </button>
             )}
-            <button type="submit" className="w-full bg-primary text-on-primary py-3 rounded-lg font-bold text-sm hover:bg-primary-container transition-colors">
+            <button type="submit" className="w-full md:w-auto bg-primary text-on-primary px-8 py-3 rounded-lg font-bold text-sm hover:bg-primary-container transition-colors ml-auto">
               {editingId ? 'Atualizar' : 'Confirmar'}
             </button>
           </div>
@@ -187,19 +240,40 @@ const Transactions = () => {
               <tr className="bg-surface-container-low/50 print:bg-transparent print:border-b print:border-outline-variant/20">
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Data</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Descrição</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Categoria</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Produto</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Qtd</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Preço Venda</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Custo</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Stock Atual</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Tipo</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Valor</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Valor Total</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5 print:divide-outline-variant/20">
-              {transactions.map((t) => (
+              {transactions.map((t) => {
+                const product = t.productId ? products.find(p => p.id === t.productId) : null;
+                return (
                 <tr key={t.id} className="hover:bg-surface-container-low/30 transition-colors group print:hover:bg-transparent">
                   <td className="px-6 py-4 text-sm font-medium text-on-surface-variant">{formatDate(t.date)}</td>
-                  <td className="px-6 py-4 text-sm font-bold text-primary">{t.description}</td>
-                  <td className="px-6 py-4">
-                    <span className="px-3 py-1 bg-surface-container text-[10px] font-bold uppercase tracking-wider rounded-full text-on-surface-variant print:border print:border-outline-variant/20 print:bg-transparent">{t.category}</span>
+                  <td className="px-6 py-4 text-sm font-bold text-primary">
+                    {t.description}
+                    <div className="text-xs font-normal text-on-surface-variant mt-1">{t.category}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-on-surface-variant">{product ? product.name : '-'}</td>
+                  <td className="px-6 py-4 text-sm text-center font-mono">{t.quantity || '-'}</td>
+                  <td className="px-6 py-4 text-sm font-mono text-right text-primary">
+                    {product ? formatCurrency(product.price) : '-'}
+                  </td>
+                  <td className="px-6 py-4 text-sm font-mono text-right text-error">
+                    {product ? formatCurrency(product.cost) : '-'}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    {product ? (
+                      <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${product.stock <= product.minStock ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container'}`}>
+                        {product.stock} un
+                      </span>
+                    ) : '-'}
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full print:border print:border-outline-variant/20 print:bg-transparent print:text-on-surface ${t.type === 'receita' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}`}>
@@ -207,7 +281,7 @@ const Transactions = () => {
                     </span>
                   </td>
                   <td className={`px-6 py-4 text-right font-headline font-bold print:text-on-surface ${t.type === 'receita' ? 'text-secondary' : 'text-error'}`}>
-                    {t.type === 'receita' ? '+' : '-'} {formatCurrency(t.value)}
+                    {t.type === 'receita' ? '+' : '-'} {formatCurrency(getTransactionValue(t))}
                   </td>
                   <td className="px-6 py-4 print:hidden">
                     <div className="flex justify-center gap-2">
@@ -220,7 +294,7 @@ const Transactions = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>

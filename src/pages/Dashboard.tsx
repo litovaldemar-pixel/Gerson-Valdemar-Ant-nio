@@ -74,10 +74,19 @@ const Dashboard = () => {
       className="p-4 md:p-6 lg:p-8 flex-1 space-y-8"
     >
       {/* Header Section */}
-      <section className="flex justify-between items-end">
+      <section className="flex justify-between items-end print:hidden">
         <div>
           <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">Dashboard</h2>
           <p className="text-on-surface-variant font-medium mt-1">Visão geral do seu negócio e saúde financeira.</p>
+        </div>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => window.print()}
+            className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">print</span>
+            Imprimir
+          </button>
         </div>
       </section>
 

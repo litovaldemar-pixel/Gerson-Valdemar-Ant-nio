@@ -12,7 +12,10 @@ const Products = () => {
   const [cost, setCost] = useState('');
   const [stock, setStock] = useState('');
   const [minStock, setMinStock] = useState('');
+  const [supplierId, setSupplierId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+
+  const { suppliers } = useAppContext();
 
   const handleEdit = (p: any) => {
     setEditingId(p.id);
@@ -23,6 +26,7 @@ const Products = () => {
     setCost(p.cost.toString());
     setStock(p.stock.toString());
     setMinStock(p.minStock.toString());
+    setSupplierId(p.supplierId || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -35,6 +39,7 @@ const Products = () => {
     setCost('');
     setStock('');
     setMinStock('');
+    setSupplierId('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -49,6 +54,7 @@ const Products = () => {
       cost: parseFloat(cost),
       stock: parseInt(stock, 10),
       minStock: parseInt(minStock || '0', 10),
+      supplierId: supplierId || undefined,
     };
 
     if (editingId) {
@@ -65,6 +71,7 @@ const Products = () => {
     setCost('');
     setStock('');
     setMinStock('');
+    setSupplierId('');
   };
 
   const filteredProducts = products.filter(p => 
@@ -76,15 +83,24 @@ const Products = () => {
   return (
     <div className="p-4 md:p-6 lg:p-8 flex-1 space-y-8">
       {/* Header Section */}
-      <section className="flex justify-between items-end">
+      <section className="flex justify-between items-end print:hidden">
         <div>
           <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">Mercadorias e Stock</h2>
           <p className="text-on-surface-variant font-medium mt-1">Gerencie seu inventário e produtos.</p>
         </div>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => window.print()}
+            className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">print</span>
+            Imprimir
+          </button>
+        </div>
       </section>
 
       {/* Quick Entry Form Section */}
-      <section className="bg-surface-container-low rounded-xl p-6">
+      <section className="bg-surface-container-low rounded-xl p-6 print:hidden">
         <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">Novo Produto</h3>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
           <div className="space-y-2">
@@ -164,7 +180,20 @@ const Products = () => {
               onChange={(e) => setMinStock(e.target.value)}
             />
           </div>
-          <div className="flex gap-2 w-full">
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-on-surface-variant ml-1">Fornecedor</label>
+            <select
+              className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              value={supplierId}
+              onChange={(e) => setSupplierId(e.target.value)}
+            >
+              <option value="">Selecione um fornecedor</option>
+              {suppliers.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-2 w-full md:col-span-2 lg:col-span-4">
             {editingId && (
               <button type="button" onClick={handleCancelEdit} className="w-full bg-surface-variant text-on-surface-variant py-3 rounded-lg font-bold text-sm hover:bg-outline-variant transition-colors">
                 Cancelar
@@ -200,24 +229,28 @@ const Products = () => {
             <thead>
               <tr className="bg-surface-container-low/50">
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Produto</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">SKU</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Categoria</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Preço</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Fornecedor</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Preço Venda</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Custo</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Stock</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Ações</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Total (Custo)</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5">
-              {filteredProducts.map((p) => (
+              {filteredProducts.map((p) => {
+                const supplier = suppliers.find(s => s.id === p.supplierId);
+                return (
                 <tr key={p.id} className="hover:bg-surface-container-low/30 transition-colors group">
-                  <td className="px-6 py-4 text-sm font-bold text-primary">{p.name}</td>
-                  <td className="px-6 py-4 text-sm text-on-surface-variant">{p.sku}</td>
-                  <td className="px-6 py-4 text-sm text-on-surface-variant">{p.category}</td>
-                  <td className="px-6 py-4 text-sm font-mono text-right">
+                  <td className="px-6 py-4 text-sm font-bold text-primary">
+                    {p.name}
+                    <div className="text-xs font-normal text-on-surface-variant mt-1">{p.sku} | {p.category}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-on-surface-variant">{supplier ? supplier.name : '-'}</td>
+                  <td className="px-6 py-4 text-sm font-mono text-right text-primary">
                     {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(p.price)}
                   </td>
-                  <td className="px-6 py-4 text-sm font-mono text-right text-on-surface-variant">
+                  <td className="px-6 py-4 text-sm font-mono text-right text-error">
                     {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(p.cost)}
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -225,7 +258,10 @@ const Products = () => {
                       {p.stock} un
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-sm font-mono text-right text-error">
+                    {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(p.cost * p.stock)}
+                  </td>
+                  <td className="px-6 py-4 print:hidden">
                     <div className="flex justify-center gap-2">
                       <button onClick={() => handleEdit(p)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all">
                         <span className="material-symbols-outlined text-lg">edit</span>
@@ -236,7 +272,7 @@ const Products = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )})}
               {products.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-sm text-on-surface-variant">Nenhum produto cadastrado.</td>

@@ -74,11 +74,26 @@
   
   @page {
     margin: 1cm;
+    margin-bottom: 2cm;
     size: A4 portrait;
   }
 
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  .print-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    color: #6b7280;
+    padding: 8px 0;
+    background-color: white;
+    border-top: 1px solid #e5e7eb;
+    z-index: 9999;
   }
 }

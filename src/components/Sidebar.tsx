@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useAppContext } from '../context/AppContext';
+import CompanySettingsModal from './CompanySettingsModal';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -9,10 +11,12 @@ interface SidebarProps {
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const { logout } = useAuth();
+  const { companyInfo } = useAppContext();
   const navigate = useNavigate();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
   };
 
@@ -21,12 +25,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       <div className="px-6 mb-8 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-primary rounded flex items-center justify-center text-on-primary font-black text-xl">
-            C
+            {companyInfo?.name ? companyInfo.name.charAt(0).toUpperCase() : 'C'}
           </div>
-          <div>
-            <h1 className="text-lg font-black text-blue-900 dark:text-blue-100 font-headline tracking-tight">CapitalCorp</h1>
+          <button onClick={() => setIsSettingsOpen(true)} className="text-left hover:opacity-80 transition-opacity focus:outline-none">
+            <h1 className="text-lg font-black text-blue-900 dark:text-blue-100 font-headline tracking-tight truncate max-w-[140px]">
+              {companyInfo?.name || 'CapitalCorp'}
+            </h1>
             <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-60">Enterprise ERP</p>
-          </div>
+          </button>
         </div>
         <button className="lg:hidden text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200" onClick={onClose}>
           <span className="material-symbols-outlined">close</span>
@@ -131,6 +137,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           <span>Sair</span>
         </button>
       </div>
+      
+      <CompanySettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </aside>
   );
 };

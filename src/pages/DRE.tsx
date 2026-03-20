@@ -2,7 +2,7 @@ import React from 'react';
 import { useAppContext } from '../context/AppContext';
 
 const DRE = () => {
-  const { transactions } = useAppContext();
+  const { transactions, companyInfo } = useAppContext();
 
   // State for period selection
   const [selectedMonth, setSelectedMonth] = React.useState<string>(() => {
@@ -267,8 +267,8 @@ const DRE = () => {
       </div>
       
       {/* System Footer */}
-      <footer className="mt-12 p-8 border-t border-outline-variant/10 text-center">
-        <p className="text-[10px] text-on-surface-variant font-medium uppercase tracking-[0.3em]">Financial Architect © 2024 - Sistema de Alta Precisão</p>
+      <footer className="mt-12 p-8 border-t border-outline-variant/10 text-center print:hidden">
+        <p className="text-[10px] text-on-surface-variant font-medium uppercase tracking-[0.3em]">{companyInfo?.name || 'Financial Architect'} © 2024 - Sistema de Alta Precisão</p>
       </footer>
     </div>
   );

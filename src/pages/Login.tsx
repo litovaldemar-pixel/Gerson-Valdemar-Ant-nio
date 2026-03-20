@@ -7,9 +7,10 @@ const Login = () => {
   const [error, setError] = useState('');
   const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(email, password)) {
+    const success = await login(email, password);
+    if (success) {
       setError('');
     } else {
       setError('Credenciais incorretas. Dica: admin@capitalcorp.com / admin123');

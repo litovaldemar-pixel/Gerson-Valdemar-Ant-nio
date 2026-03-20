@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useAppContext } from '../context/AppContext';
+import CompanySettingsModal from './CompanySettingsModal';
+import ChangePasswordModal from './ChangePasswordModal';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -8,10 +11,13 @@ interface HeaderProps {
 
 const Header = ({ onMenuClick }: HeaderProps) => {
   const { logout } = useAuth();
+  const { companyInfo } = useAppContext();
   const navigate = useNavigate();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
   };
 
@@ -49,16 +55,32 @@ const Header = ({ onMenuClick }: HeaderProps) => {
             alt="User profile avatar"
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUC5WsUkRoScAmhIit1Vy2vSM6TCijKZ3C_wGyZIkNwDSVLHAe-wF7rdYHPh1GRnOJMOiGcDXYcT21_riPJiiMRWRmEO9Ab-lgCtUTae4hWVX6mudl_NsiXE-6c_52ZlFM3w9Jvhx1CAG6XORPepNAVcJBYARzco-DBy9ePa-loLqY8-8we9GjYKPAjDaovSAnXkxl1DKZ310XbhZkC3Z46bBSBcpZUk2xCLuSh0gkX4DN4y0cXNSLOjolvMs0T-WC1Npwp56C76w"
           />
-          <span className="text-sm font-bold text-blue-900 dark:text-blue-100 font-headline hidden sm:block">Financial Architect</span>
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="text-sm font-bold text-blue-900 dark:text-blue-100 font-headline hidden sm:block hover:underline focus:outline-none"
+            title="Configurar Empresa"
+          >
+            {companyInfo?.name || 'Financial Architect'}
+          </button>
+          <button 
+            onClick={() => setIsPasswordModalOpen(true)}
+            title="Mudar Senha"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-outline hover:text-primary hover:bg-primary-fixed/20 transition-colors active:scale-95 ml-2"
+          >
+            <span className="material-symbols-outlined text-xl">lock_reset</span>
+          </button>
           <button 
             onClick={handleLogout}
             title="Sair"
-            className="w-8 h-8 flex items-center justify-center rounded-full text-error hover:bg-error/10 transition-colors active:scale-95 ml-2"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-error hover:bg-error/10 transition-colors active:scale-95 ml-1"
           >
             <span className="material-symbols-outlined text-xl">logout</span>
           </button>
         </div>
       </div>
+      
+      <CompanySettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <ChangePasswordModal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} />
     </header>
   );
 };

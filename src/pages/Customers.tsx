@@ -57,15 +57,24 @@ const Customers = () => {
   return (
     <div className="p-4 md:p-6 lg:p-8 flex-1 space-y-8">
       {/* Header Section */}
-      <section className="flex justify-between items-end">
+      <section className="flex justify-between items-end print:hidden">
         <div>
           <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">Clientes</h2>
           <p className="text-on-surface-variant font-medium mt-1">Gerencie sua carteira de clientes.</p>
         </div>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => window.print()}
+            className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">print</span>
+            Imprimir
+          </button>
+        </div>
       </section>
 
       {/* Quick Entry Form Section */}
-      <section className="bg-surface-container-low rounded-xl p-6">
+      <section className="bg-surface-container-low rounded-xl p-6 print:hidden">
         <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">Novo Cliente</h3>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6 items-end">
           <div className="space-y-2">
@@ -141,7 +150,7 @@ const Customers = () => {
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">E-mail</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Documento</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Status</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Ações</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5">
@@ -155,7 +164,7 @@ const Customers = () => {
                       {c.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 print:hidden">
                     <div className="flex justify-center gap-2">
                       <button onClick={() => handleEdit(c)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all">
                         <span className="material-symbols-outlined text-lg">edit</span>

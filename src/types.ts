@@ -1,3 +1,10 @@
+export interface CompanyInfo {
+  name: string;
+  nuit: string;
+  contact: string;
+  location: string;
+}
+
 export type TransactionType = 'receita' | 'despesa';
 
 export interface Transaction {
@@ -7,6 +14,8 @@ export interface Transaction {
   category: string;
   type: TransactionType;
   value: number;
+  productId?: string;
+  quantity?: number;
 }
 
 export interface Customer {
@@ -34,4 +43,5 @@ export interface Product {
   cost: number;
   stock: number;
   minStock: number;
+  supplierId?: string;
 }
