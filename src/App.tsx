@@ -9,6 +9,7 @@ import Customers from './pages/Customers';
 import Suppliers from './pages/Suppliers';
 import Products from './pages/Products';
 import DRE from './pages/DRE';
+import Statement from './pages/Statement';
 import Login from './pages/Login';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -28,6 +29,7 @@ const AppRoutes = () => {
         <Route path="fornecedores" element={<Suppliers />} />
         <Route path="mercadorias" element={<Products />} />
         <Route path="dre" element={<DRE />} />
+        <Route path="balancete" element={<Statement />} />
       </Route>
     </Routes>
   );

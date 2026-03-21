@@ -1,13 +1,22 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { User } from '@supabase/supabase-js';
+import { auth } from '../lib/firebase';
+import { 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  updatePassword as firebaseUpdatePassword, 
+  reauthenticateWithCredential, 
+  EmailAuthProvider, 
+  createUserWithEmailAndPassword,
+  User 
+} from 'firebase/auth';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  updatePassword: (password: string) => Promise<{ success: boolean; error?: string }>;
+  updatePassword: (email: string, oldPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   loading: boolean;
 }
 
@@ -18,85 +27,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setLoading(false);
-      return;
-    }
-
-    // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    }).catch(err => {
-      console.error("Error getting session:", err);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setLoading(false);
     });
 
-    // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription?.unsubscribe();
+    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      // For demo purposes, if no supabase URL is provided, fallback to mock auth
-      if (!isSupabaseConfigured) {
-        if (email === 'admin@capitalcorp.com' && password === 'admin123') {
-          setUser({ id: 'mock-id', email } as User);
-          return true;
-        }
-        return false;
-      }
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) {
-        // If it's the demo user and login failed, try to sign them up automatically
-        if (email === 'admin@capitalcorp.com' && password === 'admin123') {
-          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email,
-            password,
-          });
-          if (!signUpError && signUpData.user) {
-            return true;
-          }
-        }
-        console.error('Error logging in:', error.message);
-        return false;
-      }
+      await signInWithEmailAndPassword(auth, email, password);
       return true;
-    } catch (error) {
-      console.error('Unexpected error during login:', error);
+    } catch (error: any) {
+      console.error('Error logging in:', error.message);
+      
+      // If it's the demo user and login failed (e.g., user not found), try to sign them up automatically
+      if (email === 'admin@capitalcorp.com' && password === 'admin123') {
+        try {
+          await createUserWithEmailAndPassword(auth, email, password);
+          return true;
+        } catch (signUpError: any) {
+          console.error('Error signing up demo user:', signUpError.message);
+          return false;
+        }
+      }
       return false;
     }
   };
 
   const logout = async () => {
-    if (!isSupabaseConfigured) {
-      setUser(null);
-      return;
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Error logging out:', error);
     }
-    await supabase.auth.signOut();
   };
 
-  const updatePassword = async (password: string) => {
-    if (!isSupabaseConfigured) {
-      return { success: true };
-    }
+  const updatePassword = async (email: string, oldPassword: string, newPassword: string) => {
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) {
-        return { success: false, error: error.message };
+      if (!auth.currentUser) {
+        return { success: false, error: 'Usuário não autenticado.' };
       }
+
+      // First, verify the old password by reauthenticating
+      const credential = EmailAuthProvider.credential(email, oldPassword);
+      await reauthenticateWithCredential(auth.currentUser, credential);
+
+      // If successful, update the password
+      await firebaseUpdatePassword(auth.currentUser, newPassword);
+      
       return { success: true };
     } catch (error: any) {
+      console.error('Error updating password:', error);
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        return { success: false, error: 'Email ou senha antiga incorretos.' };
+      }
       return { success: false, error: error.message || 'Erro ao atualizar senha' };
     }
   };

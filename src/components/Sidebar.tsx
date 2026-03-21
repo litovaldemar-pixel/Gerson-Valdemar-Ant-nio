@@ -123,6 +123,20 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           <span className="material-symbols-outlined">insert_chart</span>
           <span>Relatórios</span>
         </NavLink>
+        <NavLink
+          to="/balancete"
+          onClick={onClose}
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
+              isActive
+                ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
+                : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
+            }`
+          }
+        >
+          <span className="material-symbols-outlined">receipt_long</span>
+          <span>Balancete Geral</span>
+        </NavLink>
       </nav>
       <div className="px-4 mt-auto flex flex-col gap-2">
         <button className="w-full py-3 bg-primary text-on-primary rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 duration-200">

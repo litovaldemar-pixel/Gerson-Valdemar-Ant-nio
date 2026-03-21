@@ -9,6 +9,8 @@ interface ChangePasswordModalProps {
 
 const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClose }) => {
   const { updatePassword } = useAuth();
+  const [email, setEmail] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,22 +22,29 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
     setError('');
     setSuccess('');
 
+    if (!email || !oldPassword || !password || !confirmPassword) {
+      setError('Por favor, preencha todos os campos.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('As senhas não coincidem.');
       return;
     }
 
     if (password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres.');
+      setError('A nova senha deve ter pelo menos 6 caracteres.');
       return;
     }
 
     setLoading(true);
-    const result = await updatePassword(password);
+    const result = await updatePassword(email, oldPassword, password);
     setLoading(false);
 
     if (result.success) {
       setSuccess('Senha atualizada com sucesso!');
+      setEmail('');
+      setOldPassword('');
       setPassword('');
       setConfirmPassword('');
       setTimeout(() => {
@@ -85,6 +94,30 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                   {success}
                 </div>
               )}
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-on-surface-variant ml-1">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                  placeholder="Digite seu email"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-on-surface-variant ml-1">Senha Antiga</label>
+                <input
+                  type="password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                  placeholder="Digite a senha atual"
+                  required
+                />
+              </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-on-surface-variant ml-1">Nova Senha</label>

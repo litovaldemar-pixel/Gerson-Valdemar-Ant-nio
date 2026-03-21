@@ -1,7 +1,48 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Transaction, Customer, Supplier, Product, CompanyInfo } from '../types';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { db, auth } from '../lib/firebase';
 import { useAuth } from './AuthContext';
+import { 
+  collection, 
+  query, 
+  where, 
+  onSnapshot, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  orderBy 
+} from 'firebase/firestore';
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: any;
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  // We don't throw here to prevent crashing the app, but we log it clearly
+}
 
 interface AppContextType {
   transactions: Transaction[];
@@ -31,36 +72,14 @@ interface AppContextType {
   loading: boolean;
 }
 
-const initialTransactions: Transaction[] = [
-  { id: '1', date: '2023-10-12', description: 'Pagamento AWS Cloud Services', category: 'Infraestrutura', type: 'despesa', value: 12450.00 },
-  { id: '2', date: '2023-10-11', description: 'Consultoria Enterprise - Projeto Alpha', category: 'Serviços', type: 'receita', value: 45000.00 },
-  { id: '3', date: '2023-10-10', description: 'Assinatura Adobe Creative Cloud', category: 'Marketing', type: 'despesa', value: 345.90 },
-  { id: '4', date: '2023-10-09', description: 'Venda Licença Anual Core', category: 'SaaS', type: 'receita', value: 2400.00 },
-];
-
-const initialCustomers: Customer[] = [
-  { id: 'c1', name: 'Acme Corp', email: 'contato@acme.com', document: '12.345.678/0001-90', status: 'Ativo' },
-  { id: 'c2', name: 'Global Tech', email: 'financeiro@globaltech.com', document: '98.765.432/0001-10', status: 'Ativo' },
-];
-
-const initialSuppliers: Supplier[] = [
-  { id: 's1', name: 'Amazon Web Services', email: 'billing@aws.com', document: '10.200.300/0001-40', category: 'Infraestrutura' },
-  { id: 's2', name: 'Adobe Systems', email: 'invoices@adobe.com', document: '20.300.400/0001-50', category: 'Software' },
-];
-
-const initialProducts: Product[] = [
-  { id: 'p1', name: 'Notebook Pro 15', sku: 'NB-PRO-15', category: 'Eletrônicos', price: 85000.00, cost: 60000.00, stock: 12, minStock: 5 },
-  { id: 'p2', name: 'Monitor 4K 27"', sku: 'MON-4K-27', category: 'Eletrônicos', price: 25000.00, cost: 18000.00, stock: 4, minStock: 10 },
-];
-
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
-  const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const { isAuthenticated, user } = useAuth();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(() => {
     const saved = localStorage.getItem('@FinancialArchitect:companyInfo');
     return saved ? JSON.parse(saved) : null;
@@ -68,277 +87,290 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setLoading(false);
-      return;
-    }
-
-    if (isAuthenticated) {
-      fetchData();
-    } else {
+    if (!isAuthenticated || !user) {
       setTransactions([]);
       setCustomers([]);
       setSuppliers([]);
       setProducts([]);
       setLoading(false);
+      return;
     }
-  }, [isAuthenticated, isSupabaseConfigured]);
 
-  const fetchData = async () => {
     setLoading(true);
-    try {
-      const [txRes, custRes, suppRes, prodRes] = await Promise.all([
-        supabase.from('transactions').select('*').order('date', { ascending: false }),
-        supabase.from('customers').select('*').order('name'),
-        supabase.from('suppliers').select('*').order('name'),
-        supabase.from('products').select('*').order('name')
-      ]);
 
-      // If any of the queries fail (e.g., tables don't exist yet), fallback to mock data
-      if (txRes.error || custRes.error || suppRes.error || prodRes.error) {
-        console.warn('Supabase tables not found or error occurred. Falling back to mock data.', {
-          txError: txRes.error,
-          custError: custRes.error,
-          suppError: suppRes.error,
-          prodError: prodRes.error
-        });
-        setTransactions(initialTransactions);
-        setCustomers(initialCustomers);
-        setSuppliers(initialSuppliers);
-        setProducts(initialProducts);
-      } else {
-        if (txRes.data) setTransactions(txRes.data);
-        if (custRes.data) setCustomers(custRes.data);
-        if (suppRes.data) setSuppliers(suppRes.data);
-        if (prodRes.data) setProducts(prodRes.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      // Fallback to mock data on unexpected error
-      setTransactions(initialTransactions);
-      setCustomers(initialCustomers);
-      setSuppliers(initialSuppliers);
-      setProducts(initialProducts);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const unsubTransactions = onSnapshot(
+      query(collection(db, 'transactions'), where('userId', '==', user.uid), orderBy('date', 'desc')),
+      (snapshot) => {
+        setTransactions(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction)));
+      },
+      (error) => handleFirestoreError(error, OperationType.LIST, 'transactions')
+    );
+
+    const unsubCustomers = onSnapshot(
+      query(collection(db, 'customers'), where('userId', '==', user.uid), orderBy('name', 'asc')),
+      (snapshot) => {
+        setCustomers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer)));
+      },
+      (error) => handleFirestoreError(error, OperationType.LIST, 'customers')
+    );
+
+    const unsubSuppliers = onSnapshot(
+      query(collection(db, 'suppliers'), where('userId', '==', user.uid), orderBy('name', 'asc')),
+      (snapshot) => {
+        setSuppliers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Supplier)));
+      },
+      (error) => handleFirestoreError(error, OperationType.LIST, 'suppliers')
+    );
+
+    const unsubProducts = onSnapshot(
+      query(collection(db, 'products'), where('userId', '==', user.uid), orderBy('name', 'asc')),
+      (snapshot) => {
+        setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
+      },
+      (error) => handleFirestoreError(error, OperationType.LIST, 'products')
+    );
+
+    setLoading(false);
+
+    return () => {
+      unsubTransactions();
+      unsubCustomers();
+      unsubSuppliers();
+      unsubProducts();
+    };
+  }, [isAuthenticated, user]);
 
   const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
-    let newTransaction: Transaction;
-    if (!isSupabaseConfigured) {
-      newTransaction = { ...transaction, id: Math.random().toString(36).substr(2, 9) };
-      setTransactions([newTransaction, ...transactions]);
-    } else {
-      const { data, error } = await supabase.from('transactions').insert([transaction]).select();
-      if (error || !data) {
-        console.error('Error adding transaction:', error);
-        return;
-      }
-      newTransaction = data[0];
-      setTransactions([newTransaction, ...transactions]);
-    }
+    if (!user) return;
+    try {
+      const maxReceipt = transactions.reduce((max, t) => Math.max(max, t.receiptNumber || 0), 0);
+      const nextReceiptNumber = maxReceipt + 1;
 
-    // Synchronize stock
-    if (newTransaction.productId && newTransaction.quantity) {
-      const product = products.find(p => p.id === newTransaction.productId);
-      if (product) {
-        let newStock = product.stock;
-        if (newTransaction.type === 'receita') {
-          // Sale: decrease stock
-          newStock -= newTransaction.quantity;
-        } else if (newTransaction.type === 'despesa') {
-          // Purchase: increase stock
-          newStock += newTransaction.quantity;
-        }
-        await updateProduct(product.id, { stock: newStock });
+      const newTransaction = { ...transaction, userId: user.uid, receiptNumber: nextReceiptNumber };
+      await addDoc(collection(db, 'transactions'), newTransaction);
+
+      const currentStocks: Record<string, number> = {};
+      const getStock = (productId: string) => {
+        if (currentStocks[productId] !== undefined) return currentStocks[productId];
+        const product = products.find(p => p.id === productId);
+        return product ? product.stock : 0;
+      };
+
+      // Synchronize stock for single product
+      if (newTransaction.productId && newTransaction.quantity) {
+        let stock = getStock(newTransaction.productId);
+        if (newTransaction.type === 'receita') stock -= newTransaction.quantity;
+        else if (newTransaction.type === 'despesa') stock += newTransaction.quantity;
+        currentStocks[newTransaction.productId] = stock;
       }
+
+      // Synchronize stock for multiple items
+      if (newTransaction.items && newTransaction.items.length > 0) {
+        for (const item of newTransaction.items) {
+          let stock = getStock(item.productId);
+          if (newTransaction.type === 'receita') stock -= item.quantity;
+          else if (newTransaction.type === 'despesa') stock += item.quantity;
+          currentStocks[item.productId] = stock;
+        }
+      }
+
+      // Save all changes to Firestore
+      for (const [productId, stock] of Object.entries(currentStocks)) {
+        if (products.some(p => p.id === productId)) {
+          await updateProduct(productId, { stock });
+        }
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'transactions');
     }
   };
 
   const deleteTransaction = async (id: string) => {
-    const transactionToDelete = transactions.find(t => t.id === id);
-    
-    if (!isSupabaseConfigured) {
-      setTransactions(transactions.filter(t => t.id !== id));
-    } else {
-      const { error } = await supabase.from('transactions').delete().eq('id', id);
-      if (error) {
-        console.error('Error deleting transaction:', error);
-        return;
-      }
-      setTransactions(transactions.filter(t => t.id !== id));
-    }
+    if (!user) return;
+    try {
+      const transactionToDelete = transactions.find(t => t.id === id);
+      await deleteDoc(doc(db, 'transactions', id));
 
-    // Revert stock synchronization
-    if (transactionToDelete && transactionToDelete.productId && transactionToDelete.quantity) {
-      const product = products.find(p => p.id === transactionToDelete.productId);
-      if (product) {
-        let newStock = product.stock;
-        if (transactionToDelete.type === 'receita') {
-          // Revert sale: increase stock
-          newStock += transactionToDelete.quantity;
-        } else if (transactionToDelete.type === 'despesa') {
-          // Revert purchase: decrease stock
-          newStock -= transactionToDelete.quantity;
-        }
-        await updateProduct(product.id, { stock: newStock });
+      const currentStocks: Record<string, number> = {};
+      const getStock = (productId: string) => {
+        if (currentStocks[productId] !== undefined) return currentStocks[productId];
+        const product = products.find(p => p.id === productId);
+        return product ? product.stock : 0;
+      };
+
+      // Revert stock synchronization for single product
+      if (transactionToDelete && transactionToDelete.productId && transactionToDelete.quantity) {
+        let stock = getStock(transactionToDelete.productId);
+        if (transactionToDelete.type === 'receita') stock += transactionToDelete.quantity;
+        else if (transactionToDelete.type === 'despesa') stock -= transactionToDelete.quantity;
+        currentStocks[transactionToDelete.productId] = stock;
       }
+
+      // Revert stock synchronization for multiple items
+      if (transactionToDelete && transactionToDelete.items && transactionToDelete.items.length > 0) {
+        for (const item of transactionToDelete.items) {
+          let stock = getStock(item.productId);
+          if (transactionToDelete.type === 'receita') stock += item.quantity;
+          else if (transactionToDelete.type === 'despesa') stock -= item.quantity;
+          currentStocks[item.productId] = stock;
+        }
+      }
+
+      // Save all changes to Firestore
+      for (const [productId, stock] of Object.entries(currentStocks)) {
+        if (products.some(p => p.id === productId)) {
+          await updateProduct(productId, { stock });
+        }
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `transactions/${id}`);
     }
   };
 
   const updateTransaction = async (id: string, updatedData: Partial<Transaction>) => {
-    const oldTransaction = transactions.find(t => t.id === id);
-    
-    if (!isSupabaseConfigured) {
-      setTransactions(transactions.map(t => t.id === id ? { ...t, ...updatedData } : t));
-    } else {
-      const { error } = await supabase.from('transactions').update(updatedData).eq('id', id);
-      if (error) {
-        console.error('Error updating transaction:', error);
-        return;
-      }
-      setTransactions(transactions.map(t => t.id === id ? { ...t, ...updatedData } : t));
-    }
+    if (!user) return;
+    try {
+      const oldTransaction = transactions.find(t => t.id === id);
+      await updateDoc(doc(db, 'transactions', id), updatedData);
 
-    // Synchronize stock
-    if (oldTransaction) {
-      const newTransaction = { ...oldTransaction, ...updatedData };
-      
-      if (
-        oldTransaction.productId !== newTransaction.productId ||
-        oldTransaction.quantity !== newTransaction.quantity ||
-        oldTransaction.type !== newTransaction.type
-      ) {
-        if (oldTransaction.productId === newTransaction.productId && newTransaction.productId) {
-          const product = products.find(p => p.id === newTransaction.productId);
-          if (product) {
-            let currentStock = product.stock;
-            // Revert old
-            if (oldTransaction.type === 'receita') {
-              currentStock += (oldTransaction.quantity || 0);
-            } else if (oldTransaction.type === 'despesa') {
-              currentStock -= (oldTransaction.quantity || 0);
-            }
-            // Apply new
-            if (newTransaction.type === 'receita') {
-              currentStock -= (newTransaction.quantity || 0);
-            } else if (newTransaction.type === 'despesa') {
-              currentStock += (newTransaction.quantity || 0);
-            }
-            await updateProduct(product.id, { stock: currentStock });
+      // Synchronize stock
+      if (oldTransaction) {
+        const newTransaction = { ...oldTransaction, ...updatedData };
+        const currentStocks: Record<string, number> = {};
+        
+        const getStock = (productId: string) => {
+          if (currentStocks[productId] !== undefined) return currentStocks[productId];
+          const product = products.find(p => p.id === productId);
+          return product ? product.stock : 0;
+        };
+
+        // Revert old single product
+        if (oldTransaction.productId && oldTransaction.quantity) {
+          let stock = getStock(oldTransaction.productId);
+          if (oldTransaction.type === 'receita') stock += oldTransaction.quantity;
+          else if (oldTransaction.type === 'despesa') stock -= oldTransaction.quantity;
+          currentStocks[oldTransaction.productId] = stock;
+        }
+
+        // Revert old items
+        if (oldTransaction.items && oldTransaction.items.length > 0) {
+          for (const item of oldTransaction.items) {
+            let stock = getStock(item.productId);
+            if (oldTransaction.type === 'receita') stock += item.quantity;
+            else if (oldTransaction.type === 'despesa') stock -= item.quantity;
+            currentStocks[item.productId] = stock;
           }
-        } else {
-          // Revert old
-          if (oldTransaction.productId && oldTransaction.quantity) {
-            const oldProduct = products.find(p => p.id === oldTransaction.productId);
-            if (oldProduct) {
-              let revertedStock = oldProduct.stock;
-              if (oldTransaction.type === 'receita') {
-                revertedStock += oldTransaction.quantity;
-              } else if (oldTransaction.type === 'despesa') {
-                revertedStock -= oldTransaction.quantity;
-              }
-              await updateProduct(oldProduct.id, { stock: revertedStock });
-            }
+        }
+
+        // Apply new single product
+        if (newTransaction.productId && newTransaction.quantity) {
+          let stock = getStock(newTransaction.productId);
+          if (newTransaction.type === 'receita') stock -= newTransaction.quantity;
+          else if (newTransaction.type === 'despesa') stock += newTransaction.quantity;
+          currentStocks[newTransaction.productId] = stock;
+        }
+
+        // Apply new items
+        if (newTransaction.items && newTransaction.items.length > 0) {
+          for (const item of newTransaction.items) {
+            let stock = getStock(item.productId);
+            if (newTransaction.type === 'receita') stock -= item.quantity;
+            else if (newTransaction.type === 'despesa') stock += item.quantity;
+            currentStocks[item.productId] = stock;
           }
-          // Apply new
-          if (newTransaction.productId && newTransaction.quantity) {
-            const newProduct = products.find(p => p.id === newTransaction.productId);
-            if (newProduct) {
-              let newStock = newProduct.stock;
-              if (newTransaction.type === 'receita') {
-                newStock -= newTransaction.quantity;
-              } else if (newTransaction.type === 'despesa') {
-                newStock += newTransaction.quantity;
-              }
-              await updateProduct(newProduct.id, { stock: newStock });
-            }
+        }
+
+        // Save all changes to Firestore
+        for (const [productId, stock] of Object.entries(currentStocks)) {
+          if (products.some(p => p.id === productId)) {
+            await updateProduct(productId, { stock });
           }
         }
       }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `transactions/${id}`);
     }
   };
 
   const addCustomer = async (customer: Omit<Customer, 'id'>) => {
-    if (!isSupabaseConfigured) {
-      setCustomers([{ ...customer, id: Math.random().toString(36).substr(2, 9) }, ...customers]);
-      return;
+    if (!user) return;
+    try {
+      await addDoc(collection(db, 'customers'), { ...customer, userId: user.uid });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'customers');
     }
-    const { data, error } = await supabase.from('customers').insert([customer]).select();
-    if (!error && data) setCustomers([data[0], ...customers]);
   };
 
   const deleteCustomer = async (id: string) => {
-    if (!isSupabaseConfigured) {
-      setCustomers(customers.filter(c => c.id !== id));
-      return;
+    if (!user) return;
+    try {
+      await deleteDoc(doc(db, 'customers', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `customers/${id}`);
     }
-    const { error } = await supabase.from('customers').delete().eq('id', id);
-    if (!error) setCustomers(customers.filter(c => c.id !== id));
   };
 
   const updateCustomer = async (id: string, updatedData: Partial<Customer>) => {
-    if (!isSupabaseConfigured) {
-      setCustomers(customers.map(c => c.id === id ? { ...c, ...updatedData } : c));
-      return;
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, 'customers', id), updatedData);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `customers/${id}`);
     }
-    const { error } = await supabase.from('customers').update(updatedData).eq('id', id);
-    if (!error) setCustomers(customers.map(c => c.id === id ? { ...c, ...updatedData } : c));
   };
 
   const addSupplier = async (supplier: Omit<Supplier, 'id'>) => {
-    if (!isSupabaseConfigured) {
-      setSuppliers([{ ...supplier, id: Math.random().toString(36).substr(2, 9) }, ...suppliers]);
-      return;
+    if (!user) return;
+    try {
+      await addDoc(collection(db, 'suppliers'), { ...supplier, userId: user.uid });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'suppliers');
     }
-    const { data, error } = await supabase.from('suppliers').insert([supplier]).select();
-    if (!error && data) setSuppliers([data[0], ...suppliers]);
   };
 
   const deleteSupplier = async (id: string) => {
-    if (!isSupabaseConfigured) {
-      setSuppliers(suppliers.filter(s => s.id !== id));
-      return;
+    if (!user) return;
+    try {
+      await deleteDoc(doc(db, 'suppliers', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `suppliers/${id}`);
     }
-    const { error } = await supabase.from('suppliers').delete().eq('id', id);
-    if (!error) setSuppliers(suppliers.filter(s => s.id !== id));
   };
 
   const updateSupplier = async (id: string, updatedData: Partial<Supplier>) => {
-    if (!isSupabaseConfigured) {
-      setSuppliers(suppliers.map(s => s.id === id ? { ...s, ...updatedData } : s));
-      return;
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, 'suppliers', id), updatedData);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `suppliers/${id}`);
     }
-    const { error } = await supabase.from('suppliers').update(updatedData).eq('id', id);
-    if (!error) setSuppliers(suppliers.map(s => s.id === id ? { ...s, ...updatedData } : s));
   };
 
   const addProduct = async (product: Omit<Product, 'id'>) => {
-    if (!isSupabaseConfigured) {
-      setProducts([{ ...product, id: Math.random().toString(36).substr(2, 9) }, ...products]);
-      return;
+    if (!user) return;
+    try {
+      await addDoc(collection(db, 'products'), { ...product, userId: user.uid });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'products');
     }
-    const { data, error } = await supabase.from('products').insert([product]).select();
-    if (!error && data) setProducts([data[0], ...products]);
   };
 
   const deleteProduct = async (id: string) => {
-    if (!isSupabaseConfigured) {
-      setProducts(products.filter(p => p.id !== id));
-      return;
+    if (!user) return;
+    try {
+      await deleteDoc(doc(db, 'products', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `products/${id}`);
     }
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (!error) setProducts(products.filter(p => p.id !== id));
   };
 
   const updateProduct = async (id: string, updatedData: Partial<Product>) => {
-    if (!isSupabaseConfigured) {
-      setProducts(products.map(p => p.id === id ? { ...p, ...updatedData } : p));
-      return;
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, 'products', id), updatedData);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `products/${id}`);
     }
-    const { error } = await supabase.from('products').update(updatedData).eq('id', id);
-    if (!error) setProducts(products.map(p => p.id === id ? { ...p, ...updatedData } : p));
   };
 
   const updateCompanyInfo = (info: CompanyInfo) => {

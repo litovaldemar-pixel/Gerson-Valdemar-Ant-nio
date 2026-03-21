@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
+import CustomerStatementModal from '../components/CustomerStatementModal';
+import { Customer } from '../types';
 
 const Customers = () => {
   const { customers, addCustomer, deleteCustomer, updateCustomer } = useAppContext();
@@ -9,6 +11,9 @@ const Customers = () => {
   const [email, setEmail] = useState('');
   const [document, setDocument] = useState('');
   const [status, setStatus] = useState<'Ativo' | 'Inativo'>('Ativo');
+  
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [isStatementOpen, setIsStatementOpen] = useState(false);
 
   const handleEdit = (c: any) => {
     setEditingId(c.id);
@@ -166,10 +171,13 @@ const Customers = () => {
                   </td>
                   <td className="px-6 py-4 print:hidden">
                     <div className="flex justify-center gap-2">
-                      <button onClick={() => handleEdit(c)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all">
+                      <button onClick={() => { setSelectedCustomer(c); setIsStatementOpen(true); }} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-secondary hover:bg-secondary-container/20 transition-all" title="Ver Balancete">
+                        <span className="material-symbols-outlined text-lg">account_balance_wallet</span>
+                      </button>
+                      <button onClick={() => handleEdit(c)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all" title="Editar">
                         <span className="material-symbols-outlined text-lg">edit</span>
                       </button>
-                      <button onClick={() => deleteCustomer(c.id)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 transition-all">
+                      <button onClick={() => deleteCustomer(c.id)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 transition-all" title="Excluir">
                         <span className="material-symbols-outlined text-lg">delete</span>
                       </button>
                     </div>
@@ -185,6 +193,12 @@ const Customers = () => {
           </table>
         </div>
       </section>
+      
+      <CustomerStatementModal 
+        isOpen={isStatementOpen}
+        onClose={() => setIsStatementOpen(false)}
+        customer={selectedCustomer}
+      />
     </div>
   );
 };

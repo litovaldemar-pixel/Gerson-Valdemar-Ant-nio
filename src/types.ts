@@ -7,6 +7,14 @@ export interface CompanyInfo {
 
 export type TransactionType = 'receita' | 'despesa';
 
+export interface TransactionItem {
+  productId: string;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
 export interface Transaction {
   id: string;
   date: string;
@@ -16,6 +24,10 @@ export interface Transaction {
   value: number;
   productId?: string;
   quantity?: number;
+  customerId?: string;
+  supplierId?: string;
+  items?: TransactionItem[];
+  receiptNumber?: number;
 }
 
 export interface Customer {

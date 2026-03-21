@@ -1,0 +1,177 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: transactions
+    // Document ID: auto-generated
+    // Fields:
+    //   - userId: string (required) - ID of the user who owns this transaction
+    //   - date: string (required) - Date of the transaction
+    //   - description: string (required) - Description of the transaction
+    //   - category: string (required) - Category of the transaction
+    //   - type: string (required, 'receita' or 'despesa') - Type of transaction
+    //   - value: number (required) - Value of the transaction
+    //   - productId: string (optional) - Optional product ID
+    //   - quantity: number (optional) - Optional quantity
+    //
+    // Collection: customers
+    // Document ID: auto-generated
+    // Fields:
+    //   - userId: string (required) - ID of the user who owns this customer
+    //   - name: string (required) - Name of the customer
+    //   - email: string (required) - Email of the customer
+    //   - document: string (required) - Document (CPF/CNPJ/NUIT)
+    //   - status: string (required) - Status of the customer
+    //
+    // Collection: suppliers
+    // Document ID: auto-generated
+    // Fields:
+    //   - userId: string (required) - ID of the user who owns this supplier
+    //   - name: string (required) - Name of the supplier
+    //   - email: string (required) - Email of the supplier
+    //   - document: string (required) - Document (CPF/CNPJ/NUIT)
+    //   - category: string (required) - Category of the supplier
+    //
+    // Collection: products
+    // Document ID: auto-generated
+    // Fields:
+    //   - userId: string (required) - ID of the user who owns this product
+    //   - name: string (required) - Name of the product
+    //   - sku: string (required) - SKU of the product
+    //   - category: string (required) - Category of the product
+    //   - price: number (required) - Selling price
+    //   - cost: number (required) - Cost price
+    //   - stock: number (required) - Current stock
+    //   - minStock: number (required) - Minimum stock
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    // Check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user owns the resource (for user-owned documents)
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if user is owner based on document's userId field
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+    
+    // Verify userId hasn't been tampered with on create
+    function uidUnchanged() {
+      return !('userId' in request.resource.data) ||
+        request.resource.data.userId == request.auth.uid;
+    }
+    
+    // Ensure userId field is not modified on update
+    function uidNotModified() {
+      return !('userId' in request.resource.data) ||
+        request.resource.data.userId == resource.data.userId;
+    }
+    
+    // Validate required fields exist
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Validate email format
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidTransaction(data) {
+      return hasRequiredFields(['userId', 'date', 'description', 'category', 'type', 'value']) &&
+             data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
+             data.date is string && data.date.size() > 0 && data.date.size() < 50 &&
+             data.description is string && data.description.size() > 0 && data.description.size() < 500 &&
+             data.category is string && data.category.size() > 0 && data.category.size() < 100 &&
+             data.type in ['receita', 'despesa'] &&
+             data.value is number && data.value >= 0 &&
+             (!('productId' in data) || data.productId == null || (data.productId is string && data.productId.size() < 100)) &&
+             (!('quantity' in data) || data.quantity == null || (data.quantity is number && data.quantity >= 0)) &&
+             (!('customerId' in data) || data.customerId == null || (data.customerId is string && data.customerId.size() < 100)) &&
+             (!('supplierId' in data) || data.supplierId == null || (data.supplierId is string && data.supplierId.size() < 100)) &&
+             (!('receiptNumber' in data) || data.receiptNumber == null || data.receiptNumber is number) &&
+             (!('items' in data) || data.items == null || (data.items is list && data.items.size() <= 100));
+    }
+
+    function isValidCustomer(data) {
+      return hasRequiredFields(['userId', 'name', 'email', 'document', 'status']) &&
+             data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             data.email is string && data.email.size() > 0 && data.email.size() < 200 && isValidEmail(data.email) &&
+             data.document is string && data.document.size() > 0 && data.document.size() < 50 &&
+             data.status is string && data.status.size() > 0 && data.status.size() < 50;
+    }
+
+    function isValidSupplier(data) {
+      return hasRequiredFields(['userId', 'name', 'email', 'document', 'category']) &&
+             data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             data.email is string && data.email.size() > 0 && data.email.size() < 200 && isValidEmail(data.email) &&
+             data.document is string && data.document.size() > 0 && data.document.size() < 50 &&
+             data.category is string && data.category.size() > 0 && data.category.size() < 100;
+    }
+
+    function isValidProduct(data) {
+      return hasRequiredFields(['userId', 'name', 'sku', 'category', 'price', 'cost', 'stock', 'minStock']) &&
+             data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             data.sku is string && data.sku.size() > 0 && data.sku.size() < 100 &&
+             data.category is string && data.category.size() > 0 && data.category.size() < 100 &&
+             data.price is number && data.price >= 0 &&
+             data.cost is number && data.cost >= 0 &&
+             data.stock is number && data.stock >= 0 &&
+             data.minStock is number && data.minStock >= 0;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /transactions/{transactionId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && uidUnchanged() && isValidTransaction(request.resource.data);
+      allow update: if isDocOwner() && uidNotModified() && isValidTransaction(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+
+    match /customers/{customerId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && uidUnchanged() && isValidCustomer(request.resource.data);
+      allow update: if isDocOwner() && uidNotModified() && isValidCustomer(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+
+    match /suppliers/{supplierId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && uidUnchanged() && isValidSupplier(request.resource.data);
+      allow update: if isDocOwner() && uidNotModified() && isValidSupplier(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+
+    match /products/{productId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && uidUnchanged() && isValidProduct(request.resource.data);
+      allow update: if isDocOwner() && uidNotModified() && isValidProduct(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+  }
+}
