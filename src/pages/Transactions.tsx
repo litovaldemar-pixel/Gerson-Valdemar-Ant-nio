@@ -15,6 +15,7 @@ const Transactions = () => {
   // For single product (legacy)
   const [productId, setProductId] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [itemUnitPrice, setItemUnitPrice] = useState('');
   
   // For multiple items
   const [customerId, setCustomerId] = useState('');
@@ -22,8 +23,23 @@ const Transactions = () => {
   const [cartItems, setCartItems] = useState<TransactionItem[]>([]);
   const [selectedReceiptTransaction, setSelectedReceiptTransaction] = useState<Transaction | null>(null);
 
+  // Payment
+  const [paymentMethod, setPaymentMethod] = useState('Numerário');
+  const [paymentStatus, setPaymentStatus] = useState<'pago' | 'pendente'>('pago');
+
   // Calculate total for cart
   const cartTotal = cartItems.reduce((acc, item) => acc + item.subtotal, 0);
+
+  // Calculate total for single item if not using cart
+  useEffect(() => {
+    if (cartItems.length === 0 && quantity && itemUnitPrice) {
+      const q = parseInt(quantity, 10);
+      const p = parseFloat(itemUnitPrice);
+      if (!isNaN(q) && !isNaN(p)) {
+        setValue((q * p).toString());
+      }
+    }
+  }, [quantity, itemUnitPrice, cartItems.length]);
 
   useEffect(() => {
     if (cartItems.length > 0) {
@@ -48,8 +64,11 @@ const Transactions = () => {
     setCategory(t.category);
     setProductId(t.productId || '');
     setQuantity(t.quantity?.toString() || '');
+    setItemUnitPrice(t.unitPrice?.toString() || '');
     setCustomerId(t.customerId || '');
     setSupplierId(t.supplierId || '');
+    setPaymentMethod(t.paymentMethod || 'Numerário');
+    setPaymentStatus(t.paymentStatus || 'pago');
     setCartItems(t.items || []);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -62,13 +81,16 @@ const Transactions = () => {
     setCategory('Operacional');
     setProductId('');
     setQuantity('');
+    setItemUnitPrice('');
     setCustomerId('');
     setSupplierId('');
+    setPaymentMethod('Numerário');
+    setPaymentStatus('pago');
     setCartItems([]);
   };
 
   const handleAddToCart = () => {
-    if (!productId || !quantity) return;
+    if (!productId || !quantity || !itemUnitPrice) return;
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
@@ -80,7 +102,8 @@ const Transactions = () => {
       return;
     }
 
-    const unitPrice = type === 'receita' ? product.price : product.cost;
+    const unitPrice = parseFloat(itemUnitPrice);
+    if (isNaN(unitPrice) || unitPrice < 0) return;
 
     const newItem: TransactionItem = {
       productId: product.id,
@@ -93,6 +116,7 @@ const Transactions = () => {
     setCartItems([...cartItems, newItem]);
     setProductId('');
     setQuantity('');
+    setItemUnitPrice('');
   };
 
   const handleRemoveFromCart = (index: number) => {
@@ -128,11 +152,19 @@ const Transactions = () => {
       }
     }
 
+    const parsedValue = isMultiItem ? cartTotal : parseFloat(value);
+    if (isNaN(parsedValue) || parsedValue < 0) {
+      alert('Valor da transação inválido.');
+      return;
+    }
+
     const transactionData: any = {
       description,
-      value: isMultiItem ? cartTotal : parseFloat(value),
+      value: parsedValue,
       type,
       category,
+      paymentMethod,
+      paymentStatus,
     };
 
     if (isMultiItem) {
@@ -141,13 +173,16 @@ const Transactions = () => {
       transactionData.supplierId = type === 'despesa' ? (supplierId || null) : null;
       transactionData.productId = null;
       transactionData.quantity = null;
+      transactionData.unitPrice = null;
     } else {
       if (productId && quantity) {
         transactionData.productId = productId;
         transactionData.quantity = parseInt(quantity, 10);
+        transactionData.unitPrice = itemUnitPrice ? parseFloat(itemUnitPrice) : null;
       } else {
         transactionData.productId = null;
         transactionData.quantity = null;
+        transactionData.unitPrice = null;
       }
       transactionData.items = null;
       transactionData.customerId = type === 'receita' ? (customerId || null) : null;
@@ -170,8 +205,11 @@ const Transactions = () => {
     setCategory('Operacional');
     setProductId('');
     setQuantity('');
+    setItemUnitPrice('');
     setCustomerId('');
     setSupplierId('');
+    setPaymentMethod('Numerário');
+    setPaymentStatus('pago');
     setCartItems([]);
   };
 
@@ -283,6 +321,7 @@ const Transactions = () => {
                 <option value="Marketing">Marketing</option>
                 <option value="Pessoal">Pessoal</option>
                 <option value="Infraestrutura">Infraestrutura</option>
+                <option value="Estado">Estado (Impostos)</option>
                 <option value="Serviços">Serviços</option>
                 <option value="SaaS">SaaS</option>
                 <option value="Produto">Produto</option>
@@ -295,12 +334,20 @@ const Transactions = () => {
               {type === 'receita' ? 'Produtos a Vender (Opcional)' : 'Produtos para Entrada de Stock (Opcional)'}
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-              <div className="space-y-2 md:col-span-6">
+              <div className="space-y-2 md:col-span-4">
                 <label className="text-xs font-bold text-on-surface-variant ml-1">Produto</label>
                 <select
                   className="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
                   value={productId}
-                  onChange={(e) => setProductId(e.target.value)}
+                  onChange={(e) => {
+                    setProductId(e.target.value);
+                    const p = products.find(prod => prod.id === e.target.value);
+                    if (p) {
+                      setItemUnitPrice((type === 'receita' ? p.price : p.cost).toString());
+                    } else {
+                      setItemUnitPrice('');
+                    }
+                  }}
                 >
                   <option value="">Selecione um produto</option>
                   {products.map(p => (
@@ -308,7 +355,7 @@ const Transactions = () => {
                   ))}
                 </select>
               </div>
-              <div className="space-y-2 md:col-span-3">
+              <div className="space-y-2 md:col-span-2">
                 <label className="text-xs font-bold text-on-surface-variant ml-1">Qtd</label>
                 <input
                   className="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
@@ -320,11 +367,24 @@ const Transactions = () => {
                   disabled={!productId}
                 />
               </div>
+              <div className="space-y-2 md:col-span-3">
+                <label className="text-xs font-bold text-on-surface-variant ml-1">Preço Unit.</label>
+                <input
+                  className="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                  placeholder="0.00"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={itemUnitPrice}
+                  onChange={(e) => setItemUnitPrice(e.target.value)}
+                  disabled={!productId}
+                />
+              </div>
               <div className="md:col-span-3">
                 <button 
                   type="button" 
                   onClick={handleAddToCart}
-                  disabled={!productId || !quantity}
+                  disabled={!productId || !quantity || !itemUnitPrice}
                   className="w-full bg-secondary-container text-on-secondary-container px-4 py-3 rounded-lg font-bold text-sm hover:bg-secondary transition-colors disabled:opacity-50"
                 >
                   Adicionar Item
@@ -371,8 +431,8 @@ const Transactions = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+            <div className="space-y-2 lg:col-span-2">
               <label className="text-xs font-bold text-on-surface-variant ml-1">Descrição</label>
               <input
                 className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
@@ -384,16 +444,42 @@ const Transactions = () => {
               />
             </div>
             <div className="space-y-2">
+              <label className="text-xs font-bold text-on-surface-variant ml-1">Método de Pagamento</label>
+              <select
+                className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              >
+                <option value="Numerário">Numerário</option>
+                <option value="M-Pesa">M-Pesa</option>
+                <option value="E-mola">E-mola</option>
+                <option value="Transferência Bancária">Transferência Bancária</option>
+                <option value="Cartão">Cartão</option>
+                <option value="Cheque">Cheque</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-on-surface-variant ml-1">Status de Pagamento</label>
+              <select
+                className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                value={paymentStatus}
+                onChange={(e) => setPaymentStatus(e.target.value as 'pago' | 'pendente')}
+              >
+                <option value="pago">Pago</option>
+                <option value="pendente">Pendente</option>
+              </select>
+            </div>
+            <div className="space-y-2 lg:col-span-4">
               <label className="text-xs font-bold text-on-surface-variant ml-1">Valor Total (MZN)</label>
               <input
-                className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim font-bold text-primary"
                 placeholder="0,00"
                 type="number"
                 step="0.01"
                 value={cartItems.length > 0 ? cartTotal : value}
                 onChange={(e) => setValue(e.target.value)}
                 required={cartItems.length === 0}
-                disabled={cartItems.length > 0}
+                disabled={cartItems.length > 0 || (quantity !== '' && itemUnitPrice !== '')}
               />
             </div>
           </div>
@@ -457,6 +543,16 @@ const Transactions = () => {
                       {customer && ` • Cliente: ${customer.name}`}
                       {supplier && ` • Fornecedor: ${supplier.name}`}
                     </div>
+                    {(t.paymentMethod || t.paymentStatus) && (
+                      <div className="text-xs font-normal text-on-surface-variant mt-1 flex gap-2 items-center">
+                        {t.paymentMethod && <span className="bg-surface-container px-2 py-0.5 rounded-md">{t.paymentMethod}</span>}
+                        {t.paymentStatus && (
+                          <span className={`px-2 py-0.5 rounded-md font-bold ${t.paymentStatus === 'pago' ? 'bg-secondary-container/50 text-secondary' : 'bg-error-container/50 text-error'}`}>
+                            {t.paymentStatus.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm text-on-surface-variant">
                     {isMultiItem ? `${t.items!.length} itens` : (product ? product.name : '-')}

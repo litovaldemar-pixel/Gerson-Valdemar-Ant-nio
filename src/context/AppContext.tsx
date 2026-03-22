@@ -66,6 +66,13 @@ interface AppContextType {
   updateSupplier: (id: string, data: Partial<Supplier>) => Promise<void>;
   updateProduct: (id: string, data: Partial<Product>) => Promise<void>;
   
+  companies: CompanyInfo[];
+  currentCompanyId: string | null;
+  setCurrentCompanyId: (id: string) => void;
+  addCompany: (company: Omit<CompanyInfo, 'id'>) => Promise<void>;
+  updateCompany: (id: string, data: Partial<CompanyInfo>) => Promise<void>;
+  deleteCompany: (id: string) => Promise<void>;
+  
   companyInfo: CompanyInfo | null;
   updateCompanyInfo: (info: CompanyInfo) => void;
 
@@ -76,6 +83,15 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
+  const [companies, setCompanies] = useState<CompanyInfo[]>([]);
+  const [currentCompanyId, setCurrentCompanyId] = useState<string | null>(() => {
+    return localStorage.getItem('@FinancialArchitect:currentCompanyId');
+  });
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
+  const [allSuppliers, setAllSuppliers] = useState<Supplier[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -88,44 +104,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
-      setTransactions([]);
-      setCustomers([]);
-      setSuppliers([]);
-      setProducts([]);
+      setAllTransactions([]);
+      setAllCustomers([]);
+      setAllSuppliers([]);
+      setAllProducts([]);
+      setCompanies([]);
       setLoading(false);
       return;
     }
 
     setLoading(true);
 
-    const unsubTransactions = onSnapshot(
-      query(collection(db, 'transactions'), where('userId', '==', user.uid), orderBy('date', 'desc')),
+    const unsubCompanies = onSnapshot(
+      query(collection(db, 'companies'), where('userId', '==', user.uid)),
       (snapshot) => {
-        setTransactions(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction)));
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CompanyInfo));
+        setCompanies(data);
+        if (data.length > 0 && !currentCompanyId) {
+          setCurrentCompanyId(data[0].id);
+          localStorage.setItem('@FinancialArchitect:currentCompanyId', data[0].id);
+        }
+      },
+      (error) => handleFirestoreError(error, OperationType.LIST, 'companies')
+    );
+
+    const unsubTransactions = onSnapshot(
+      query(collection(db, 'transactions'), where('userId', '==', user.uid)),
+      (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
+        setAllTransactions(data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       },
       (error) => handleFirestoreError(error, OperationType.LIST, 'transactions')
     );
 
     const unsubCustomers = onSnapshot(
-      query(collection(db, 'customers'), where('userId', '==', user.uid), orderBy('name', 'asc')),
+      query(collection(db, 'customers'), where('userId', '==', user.uid)),
       (snapshot) => {
-        setCustomers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer)));
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer));
+        setAllCustomers(data.sort((a, b) => a.name.localeCompare(b.name)));
       },
       (error) => handleFirestoreError(error, OperationType.LIST, 'customers')
     );
 
     const unsubSuppliers = onSnapshot(
-      query(collection(db, 'suppliers'), where('userId', '==', user.uid), orderBy('name', 'asc')),
+      query(collection(db, 'suppliers'), where('userId', '==', user.uid)),
       (snapshot) => {
-        setSuppliers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Supplier)));
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Supplier));
+        setAllSuppliers(data.sort((a, b) => a.name.localeCompare(b.name)));
       },
       (error) => handleFirestoreError(error, OperationType.LIST, 'suppliers')
     );
 
     const unsubProducts = onSnapshot(
-      query(collection(db, 'products'), where('userId', '==', user.uid), orderBy('name', 'asc')),
+      query(collection(db, 'products'), where('userId', '==', user.uid)),
       (snapshot) => {
-        setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        setAllProducts(data.sort((a, b) => a.name.localeCompare(b.name)));
       },
       (error) => handleFirestoreError(error, OperationType.LIST, 'products')
     );
@@ -133,6 +167,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLoading(false);
 
     return () => {
+      unsubCompanies();
       unsubTransactions();
       unsubCustomers();
       unsubSuppliers();
@@ -140,19 +175,48 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [isAuthenticated, user]);
 
+  useEffect(() => {
+    // Filter data by current company
+    // If no currentCompanyId, or if it's a legacy record (no companyId), we show it if we are in the "default" or first company
+    const isFirstCompany = companies.length === 0 || companies[0].id === currentCompanyId;
+    
+    setTransactions(allTransactions.filter(t => t.companyId === currentCompanyId || (!t.companyId && isFirstCompany)));
+    setCustomers(allCustomers.filter(c => c.companyId === currentCompanyId || (!c.companyId && isFirstCompany)));
+    setSuppliers(allSuppliers.filter(s => s.companyId === currentCompanyId || (!s.companyId && isFirstCompany)));
+    setProducts(allProducts.filter(p => p.companyId === currentCompanyId || (!p.companyId && isFirstCompany)));
+    
+    // Update companyInfo to match current company if it exists in DB
+    if (currentCompanyId) {
+      const current = companies.find(c => c.id === currentCompanyId);
+      if (current) {
+        setCompanyInfo(current);
+      }
+    }
+  }, [allTransactions, allCustomers, allSuppliers, allProducts, currentCompanyId, companies]);
+
+  const handleSetCurrentCompanyId = (id: string) => {
+    setCurrentCompanyId(id);
+    localStorage.setItem('@FinancialArchitect:currentCompanyId', id);
+  };
+
   const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
     if (!user) return;
     try {
-      const maxReceipt = transactions.reduce((max, t) => Math.max(max, t.receiptNumber || 0), 0);
+      const maxReceipt = allTransactions.reduce((max, t) => Math.max(max, t.receiptNumber || 0), 0);
       const nextReceiptNumber = maxReceipt + 1;
 
-      const newTransaction = { ...transaction, userId: user.uid, receiptNumber: nextReceiptNumber };
+      const newTransaction = { 
+        ...transaction, 
+        userId: user.uid, 
+        receiptNumber: nextReceiptNumber,
+        companyId: currentCompanyId || undefined
+      };
       await addDoc(collection(db, 'transactions'), newTransaction);
 
       const currentStocks: Record<string, number> = {};
       const getStock = (productId: string) => {
         if (currentStocks[productId] !== undefined) return currentStocks[productId];
-        const product = products.find(p => p.id === productId);
+        const product = allProducts.find(p => p.id === productId);
         return product ? product.stock : 0;
       };
 
@@ -176,7 +240,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // Save all changes to Firestore
       for (const [productId, stock] of Object.entries(currentStocks)) {
-        if (products.some(p => p.id === productId)) {
+        if (allProducts.some(p => p.id === productId)) {
           await updateProduct(productId, { stock });
         }
       }
@@ -188,13 +252,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const deleteTransaction = async (id: string) => {
     if (!user) return;
     try {
-      const transactionToDelete = transactions.find(t => t.id === id);
+      const transactionToDelete = allTransactions.find(t => t.id === id);
       await deleteDoc(doc(db, 'transactions', id));
 
       const currentStocks: Record<string, number> = {};
       const getStock = (productId: string) => {
         if (currentStocks[productId] !== undefined) return currentStocks[productId];
-        const product = products.find(p => p.id === productId);
+        const product = allProducts.find(p => p.id === productId);
         return product ? product.stock : 0;
       };
 
@@ -218,7 +282,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // Save all changes to Firestore
       for (const [productId, stock] of Object.entries(currentStocks)) {
-        if (products.some(p => p.id === productId)) {
+        if (allProducts.some(p => p.id === productId)) {
           await updateProduct(productId, { stock });
         }
       }
@@ -230,7 +294,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateTransaction = async (id: string, updatedData: Partial<Transaction>) => {
     if (!user) return;
     try {
-      const oldTransaction = transactions.find(t => t.id === id);
+      const oldTransaction = allTransactions.find(t => t.id === id);
       await updateDoc(doc(db, 'transactions', id), updatedData);
 
       // Synchronize stock
@@ -240,7 +304,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         
         const getStock = (productId: string) => {
           if (currentStocks[productId] !== undefined) return currentStocks[productId];
-          const product = products.find(p => p.id === productId);
+          const product = allProducts.find(p => p.id === productId);
           return product ? product.stock : 0;
         };
 
@@ -282,7 +346,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         // Save all changes to Firestore
         for (const [productId, stock] of Object.entries(currentStocks)) {
-          if (products.some(p => p.id === productId)) {
+          if (allProducts.some(p => p.id === productId)) {
             await updateProduct(productId, { stock });
           }
         }
@@ -295,7 +359,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addCustomer = async (customer: Omit<Customer, 'id'>) => {
     if (!user) return;
     try {
-      await addDoc(collection(db, 'customers'), { ...customer, userId: user.uid });
+      await addDoc(collection(db, 'customers'), { ...customer, userId: user.uid, companyId: currentCompanyId || undefined });
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'customers');
     }
@@ -322,7 +386,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addSupplier = async (supplier: Omit<Supplier, 'id'>) => {
     if (!user) return;
     try {
-      await addDoc(collection(db, 'suppliers'), { ...supplier, userId: user.uid });
+      await addDoc(collection(db, 'suppliers'), { ...supplier, userId: user.uid, companyId: currentCompanyId || undefined });
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'suppliers');
     }
@@ -349,7 +413,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addProduct = async (product: Omit<Product, 'id'>) => {
     if (!user) return;
     try {
-      await addDoc(collection(db, 'products'), { ...product, userId: user.uid });
+      await addDoc(collection(db, 'products'), { ...product, userId: user.uid, companyId: currentCompanyId || undefined });
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'products');
     }
@@ -373,9 +437,66 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const addCompany = async (company: Omit<CompanyInfo, 'id'>) => {
+    if (!user) return;
+    try {
+      // Default 14 days trial
+      const validUntil = new Date();
+      validUntil.setDate(validUntil.getDate() + 14);
+      
+      const newCompany = { 
+        ...company, 
+        userId: user.uid,
+        subscription: {
+          status: 'active',
+          validUntil: validUntil.toISOString(),
+          plan: 'Trial',
+          price: 0
+        }
+      };
+      
+      const docRef = await addDoc(collection(db, 'companies'), newCompany);
+      if (!currentCompanyId) {
+        handleSetCurrentCompanyId(docRef.id);
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'companies');
+    }
+  };
+
+  const updateCompany = async (id: string, updatedData: Partial<CompanyInfo>) => {
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, 'companies', id), updatedData);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `companies/${id}`);
+    }
+  };
+
+  const deleteCompany = async (id: string) => {
+    if (!user) return;
+    try {
+      await deleteDoc(doc(db, 'companies', id));
+      if (currentCompanyId === id) {
+        const remaining = companies.filter(c => c.id !== id);
+        if (remaining.length > 0) {
+          handleSetCurrentCompanyId(remaining[0].id);
+        } else {
+          setCurrentCompanyId(null);
+          localStorage.removeItem('@FinancialArchitect:currentCompanyId');
+        }
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `companies/${id}`);
+    }
+  };
+
   const updateCompanyInfo = (info: CompanyInfo) => {
-    setCompanyInfo(info);
-    localStorage.setItem('@FinancialArchitect:companyInfo', JSON.stringify(info));
+    if (currentCompanyId) {
+      updateCompany(currentCompanyId, info);
+    } else {
+      addCompany(info);
+    }
   };
 
   return (
@@ -384,6 +505,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       customers, addCustomer, deleteCustomer, updateCustomer,
       suppliers, addSupplier, deleteSupplier, updateSupplier,
       products, addProduct, deleteProduct, updateProduct,
+      companies, currentCompanyId, setCurrentCompanyId: handleSetCurrentCompanyId,
+      addCompany, updateCompany, deleteCompany,
       companyInfo, updateCompanyInfo,
       loading
     }}>

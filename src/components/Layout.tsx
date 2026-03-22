@@ -3,11 +3,27 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import PrintHeader from './PrintHeader';
+import { useAppContext } from '../context/AppContext';
+import SubscriptionLock from './SubscriptionLock';
+import CompanySettingsModal from './CompanySettingsModal';
 
 const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { companyInfo, companies, loading } = useAppContext();
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  // Check subscription status
+  const isSubscriptionValid = () => {
+    if (!companyInfo?.subscription) return true; // Legacy companies without subscription
+    if (companyInfo.subscription.status !== 'active') return false;
+    
+    const validUntil = new Date(companyInfo.subscription.validUntil);
+    return validUntil > new Date();
+  };
+
+  const showLock = !loading && companies.length > 0 && !isSubscriptionValid();
+  const showCreateCompany = !loading && companies.length === 0;
 
   return (
     <>
@@ -30,6 +46,13 @@ const Layout = () => {
       <div className="hidden print:block print-footer">
         Desenvolvido por Gerson Valdemar Antonio, contacto +258 848807062 ou +258 871788070.
       </div>
+
+      {showLock && <SubscriptionLock />}
+      
+      <CompanySettingsModal 
+        isOpen={showCreateCompany} 
+        onClose={() => {}} // Cannot close if no company exists
+      />
     </>
   );
 };

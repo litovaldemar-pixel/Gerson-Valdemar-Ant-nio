@@ -1,97 +1,228 @@
 {
   "entities": {
-    "Transaction": {
-      "title": "Transaction",
-      "description": "A financial transaction (income or expense)",
+    "CompanyInfo": {
+      "title": "CompanyInfo",
+      "description": "Information about a company",
       "type": "object",
       "properties": {
-        "userId": { "type": "string", "description": "ID of the user who owns this transaction" },
-        "date": { "type": "string", "description": "Date of the transaction" },
-        "description": { "type": "string", "description": "Description of the transaction" },
-        "category": { "type": "string", "description": "Category of the transaction" },
-        "type": { "type": "string", "enum": ["receita", "despesa"], "description": "Type of transaction" },
-        "value": { "type": "number", "description": "Value of the transaction" },
-        "productId": { "type": "string", "description": "Optional product ID" },
-        "quantity": { "type": "number", "description": "Optional quantity" },
-        "customerId": { "type": "string", "description": "Optional customer ID" },
-        "supplierId": { "type": "string", "description": "Optional supplier ID" },
-        "receiptNumber": { "type": "number", "description": "Sequential receipt number" },
-        "items": { 
-          "type": "array", 
-          "description": "Optional array of items for multi-item transactions",
-          "items": {
-            "type": "object",
-            "properties": {
-              "productId": { "type": "string" },
-              "name": { "type": "string" },
-              "quantity": { "type": "number" },
-              "unitPrice": { "type": "number" },
-              "subtotal": { "type": "number" }
+        "userId": {
+          "type": "string",
+          "description": "ID of the user who owns this company"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the company"
+        },
+        "nuit": {
+          "type": "string",
+          "description": "NUIT of the company"
+        },
+        "contact": {
+          "type": "string",
+          "description": "Contact of the company"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the company"
+        },
+        "subscription": {
+          "type": "object",
+          "description": "Subscription details",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["active", "inactive", "pending"]
+            },
+            "validUntil": {
+              "type": "string"
+            },
+            "plan": {
+              "type": "string"
+            },
+            "price": {
+              "type": "number"
             }
           }
+        }
+      },
+      "required": ["userId", "name", "nuit", "contact", "location"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "A financial transaction",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "companyId": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["receita", "despesa"]
+        },
+        "value": {
+          "type": "number"
+        },
+        "productId": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "unitPrice": {
+          "type": "number"
+        },
+        "customerId": {
+          "type": "string"
+        },
+        "supplierId": {
+          "type": "string"
+        },
+        "paymentMethod": {
+          "type": "string"
+        },
+        "paymentStatus": {
+          "type": "string",
+          "enum": ["pago", "pendente"]
+        },
+        "receiptNumber": {
+          "type": "number"
+        },
+        "items": {
+          "type": "array"
         }
       },
       "required": ["userId", "date", "description", "category", "type", "value"]
     },
     "Customer": {
       "title": "Customer",
-      "description": "A customer of the company",
+      "description": "A customer",
       "type": "object",
       "properties": {
-        "userId": { "type": "string", "description": "ID of the user who owns this customer" },
-        "name": { "type": "string", "description": "Name of the customer" },
-        "email": { "type": "string", "format": "email", "description": "Email of the customer" },
-        "document": { "type": "string", "description": "Document (CPF/CNPJ/NUIT)" },
-        "status": { "type": "string", "description": "Status of the customer" }
+        "userId": {
+          "type": "string"
+        },
+        "companyId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "document": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
       },
       "required": ["userId", "name", "email", "document", "status"]
     },
     "Supplier": {
       "title": "Supplier",
-      "description": "A supplier of the company",
+      "description": "A supplier",
       "type": "object",
       "properties": {
-        "userId": { "type": "string", "description": "ID of the user who owns this supplier" },
-        "name": { "type": "string", "description": "Name of the supplier" },
-        "email": { "type": "string", "format": "email", "description": "Email of the supplier" },
-        "document": { "type": "string", "description": "Document (CPF/CNPJ/NUIT)" },
-        "category": { "type": "string", "description": "Category of the supplier" }
+        "userId": {
+          "type": "string"
+        },
+        "companyId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "document": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        }
       },
       "required": ["userId", "name", "email", "document", "category"]
     },
     "Product": {
       "title": "Product",
-      "description": "A product sold by the company",
+      "description": "A product",
       "type": "object",
       "properties": {
-        "userId": { "type": "string", "description": "ID of the user who owns this product" },
-        "name": { "type": "string", "description": "Name of the product" },
-        "sku": { "type": "string", "description": "SKU of the product" },
-        "category": { "type": "string", "description": "Category of the product" },
-        "price": { "type": "number", "description": "Selling price" },
-        "cost": { "type": "number", "description": "Cost price" },
-        "stock": { "type": "number", "description": "Current stock" },
-        "minStock": { "type": "number", "description": "Minimum stock" }
+        "userId": {
+          "type": "string"
+        },
+        "companyId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "sku": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number"
+        },
+        "cost": {
+          "type": "number"
+        },
+        "stock": {
+          "type": "number"
+        },
+        "minStock": {
+          "type": "number"
+        }
       },
       "required": ["userId", "name", "sku", "category", "price", "cost", "stock", "minStock"]
     }
   },
   "firestore": {
-    "transactions": {
-      "schema": { "$ref": "#/entities/Transaction" },
-      "description": "Collection of all transactions"
+    "/companies/{companyId}": {
+      "schema": {
+        "$ref": "#/entities/CompanyInfo"
+      },
+      "description": "Companies"
     },
-    "customers": {
-      "schema": { "$ref": "#/entities/Customer" },
-      "description": "Collection of all customers"
+    "/transactions/{transactionId}": {
+      "schema": {
+        "$ref": "#/entities/Transaction"
+      },
+      "description": "Transactions"
     },
-    "suppliers": {
-      "schema": { "$ref": "#/entities/Supplier" },
-      "description": "Collection of all suppliers"
+    "/customers/{customerId}": {
+      "schema": {
+        "$ref": "#/entities/Customer"
+      },
+      "description": "Customers"
     },
-    "products": {
-      "schema": { "$ref": "#/entities/Product" },
-      "description": "Collection of all products"
+    "/suppliers/{supplierId}": {
+      "schema": {
+        "$ref": "#/entities/Supplier"
+      },
+      "description": "Suppliers"
+    },
+    "/products/{productId}": {
+      "schema": {
+        "$ref": "#/entities/Product"
+      },
+      "description": "Products"
     }
   }
 }

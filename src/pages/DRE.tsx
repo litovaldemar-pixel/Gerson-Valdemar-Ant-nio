@@ -25,9 +25,7 @@ const DRE = () => {
     .reduce((acc, curr) => acc + curr.value, 0);
 
   // Calculate taxes and CMV based on specific categories if they exist, otherwise use a default percentage for demonstration
-  const impostos = filteredTransactions
-    .filter(t => t.type === 'despesa' && t.category === 'Impostos')
-    .reduce((acc, curr) => acc + curr.value, 0) || (receitaBruta * 0.0944);
+  const impostos = receitaBruta * 0.03; // ISPC Moçambique (3%)
     
   const cmv = filteredTransactions
     .filter(t => t.type === 'despesa' && (t.category === 'CMV' || t.category === 'Fornecedores'))
@@ -139,7 +137,7 @@ const DRE = () => {
           {/* Variable Costs */}
           <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
             <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
-              Impostos sobre Vendas (-)
+              Impostos sobre Vendas (ISPC 3%) (-)
             </div>
             <div className="col-span-3 md:col-span-2 text-right text-sm text-tertiary-container font-semibold">
               ({formatCurrency(impostos)})

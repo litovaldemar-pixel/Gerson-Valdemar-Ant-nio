@@ -156,6 +156,18 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
               <span>TOTAL</span>
               <span>{formatCurrency(totalValue)}</span>
             </div>
+            {transaction.paymentMethod && (
+              <div className="flex justify-between text-sm text-slate-600 mt-2 pt-2 border-t border-slate-100">
+                <span>Método de Pagamento:</span>
+                <span className="font-medium">{transaction.paymentMethod}</span>
+              </div>
+            )}
+            {transaction.paymentStatus && (
+              <div className="flex justify-between text-sm text-slate-600">
+                <span>Status:</span>
+                <span className="font-medium uppercase">{transaction.paymentStatus}</span>
+              </div>
+            )}
           </div>
 
           {/* QR Code and Footer */}

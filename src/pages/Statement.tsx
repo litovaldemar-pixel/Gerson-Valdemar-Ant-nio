@@ -1,8 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 
+interface AccountBalance {
+  conta: string;
+  descricao: string;
+  categoria: string;
+  debito: number;
+  credito: number;
+  saldoDevedor?: number;
+  saldoCredor?: number;
+}
+
 const Statement = () => {
-  const { transactions, products, customers, suppliers, companyInfo } = useAppContext();
+  const { transactions, companyInfo } = useAppContext();
   
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
@@ -21,22 +31,89 @@ const Statement = () => {
         if (startDate && t.date < startDate) return false;
         if (endDate && t.date > endDate) return false;
         return true;
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      });
   }, [transactions, startDate, endDate]);
 
-  const totalReceitas = filteredTransactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
-  const totalDespesas = filteredTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
-  const saldo = totalReceitas - totalDespesas;
+  const balanceteData = useMemo(() => {
+    const accountsMap: Record<string, AccountBalance> = {
+      '11': { conta: '11', descricao: 'Caixa', categoria: 'Ativos', debito: 0, credito: 0 },
+      '12': { conta: '12', descricao: 'Bancos', categoria: 'Ativos', debito: 0, credito: 0 },
+      '21': { conta: '21', descricao: 'Compras', categoria: 'Ativos', debito: 0, credito: 0 },
+      '22': { conta: '22', descricao: 'Mercadorias', categoria: 'Ativos', debito: 0, credito: 0 },
+      '31': { conta: '31', descricao: 'Clientes', categoria: 'Clientes', debito: 0, credito: 0 },
+      '42': { conta: '42', descricao: 'Fornecedores', categoria: 'Fornecedores', debito: 0, credito: 0 },
+      '44': { conta: '44', descricao: 'Estado', categoria: 'Passivos', debito: 0, credito: 0 },
+      '51': { conta: '51', descricao: 'Capital', categoria: 'Capital', debito: 0, credito: 0 },
+      '61': { conta: '61', descricao: 'Custo das Mercadorias Vendidas', categoria: 'Despesas', debito: 0, credito: 0 },
+      '62': { conta: '62', descricao: 'Fornecimentos e Serviços de Terceiros', categoria: 'Despesas', debito: 0, credito: 0 },
+      '63': { conta: '63', descricao: 'Gastos com o Pessoal', categoria: 'Despesas', debito: 0, credito: 0 },
+      '64': { conta: '64', descricao: 'Impostos e Taxas', categoria: 'Despesas', debito: 0, credito: 0 },
+      '68': { conta: '68', descricao: 'Outros Gastos', categoria: 'Despesas', debito: 0, credito: 0 },
+      '71': { conta: '71', descricao: 'Vendas', categoria: 'Receitas', debito: 0, credito: 0 },
+      '72': { conta: '72', descricao: 'Prestações de Serviços', categoria: 'Receitas', debito: 0, credito: 0 },
+      '78': { conta: '78', descricao: 'Outros Rendimentos', categoria: 'Receitas', debito: 0, credito: 0 },
+    };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('pt-MZ', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).format(date);
-  };
+    filteredTransactions.forEach(t => {
+      if (t.type === 'receita') {
+        // Debit Caixa/Bancos (11/12)
+        accountsMap['12'].debito += t.value;
+        
+        // Credit Vendas/Serviços (71/72)
+        if (t.category === 'Serviços') {
+          accountsMap['72'].credito += t.value;
+        } else {
+          accountsMap['71'].credito += t.value;
+        }
+      } else {
+        // Credit Caixa/Bancos (11/12)
+        accountsMap['12'].credito += t.value;
+        
+        // Debit specific expense account
+        if (t.category === 'Produto' || t.supplierId) {
+          accountsMap['21'].debito += t.value;
+        } else if (t.category === 'Pessoal') {
+          accountsMap['63'].debito += t.value;
+        } else if (t.category === 'Impostos') {
+          accountsMap['64'].debito += t.value;
+        } else if (t.category === 'Estado') {
+          accountsMap['44'].debito += t.value;
+        } else if (t.category === 'Operacional' || t.category === 'Infraestrutura' || t.category === 'Marketing' || t.category === 'SaaS') {
+          accountsMap['62'].debito += t.value;
+        } else {
+          accountsMap['68'].debito += t.value;
+        }
+      }
+    });
+
+    return Object.values(accountsMap)
+      .filter(acc => acc.debito > 0 || acc.credito > 0)
+      .map(acc => {
+        const saldo = acc.debito - acc.credito;
+        return {
+          ...acc,
+          saldoDevedor: saldo > 0 ? saldo : 0,
+          saldoCredor: saldo < 0 ? Math.abs(saldo) : 0,
+        };
+      })
+      .sort((a, b) => a.conta.localeCompare(b.conta));
+  }, [filteredTransactions]);
+
+  const groupedBalancete = useMemo(() => {
+    const groups: Record<string, AccountBalance[]> = {};
+    balanceteData.forEach(acc => {
+      if (!groups[acc.categoria]) {
+        groups[acc.categoria] = [];
+      }
+      groups[acc.categoria].push(acc);
+    });
+    return groups;
+  }, [balanceteData]);
+
+  const totalDebito = balanceteData.reduce((acc, curr) => acc + curr.debito, 0);
+  const totalCredito = balanceteData.reduce((acc, curr) => acc + curr.credito, 0);
+  const totalSaldoDevedor = balanceteData.reduce((acc, curr) => acc + (curr.saldoDevedor || 0), 0);
+  const totalSaldoCredor = balanceteData.reduce((acc, curr) => acc + (curr.saldoCredor || 0), 0);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-MZ', {
@@ -54,8 +131,8 @@ const Statement = () => {
       {/* Header Section */}
       <section className="flex justify-between items-end print:hidden">
         <div>
-          <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">Balancete Geral</h2>
-          <p className="text-on-surface-variant font-medium mt-1">Visão geral de todas as movimentações no período.</p>
+          <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">Balancete do Razão</h2>
+          <p className="text-on-surface-variant font-medium mt-1">Balancete analítico estruturado por contas (PGC-NIRF).</p>
         </div>
         <div className="flex gap-3">
           <button 
@@ -92,129 +169,85 @@ const Statement = () => {
         </div>
       </section>
 
-      {/* Summary Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 print:hidden">
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-sm">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
-              <span className="material-symbols-outlined">arrow_upward</span>
-            </div>
-            <div>
-              <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">Total Entradas</p>
-              <h3 className="text-2xl font-black text-secondary">{formatCurrency(totalReceitas)}</h3>
-            </div>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-sm">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-error-container flex items-center justify-center text-on-error-container">
-              <span className="material-symbols-outlined">arrow_downward</span>
-            </div>
-            <div>
-              <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">Total Saídas</p>
-              <h3 className="text-2xl font-black text-error">{formatCurrency(totalDespesas)}</h3>
-            </div>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-sm">
-          <div className="flex items-center gap-4 mb-4">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${saldo >= 0 ? 'bg-primary-container text-on-primary-container' : 'bg-error-container text-on-error-container'}`}>
-              <span className="material-symbols-outlined">account_balance</span>
-            </div>
-            <div>
-              <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">Saldo do Período</p>
-              <h3 className={`text-2xl font-black ${saldo >= 0 ? 'text-primary' : 'text-error'}`}>{formatCurrency(saldo)}</h3>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Printable Content */}
       <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden print:shadow-none print:bg-transparent">
         {/* Print Header */}
         <div className="hidden print:block text-center mb-8 border-b border-outline-variant/20 pb-6">
           <h1 className="text-2xl font-black uppercase tracking-wider mb-2">{companyInfo?.name || 'SUA EMPRESA'}</h1>
-          <h2 className="text-xl font-bold text-slate-800">Balancete Geral</h2>
+          <h2 className="text-xl font-bold text-slate-800">Balancete do Razão</h2>
           <p className="text-sm text-slate-600 mt-2">Período: {startDate ? new Date(startDate).toLocaleDateString('pt-MZ') : 'Início'} a {endDate ? new Date(endDate).toLocaleDateString('pt-MZ') : 'Hoje'}</p>
         </div>
 
         <div className="p-6 border-b border-outline-variant/10 flex justify-between items-center print:hidden">
-          <h3 className="font-headline font-bold text-lg text-primary">Movimentações do Período</h3>
-          <span className="text-xs text-on-surface-variant">{filteredTransactions.length} registros encontrados</span>
+          <h3 className="font-headline font-bold text-lg text-primary">Contas Movimentadas</h3>
+          <span className="text-xs text-on-surface-variant">{balanceteData.length} contas com saldo</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low/50 print:bg-transparent print:border-b print:border-outline-variant/20">
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Data</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Recibo</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Descrição</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Categoria</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Entidade</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Valor</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/20" rowSpan={2}>Conta</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/20" rowSpan={2}>Descrição</th>
+                <th className="px-6 py-2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center border-b border-outline-variant/20" colSpan={2}>Movimentos</th>
+                <th className="px-6 py-2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center border-b border-outline-variant/20" colSpan={2}>Saldos</th>
+              </tr>
+              <tr className="bg-surface-container-low/30 print:bg-transparent print:border-b print:border-outline-variant/20">
+                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Débito</th>
+                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Crédito</th>
+                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Devedor</th>
+                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Credor</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5 print:divide-outline-variant/20">
-              {filteredTransactions.length === 0 ? (
+              {balanceteData.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-sm text-on-surface-variant">
                     Nenhuma movimentação encontrada neste período.
                   </td>
                 </tr>
               ) : (
-                filteredTransactions.map(t => {
-                  const customer = t.customerId ? customers.find(c => c.id === t.customerId) : null;
-                  const supplier = t.supplierId ? suppliers.find(s => s.id === t.supplierId) : null;
-                  const entityName = customer ? customer.name : (supplier ? supplier.name : '-');
-                  
+                Object.entries(groupedBalancete).map(([categoria, accounts]) => {
+                  const accs = accounts as AccountBalance[];
                   return (
-                    <tr key={t.id} className="hover:bg-surface-container-low/30 transition-colors print:hover:bg-transparent">
-                      <td className="px-6 py-4 text-sm font-medium text-on-surface-variant whitespace-nowrap">{formatDate(t.date)}</td>
-                      <td className="px-6 py-4 text-sm font-mono text-on-surface-variant">
-                        {t.receiptNumber ? String(t.receiptNumber).padStart(3, '0') : '-'}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold text-primary">
-                        {t.description}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-on-surface-variant">
-                        {t.category}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-on-surface-variant">
-                        {entityName}
-                      </td>
-                      <td className={`px-6 py-4 text-sm font-bold text-right ${t.type === 'receita' ? 'text-secondary' : 'text-error'}`}>
-                        {t.type === 'receita' ? '+' : '-'}{formatCurrency(t.value)}
-                      </td>
-                    </tr>
+                    <React.Fragment key={categoria}>
+                      <tr className="bg-surface-container-low/20 print:bg-transparent">
+                        <td colSpan={6} className="px-6 py-2 text-xs font-black uppercase tracking-widest text-primary border-y border-outline-variant/10">
+                          {categoria}
+                        </td>
+                      </tr>
+                      {accs.map(acc => (
+                        <tr key={acc.conta} className="hover:bg-surface-container-low/30 transition-colors print:hover:bg-transparent">
+                          <td className="px-6 py-3 text-sm font-mono font-bold text-primary">{acc.conta}</td>
+                          <td className="px-6 py-3 text-sm font-medium text-on-surface-variant">{acc.descricao}</td>
+                          <td className="px-6 py-3 text-sm text-right text-on-surface-variant">{acc.debito > 0 ? formatCurrency(acc.debito) : '-'}</td>
+                          <td className="px-6 py-3 text-sm text-right text-on-surface-variant">{acc.credito > 0 ? formatCurrency(acc.credito) : '-'}</td>
+                          <td className="px-6 py-3 text-sm font-bold text-right text-secondary">{(acc.saldoDevedor || 0) > 0 ? formatCurrency(acc.saldoDevedor!) : '-'}</td>
+                          <td className="px-6 py-3 text-sm font-bold text-right text-error">{(acc.saldoCredor || 0) > 0 ? formatCurrency(acc.saldoCredor!) : '-'}</td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
                   );
                 })
               )}
             </tbody>
-            {filteredTransactions.length > 0 && (
-              <tfoot className="hidden print:table-footer-group">
+            {balanceteData.length > 0 && (
+              <tfoot className="bg-surface-container-low/50 print:bg-transparent">
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-right font-bold text-on-surface-variant uppercase tracking-wider border-t border-outline-variant/20">
-                    Total Entradas:
+                  <td colSpan={2} className="px-6 py-4 text-right font-black text-primary uppercase tracking-wider border-t-2 border-outline-variant/30">
+                    Totais:
                   </td>
-                  <td className="px-6 py-4 text-right font-bold text-secondary border-t border-outline-variant/20">
-                    {formatCurrency(totalReceitas)}
+                  <td className="px-6 py-4 text-right font-black text-primary border-t-2 border-outline-variant/30">
+                    {formatCurrency(totalDebito)}
                   </td>
-                </tr>
-                <tr>
-                  <td colSpan={5} className="px-6 py-4 text-right font-bold text-on-surface-variant uppercase tracking-wider">
-                    Total Saídas:
+                  <td className="px-6 py-4 text-right font-black text-primary border-t-2 border-outline-variant/30">
+                    {formatCurrency(totalCredito)}
                   </td>
-                  <td className="px-6 py-4 text-right font-bold text-error">
-                    {formatCurrency(totalDespesas)}
+                  <td className="px-6 py-4 text-right font-black text-secondary border-t-2 border-outline-variant/30">
+                    {formatCurrency(totalSaldoDevedor)}
                   </td>
-                </tr>
-                <tr>
-                  <td colSpan={5} className="px-6 py-4 text-right font-black text-primary uppercase tracking-wider border-t border-outline-variant/20">
-                    Saldo Final do Período:
-                  </td>
-                  <td className={`px-6 py-4 text-right font-black text-lg border-t border-outline-variant/20 ${saldo >= 0 ? 'text-primary' : 'text-error'}`}>
-                    {formatCurrency(saldo)}
+                  <td className="px-6 py-4 text-right font-black text-error border-t-2 border-outline-variant/30">
+                    {formatCurrency(totalSaldoCredor)}
                   </td>
                 </tr>
               </tfoot>

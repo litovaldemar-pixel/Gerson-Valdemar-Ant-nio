@@ -1,8 +1,18 @@
+export interface Subscription {
+  status: 'active' | 'inactive' | 'pending';
+  validUntil: string;
+  plan: string;
+  price: number;
+}
+
 export interface CompanyInfo {
+  id: string;
   name: string;
   nuit: string;
   contact: string;
   location: string;
+  userId?: string;
+  subscription?: Subscription;
 }
 
 export type TransactionType = 'receita' | 'despesa';
@@ -17,6 +27,7 @@ export interface TransactionItem {
 
 export interface Transaction {
   id: string;
+  companyId?: string;
   date: string;
   description: string;
   category: string;
@@ -24,14 +35,18 @@ export interface Transaction {
   value: number;
   productId?: string;
   quantity?: number;
+  unitPrice?: number;
   customerId?: string;
   supplierId?: string;
+  paymentMethod?: string;
+  paymentStatus?: 'pago' | 'pendente';
   items?: TransactionItem[];
   receiptNumber?: number;
 }
 
 export interface Customer {
   id: string;
+  companyId?: string;
   name: string;
   email: string;
   document: string;
@@ -40,6 +55,7 @@ export interface Customer {
 
 export interface Supplier {
   id: string;
+  companyId?: string;
   name: string;
   email: string;
   document: string;
@@ -48,6 +64,7 @@ export interface Supplier {
 
 export interface Product {
   id: string;
+  companyId?: string;
   name: string;
   sku: string;
   category: string;

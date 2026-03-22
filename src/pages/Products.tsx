@@ -54,7 +54,7 @@ const Products = () => {
       cost: parseFloat(cost),
       stock: parseInt(stock, 10),
       minStock: parseInt(minStock || '0', 10),
-      supplierId: supplierId || undefined,
+      supplierId: supplierId || null,
     };
 
     if (editingId) {
