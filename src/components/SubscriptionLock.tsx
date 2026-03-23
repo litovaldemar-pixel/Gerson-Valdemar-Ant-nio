@@ -13,23 +13,34 @@ const SubscriptionLock = () => {
 
   const isDeveloper = user?.email === 'litovaldemar@gmail.com';
 
-  const handleDeveloperUnlock = async () => {
+  const handleDeveloperAction = async (action: '30days' | '1year' | 'deactivate') => {
     if (!companyInfo) return;
     setVerifying(true);
     try {
-      const nextYear = new Date();
-      nextYear.setFullYear(nextYear.getFullYear() + 1);
+      const newDate = new Date();
+      let plan = 'Developer Override';
+
+      if (action === '30days') {
+        newDate.setDate(newDate.getDate() + 30);
+        plan = 'Manual (30 Dias)';
+      } else if (action === '1year') {
+        newDate.setFullYear(newDate.getFullYear() + 1);
+        plan = 'Manual (1 Ano)';
+      } else if (action === 'deactivate') {
+        newDate.setFullYear(newDate.getFullYear() + 99);
+        plan = 'Vitalício (Dev)';
+      }
 
       await updateCompany(companyInfo.id, {
         subscription: {
           status: 'active',
-          validUntil: nextYear.toISOString(),
-          plan: 'Developer Override',
+          validUntil: newDate.toISOString(),
+          plan: plan,
           price: 0
         }
       });
     } catch (err) {
-      setError('Erro no desbloqueio de desenvolvedor.');
+      setError('Erro na ação de desenvolvedor.');
     } finally {
       setVerifying(false);
     }
@@ -147,15 +158,31 @@ const SubscriptionLock = () => {
 
         <div className="space-y-3">
           {isDeveloper && (
-            <div className="pt-4 border-t border-primary/20">
-              <button 
-                onClick={handleDeveloperUnlock}
-                disabled={verifying}
-                className="w-full bg-primary/10 text-primary px-4 py-3 rounded-xl font-black hover:bg-primary/20 transition-colors flex items-center justify-center gap-2 text-sm border border-primary/20"
-              >
-                <span className="material-symbols-outlined text-lg">terminal</span>
-                Desbloqueio de Desenvolvedor
-              </button>
+            <div className="pt-4 border-t border-primary/20 space-y-2">
+              <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Painel do Desenvolvedor</p>
+              <div className="grid grid-cols-3 gap-2">
+                <button 
+                  onClick={() => handleDeveloperAction('30days')}
+                  disabled={verifying}
+                  className="bg-primary/10 text-primary px-2 py-2 rounded-lg font-bold hover:bg-primary/20 transition-colors text-[10px] border border-primary/20"
+                >
+                  +30 Dias
+                </button>
+                <button 
+                  onClick={() => handleDeveloperAction('1year')}
+                  disabled={verifying}
+                  className="bg-primary/10 text-primary px-2 py-2 rounded-lg font-bold hover:bg-primary/20 transition-colors text-[10px] border border-primary/20"
+                >
+                  +1 Ano
+                </button>
+                <button 
+                  onClick={() => handleDeveloperAction('deactivate')}
+                  disabled={verifying}
+                  className="bg-primary text-on-primary px-2 py-2 rounded-lg font-bold hover:brightness-110 transition-colors text-[10px]"
+                >
+                  Desativar (Vitalício)
+                </button>
+              </div>
             </div>
           )}
 
