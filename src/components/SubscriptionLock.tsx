@@ -11,7 +11,7 @@ const SubscriptionLock = () => {
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState('');
 
-  const isDeveloper = user?.email === 'litovaldemar@gmail.com';
+  const isDeveloper = user?.email?.toLowerCase().includes('litovaldemar');
 
   const handleDeveloperAction = async (action: '30days' | '1year' | 'deactivate') => {
     if (!companyInfo) return;
@@ -231,6 +231,11 @@ const SubscriptionLock = () => {
               <span className="material-symbols-outlined text-lg">logout</span>
               Sair
             </button>
+          </div>
+          <div className="pt-4 text-center">
+            <p className="text-[10px] text-on-surface-variant opacity-50">
+              Logado como: {user?.email || 'Desconhecido'}
+            </p>
           </div>
         </div>
       </motion.div>
