@@ -55,57 +55,48 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 print:bg-white print:p-0">
-      <div className="bg-white rounded-lg w-full max-w-md shadow-2xl overflow-hidden print:shadow-none print:w-full print:max-w-none">
+      <div className="bg-white rounded-lg w-full max-w-sm shadow-2xl overflow-hidden print:shadow-none print:w-full print:max-w-none flex flex-col max-h-[90vh]">
         {/* Modal Header - Hidden on print */}
-        <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center print:hidden bg-slate-50">
-          <h2 className="text-lg font-bold text-slate-800">Recibo</h2>
-          <div className="flex gap-2">
-            <button onClick={handlePrint} className="p-2 text-slate-600 hover:bg-slate-200 rounded-full transition-colors" title="Imprimir Recibo">
-              <span className="material-symbols-outlined">print</span>
-            </button>
-            <button onClick={onClose} className="p-2 text-slate-600 hover:bg-slate-200 rounded-full transition-colors" title="Fechar">
-              <span className="material-symbols-outlined">close</span>
-            </button>
-          </div>
+        <div className="px-4 py-3 border-b border-slate-200 flex justify-between items-center print:hidden bg-slate-50 shrink-0">
+          <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Recibo</h2>
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <span className="material-symbols-outlined text-xl">close</span>
+          </button>
         </div>
 
         {/* Receipt Content - This is what gets printed */}
-        <div className="p-8 bg-white text-slate-900 print:p-4" id="receipt-content">
+        <div className="p-6 bg-white text-slate-900 print:p-4 overflow-y-auto" id="receipt-content">
           {/* Company Header */}
-          <div className="text-center mb-6 border-b border-dashed border-slate-300 pb-6">
-            <h1 className="text-2xl font-black uppercase tracking-wider mb-2">{companyInfo?.name || 'SUA EMPRESA'}</h1>
-            {companyInfo?.nuit && <p className="text-sm text-slate-600 font-medium">NUIT: {companyInfo.nuit}</p>}
-            {companyInfo?.location && <p className="text-sm text-slate-600">{companyInfo.location}</p>}
-            {companyInfo?.contact && <p className="text-sm text-slate-600">Celular: {companyInfo.contact}</p>}
+          <div className="text-center mb-4 border-b border-dashed border-slate-300 pb-4">
+            <h1 className="text-xl font-black uppercase tracking-wider mb-1">{companyInfo?.name || 'SUA EMPRESA'}</h1>
+            {companyInfo?.nuit && <p className="text-[10px] text-slate-600 font-medium">NUIT: {companyInfo.nuit}</p>}
+            {companyInfo?.location && <p className="text-[10px] text-slate-600">{companyInfo.location}</p>}
+            {companyInfo?.contact && <p className="text-[10px] text-slate-600">Celular: {companyInfo.contact}</p>}
           </div>
 
           {/* Receipt Info */}
-          <div className="mb-6 text-sm">
-            <h2 className="text-center font-bold text-lg mb-4 uppercase tracking-widest">
+          <div className="mb-4 text-[11px]">
+            <h2 className="text-center font-bold text-xs mb-3 uppercase tracking-widest">
               {transaction.type === 'receita' ? 'Recibo de Venda' : 'Recibo de Compra'}
             </h2>
-            <div className="flex justify-between mb-1">
+            <div className="flex justify-between mb-0.5">
               <span className="text-slate-500">Data:</span>
               <span className="font-medium">{formatDate(transaction.date)}</span>
             </div>
-            <div className="flex justify-between mb-1">
+            <div className="flex justify-between mb-0.5">
               <span className="text-slate-500">Recibo Nº:</span>
               <span className="font-medium font-mono">
                 {transaction.receiptNumber ? String(transaction.receiptNumber).padStart(3, '0') : transaction.id.substring(0, 8).toUpperCase()}
               </span>
             </div>
-            <div className="flex justify-between mb-1">
-              <span className="text-slate-500">Operador:</span>
-              <span className="font-medium">Admin</span>
-            </div>
             {customer && (
-              <div className="flex justify-between mb-1 mt-2 pt-2 border-t border-slate-100">
+              <div className="flex justify-between mb-0.5 mt-1 pt-1 border-t border-slate-100">
                 <span className="text-slate-500">Cliente:</span>
                 <span className="font-medium">{customer.name}</span>
               </div>
             )}
             {supplier && (
-              <div className="flex justify-between mb-1 mt-2 pt-2 border-t border-slate-100">
+              <div className="flex justify-between mb-0.5 mt-1 pt-1 border-t border-slate-100">
                 <span className="text-slate-500">Fornecedor:</span>
                 <span className="font-medium">{supplier.name}</span>
               </div>
@@ -113,37 +104,33 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
           </div>
 
           {/* Items */}
-          <div className="border-t border-b border-dashed border-slate-300 py-4 mb-6">
-            <table className="w-full text-sm">
+          <div className="border-t border-b border-dashed border-slate-300 py-3 mb-4">
+            <table className="w-full text-[11px]">
               <thead>
                 <tr className="text-left text-slate-500">
-                  <th className="pb-2 font-medium">Qtd</th>
-                  <th className="pb-2 font-medium">Descrição</th>
-                  <th className="pb-2 font-medium text-right">Preço</th>
-                  <th className="pb-2 font-medium text-right">Total</th>
+                  <th className="pb-1 font-medium">Qtd</th>
+                  <th className="pb-1 font-medium">Descrição</th>
+                  <th className="pb-1 font-medium text-right">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {isMultiItem ? (
                   transaction.items!.map((item, idx) => (
                     <tr key={idx}>
-                      <td className="py-2 align-top">{item.quantity}</td>
-                      <td className="py-2 pr-2">
+                      <td className="py-1 align-top">{item.quantity}</td>
+                      <td className="py-1 pr-2">
                         <div className="font-medium">{item.name}</div>
                       </td>
-                      <td className="py-2 text-right align-top">{formatCurrency(item.unitPrice)}</td>
-                      <td className="py-2 text-right align-top font-medium">{formatCurrency(item.subtotal)}</td>
+                      <td className="py-1 text-right align-top font-medium">{formatCurrency(item.subtotal)}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td className="py-2 align-top">{quantity}</td>
-                    <td className="py-2 pr-2">
+                    <td className="py-1 align-top">{quantity}</td>
+                    <td className="py-1 pr-2">
                       <div className="font-medium">{product ? product.name : transaction.description}</div>
-                      {product && <div className="text-xs text-slate-500">{transaction.description}</div>}
                     </td>
-                    <td className="py-2 text-right align-top">{formatCurrency(unitPrice)}</td>
-                    <td className="py-2 text-right align-top font-medium">{formatCurrency(totalValue)}</td>
+                    <td className="py-1 text-right align-top font-medium">{formatCurrency(totalValue)}</td>
                   </tr>
                 )}
               </tbody>
@@ -151,33 +138,45 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
           </div>
 
           {/* Totals */}
-          <div className="space-y-2 mb-8">
-            <div className="flex justify-between text-lg font-black">
+          <div className="space-y-1 mb-6">
+            <div className="flex justify-between text-base font-black">
               <span>TOTAL</span>
               <span>{formatCurrency(totalValue)}</span>
             </div>
             {transaction.paymentMethod && (
-              <div className="flex justify-between text-sm text-slate-600 mt-2 pt-2 border-t border-slate-100">
-                <span>Método de Pagamento:</span>
+              <div className="flex justify-between text-[10px] text-slate-600 mt-1 pt-1 border-t border-slate-100">
+                <span>Pagamento:</span>
                 <span className="font-medium">{transaction.paymentMethod}</span>
-              </div>
-            )}
-            {transaction.paymentStatus && (
-              <div className="flex justify-between text-sm text-slate-600">
-                <span>Status:</span>
-                <span className="font-medium uppercase">{transaction.paymentStatus}</span>
               </div>
             )}
           </div>
 
           {/* QR Code and Footer */}
-          <div className="flex flex-col items-center justify-center text-center text-sm text-slate-500 border-t border-dashed border-slate-300 pt-6">
-            <div className="mb-4">
-              <QRCodeSVG value={qrData} size={100} level="M" />
+          <div className="flex flex-col items-center justify-center text-center text-[10px] text-slate-500 border-t border-dashed border-slate-300 pt-4">
+            <div className="mb-2">
+              <QRCodeSVG value={qrData} size={60} level="M" />
             </div>
-            <p className="mb-1">Obrigado pela preferência!</p>
-            <p className="text-xs">Processado por computador</p>
+            <p className="mb-0.5">Obrigado pela preferência!</p>
+            <p>Processado por computador</p>
           </div>
+        </div>
+
+        {/* Modal Footer - Explicit Buttons */}
+        <div className="px-6 py-4 border-t border-slate-200 flex gap-3 print:hidden bg-slate-50 shrink-0">
+          <button 
+            onClick={handlePrint} 
+            className="flex-1 bg-slate-800 text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">print</span>
+            Imprimir
+          </button>
+          <button 
+            onClick={onClose} 
+            className="flex-1 bg-slate-200 text-slate-800 py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-300 transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">close</span>
+            Sair
+          </button>
         </div>
       </div>
       

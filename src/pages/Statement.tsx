@@ -213,10 +213,10 @@ const Statement = () => {
                 <th className="px-6 py-2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center border-b border-outline-variant/20" colSpan={2}>Saldos</th>
               </tr>
               <tr className="bg-surface-container-low/30 print:bg-transparent print:border-b print:border-outline-variant/20">
-                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Débito (Entrada)</th>
                 <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Crédito (Saída)</th>
-                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Devedor</th>
+                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Débito (Entrada)</th>
                 <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Credor</th>
+                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Devedor</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5 print:divide-outline-variant/20">
@@ -249,17 +249,17 @@ const Statement = () => {
                               {acc.conta}
                             </td>
                             <td className="px-6 py-3 text-sm font-bold text-on-surface-variant">{acc.descricao}</td>
-                            <td className="px-6 py-3 text-sm font-bold text-right text-on-surface-variant">{acc.debito > 0 ? formatCurrency(acc.debito) : '-'}</td>
                             <td className="px-6 py-3 text-sm font-bold text-right text-on-surface-variant">{acc.credito > 0 ? formatCurrency(acc.credito) : '-'}</td>
-                            <td className="px-6 py-3 text-sm font-bold text-right text-secondary">{(acc.saldoDevedor || 0) > 0 ? formatCurrency(acc.saldoDevedor!) : '-'}</td>
+                            <td className="px-6 py-3 text-sm font-bold text-right text-on-surface-variant">{acc.debito > 0 ? formatCurrency(acc.debito) : '-'}</td>
                             <td className="px-6 py-3 text-sm font-bold text-right text-error">{(acc.saldoCredor || 0) > 0 ? formatCurrency(acc.saldoCredor!) : '-'}</td>
+                            <td className="px-6 py-3 text-sm font-bold text-right text-secondary">{(acc.saldoDevedor || 0) > 0 ? formatCurrency(acc.saldoDevedor!) : '-'}</td>
                           </tr>
                           {showMovements[acc.conta] && acc.movimentos.map((mov, idx) => (
                             <tr key={`${acc.conta}-mov-${idx}`} className="text-xs bg-surface-container-lowest/50 border-b border-outline-variant/5">
                               <td className="px-6 py-2 text-right text-on-surface-variant/70 font-mono">{new Date(mov.date).toLocaleDateString('pt-MZ')}</td>
                               <td className="px-6 py-2 pl-10 text-on-surface-variant/80">{mov.description}</td>
-                              <td className="px-6 py-2 text-right text-on-surface-variant/80">{mov.tipoMovimento === 'debito' ? formatCurrency(mov.value) : '-'}</td>
                               <td className="px-6 py-2 text-right text-on-surface-variant/80">{mov.tipoMovimento === 'credito' ? formatCurrency(mov.value) : '-'}</td>
+                              <td className="px-6 py-2 text-right text-on-surface-variant/80">{mov.tipoMovimento === 'debito' ? formatCurrency(mov.value) : '-'}</td>
                               <td className="px-6 py-2"></td>
                               <td className="px-6 py-2"></td>
                             </tr>
@@ -278,16 +278,16 @@ const Statement = () => {
                     Totais:
                   </td>
                   <td className="px-6 py-4 text-right font-black text-primary border-t-2 border-outline-variant/30">
-                    {formatCurrency(totalDebito)}
-                  </td>
-                  <td className="px-6 py-4 text-right font-black text-primary border-t-2 border-outline-variant/30">
                     {formatCurrency(totalCredito)}
                   </td>
-                  <td className="px-6 py-4 text-right font-black text-secondary border-t-2 border-outline-variant/30">
-                    {formatCurrency(totalSaldoDevedor)}
+                  <td className="px-6 py-4 text-right font-black text-primary border-t-2 border-outline-variant/30">
+                    {formatCurrency(totalDebito)}
                   </td>
                   <td className="px-6 py-4 text-right font-black text-error border-t-2 border-outline-variant/30">
                     {formatCurrency(totalSaldoCredor)}
+                  </td>
+                  <td className="px-6 py-4 text-right font-black text-secondary border-t-2 border-outline-variant/30">
+                    {formatCurrency(totalSaldoDevedor)}
                   </td>
                 </tr>
               </tfoot>

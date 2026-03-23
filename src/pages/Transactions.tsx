@@ -29,6 +29,7 @@ const Transactions = () => {
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
   const [filterType, setFilterType] = useState<TransactionType | 'all'>('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterDateStart, setFilterDateStart] = useState('');
@@ -243,6 +244,10 @@ const Transactions = () => {
     if (filterDateEnd && new Date(t.date) > new Date(filterDateEnd + 'T23:59:59')) return false;
     return true;
   });
+
+  const displayedTransactions = showAllTransactions 
+    ? filteredTransactions 
+    : filteredTransactions.slice(0, 10);
 
   const totalReceitas = filteredTransactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
   const totalDespesas = filteredTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
@@ -625,14 +630,14 @@ const Transactions = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5 print:divide-outline-variant/20">
-              {filteredTransactions.length === 0 ? (
+              {displayedTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center text-on-surface-variant">
                     Nenhum lançamento encontrado.
                   </td>
                 </tr>
               ) : (
-                filteredTransactions.map((t) => {
+                displayedTransactions.map((t) => {
                   const isMultiItem = t.items && t.items.length > 0;
                   const product = !isMultiItem && t.productId ? products.find(p => p.id === t.productId) : null;
                   const customer = t.customerId ? customers.find(c => c.id === t.customerId) : null;
@@ -696,12 +701,19 @@ const Transactions = () => {
             </tbody>
           </table>
         </div>
-        <div className="p-6 bg-surface-container-low/20 flex justify-center print:hidden">
-          <button className="text-sm font-bold text-primary hover:underline flex items-center gap-2">
-            Ver todos os lançamentos
-            <span className="material-symbols-outlined text-sm">expand_more</span>
-          </button>
-        </div>
+        {filteredTransactions.length > 10 && (
+          <div className="p-6 bg-surface-container-low/20 flex justify-center print:hidden">
+            <button 
+              onClick={() => setShowAllTransactions(!showAllTransactions)}
+              className="text-sm font-bold text-primary hover:underline flex items-center gap-2"
+            >
+              {showAllTransactions ? 'Ver menos lançamentos' : 'Ver todos os lançamentos'}
+              <span className={`material-symbols-outlined text-sm transition-transform ${showAllTransactions ? 'rotate-180' : ''}`}>
+                expand_more
+              </span>
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Sticky Footer Summary (Bento Style) */}
