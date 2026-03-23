@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { motion } from 'motion/react';
 
 const Dashboard = () => {
-  const { transactions, customers, suppliers, products } = useAppContext();
+  const { transactions, customers, suppliers, products, companyInfo } = useAppContext();
 
   const totalReceitas = transactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
   const totalDespesas = transactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
@@ -102,7 +102,23 @@ const Dashboard = () => {
       )}
 
       {/* KPI Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 shadow-sm flex flex-col justify-between"
+        >
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Subscrição</p>
+            <h4 className="text-xl font-headline font-extrabold mt-1 text-primary">
+              {companyInfo?.subscription?.status === 'active' ? 'Ativa' : 'Expirada'}
+            </h4>
+          </div>
+          <div className="mt-2 text-[10px] font-bold text-on-surface-variant">
+            Expira em: {companyInfo?.subscription?.validUntil ? new Date(companyInfo.subscription.validUntil).toLocaleDateString('pt-MZ') : 'N/A'}
+          </div>
+        </motion.div>
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}

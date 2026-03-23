@@ -15,7 +15,7 @@ const Layout = () => {
 
   // Check subscription status
   const isSubscriptionValid = () => {
-    if (!companyInfo?.subscription) return true; // Legacy companies without subscription
+    if (!companyInfo?.subscription) return false; // Force subscription for all
     if (companyInfo.subscription.status !== 'active') return false;
     
     const validUntil = new Date(companyInfo.subscription.validUntil);

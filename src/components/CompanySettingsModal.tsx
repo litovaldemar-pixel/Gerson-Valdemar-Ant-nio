@@ -81,6 +81,27 @@ const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) =>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {companyInfo?.subscription && (
+              <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-xs font-bold text-primary uppercase tracking-widest">Estado da Subscrição</p>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${companyInfo.subscription.status === 'active' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
+                    {companyInfo.subscription.status === 'active' ? 'Ativa' : 'Expirada'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-[10px] text-on-surface-variant">Válido até:</p>
+                    <p className="text-sm font-bold text-on-surface">{new Date(companyInfo.subscription.validUntil).toLocaleDateString('pt-MZ')}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-on-surface-variant">Plano:</p>
+                    <p className="text-sm font-bold text-on-surface">{companyInfo.subscription.plan}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-bold text-on-surface-variant mb-1">Nome do Estabelecimento / Empresa</label>
               <input

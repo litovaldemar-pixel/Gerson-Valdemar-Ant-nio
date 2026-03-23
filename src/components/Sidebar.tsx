@@ -31,7 +31,12 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             <h1 className="text-lg font-black text-blue-900 dark:text-blue-100 font-headline tracking-tight truncate max-w-[140px]">
               {companyInfo?.name || 'CapitalCorp'}
             </h1>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-60">Enterprise ERP</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-60">Enterprise ERP</p>
+              {companyInfo?.subscription?.status === 'active' && (
+                <span className="bg-primary/10 text-primary text-[8px] font-black px-1 rounded uppercase tracking-tighter">Premium</span>
+              )}
+            </div>
           </button>
         </div>
         <button className="lg:hidden text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200" onClick={onClose}>
