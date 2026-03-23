@@ -9,6 +9,62 @@ const Suppliers = () => {
   const [email, setEmail] = useState('');
   const [document, setDocument] = useState('');
   const [category, setCategory] = useState('Infraestrutura');
+  const [documentError, setDocumentError] = useState('');
+
+  const formatCNPJ = (value: string) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/^(\d{2})(\d)/, '$1.$2')
+      .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/\.(\d{3})(\d)/, '.$1/$2')
+      .replace(/(\d{4})(\d)/, '$1-$2')
+      .substring(0, 18);
+  };
+
+  const validateCNPJ = (cnpj: string) => {
+    cnpj = cnpj.replace(/[^\d]+/g, '');
+    if (cnpj === '') return true; // Optional field
+    if (cnpj.length !== 14) return false;
+
+    // Eliminate known invalid CNPJs
+    if (/^(\d)\1+$/.test(cnpj)) return false;
+
+    // Validate DVs
+    let size = cnpj.length - 2;
+    let numbers = cnpj.substring(0, size);
+    const digits = cnpj.substring(size);
+    let sum = 0;
+    let pos = size - 7;
+    for (let i = size; i >= 1; i--) {
+      sum += parseInt(numbers.charAt(size - i)) * pos--;
+      if (pos < 2) pos = 9;
+    }
+    let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    if (result !== parseInt(digits.charAt(0))) return false;
+
+    size = size + 1;
+    numbers = cnpj.substring(0, size);
+    sum = 0;
+    pos = size - 7;
+    for (let i = size; i >= 1; i--) {
+      sum += parseInt(numbers.charAt(size - i)) * pos--;
+      if (pos < 2) pos = 9;
+    }
+    result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    if (result !== parseInt(digits.charAt(1))) return false;
+
+    return true;
+  };
+
+  const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCNPJ(e.target.value);
+    setDocument(formatted);
+    if (formatted && !validateCNPJ(formatted)) {
+      setDocumentError('CNPJ inválido');
+    } else {
+      setDocumentError('');
+    }
+  };
 
   const handleEdit = (s: any) => {
     setEditingId(s.id);
@@ -29,7 +85,7 @@ const Suppliers = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !document) return;
+    if (!name) return;
 
     if (editingId) {
       updateSupplier(editingId, {
@@ -89,26 +145,25 @@ const Suppliers = () => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">E-mail</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">E-mail (Opcional)</label>
             <input
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               placeholder="contato@fornecedor.com"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">CNPJ</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">CNPJ (Opcional)</label>
             <input
-              className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              className={`w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim ${documentError ? 'ring-2 ring-error' : ''}`}
               placeholder="00.000.000/0000-00"
               type="text"
               value={document}
-              onChange={(e) => setDocument(e.target.value)}
-              required
+              onChange={handleDocumentChange}
             />
+            {documentError && <p className="text-error text-[10px] font-bold ml-1">{documentError}</p>}
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-on-surface-variant ml-1">Categoria</label>
@@ -121,6 +176,11 @@ const Suppliers = () => {
               <option value="Software">Software</option>
               <option value="Serviços">Serviços</option>
               <option value="Marketing">Marketing</option>
+              <option value="Mercadorias">Mercadorias</option>
+              <option value="Equipamentos">Equipamentos</option>
+              <option value="Logística">Logística</option>
+              <option value="Consultoria">Consultoria</option>
+              <option value="Alimentação">Alimentação</option>
               <option value="Outros">Outros</option>
             </select>
           </div>
@@ -130,7 +190,11 @@ const Suppliers = () => {
                 Cancelar
               </button>
             )}
-            <button type="submit" className="w-full bg-primary text-on-primary py-3 rounded-lg font-bold text-sm hover:bg-primary-container transition-colors">
+            <button 
+              type="submit" 
+              disabled={!!documentError}
+              className="w-full bg-primary text-on-primary py-3 rounded-lg font-bold text-sm hover:bg-primary-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {editingId ? 'Atualizar' : 'Cadastrar'}
             </button>
           </div>

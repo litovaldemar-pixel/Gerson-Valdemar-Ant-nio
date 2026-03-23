@@ -139,7 +139,10 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         </NavLink>
       </nav>
       <div className="px-4 mt-auto flex flex-col gap-2">
-        <button className="w-full py-3 bg-primary text-on-primary rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 duration-200">
+        <button 
+          onClick={() => { onClose(); navigate('/lancamentos'); }}
+          className="w-full py-3 bg-primary text-on-primary rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 duration-200"
+        >
           <span className="material-symbols-outlined">add</span>
           <span>Novo Lançamento</span>
         </button>

@@ -101,6 +101,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : null;
   });
   const [loading, setLoading] = useState(true);
+  const [pinModalOpen, setPinModalOpen] = useState(false);
+  const [pendingCompanyId, setPendingCompanyId] = useState<string | null>(null);
+  const [pinError, setPinError] = useState<string>('');
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -195,8 +198,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [allTransactions, allCustomers, allSuppliers, allProducts, currentCompanyId, companies]);
 
   const handleSetCurrentCompanyId = (id: string) => {
-    setCurrentCompanyId(id);
-    localStorage.setItem('@FinancialArchitect:currentCompanyId', id);
+    const targetCompany = companies.find(c => c.id === id);
+    if (targetCompany && targetCompany.pin) {
+      setPendingCompanyId(id);
+      setPinModalOpen(true);
+      setPinError('');
+    } else {
+      setCurrentCompanyId(id);
+      localStorage.setItem('@FinancialArchitect:currentCompanyId', id);
+    }
+  };
+
+  const handlePinSubmit = (pin: string) => {
+    if (!pendingCompanyId) return;
+    
+    const targetCompany = companies.find(c => c.id === pendingCompanyId);
+    if (targetCompany && targetCompany.pin === pin) {
+      setCurrentCompanyId(pendingCompanyId);
+      localStorage.setItem('@FinancialArchitect:currentCompanyId', pendingCompanyId);
+      setPinModalOpen(false);
+      setPendingCompanyId(null);
+      setPinError('');
+    } else {
+      setPinError('PIN incorreto');
+    }
+  };
+
+  const handlePinCancel = () => {
+    setPinModalOpen(false);
+    setPendingCompanyId(null);
+    setPinError('');
   };
 
   const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
@@ -205,12 +236,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const maxReceipt = allTransactions.reduce((max, t) => Math.max(max, t.receiptNumber || 0), 0);
       const nextReceiptNumber = maxReceipt + 1;
 
-      const newTransaction = { 
+      const newTransaction: Omit<Transaction, 'id'> = { 
         ...transaction, 
         userId: user.uid, 
-        receiptNumber: nextReceiptNumber,
-        companyId: currentCompanyId || undefined
+        receiptNumber: nextReceiptNumber
       };
+      
+      if (currentCompanyId) {
+        newTransaction.companyId = currentCompanyId;
+      }
+      
       await addDoc(collection(db, 'transactions'), newTransaction);
 
       const currentStocks: Record<string, number> = {};
@@ -359,7 +394,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addCustomer = async (customer: Omit<Customer, 'id'>) => {
     if (!user) return;
     try {
-      await addDoc(collection(db, 'customers'), { ...customer, userId: user.uid, companyId: currentCompanyId || undefined });
+      const newCustomer = { ...customer, userId: user.uid };
+      if (currentCompanyId) {
+        newCustomer.companyId = currentCompanyId;
+      }
+      await addDoc(collection(db, 'customers'), newCustomer);
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'customers');
     }
@@ -386,7 +425,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addSupplier = async (supplier: Omit<Supplier, 'id'>) => {
     if (!user) return;
     try {
-      await addDoc(collection(db, 'suppliers'), { ...supplier, userId: user.uid, companyId: currentCompanyId || undefined });
+      const newSupplier = { ...supplier, userId: user.uid };
+      if (currentCompanyId) {
+        newSupplier.companyId = currentCompanyId;
+      }
+      await addDoc(collection(db, 'suppliers'), newSupplier);
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'suppliers');
     }
@@ -413,7 +456,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addProduct = async (product: Omit<Product, 'id'>) => {
     if (!user) return;
     try {
-      await addDoc(collection(db, 'products'), { ...product, userId: user.uid, companyId: currentCompanyId || undefined });
+      const newProduct = { ...product, userId: user.uid };
+      if (currentCompanyId) {
+        newProduct.companyId = currentCompanyId;
+      }
+      await addDoc(collection(db, 'products'), newProduct);
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'products');
     }
@@ -511,6 +558,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       loading
     }}>
       {children}
+      
+      {pinModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-outline-variant/10">
+              <h2 className="text-xl font-bold font-headline text-primary">Acesso Restrito</h2>
+              <p className="text-sm text-on-surface-variant mt-1">Digite o PIN da empresa para acessar</p>
+            </div>
+            <div className="p-6">
+              <input
+                type="password"
+                maxLength={6}
+                autoFocus
+                placeholder="••••••"
+                className="w-full text-center text-2xl tracking-[0.5em] p-4 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                onChange={(e) => {
+                  setPinError('');
+                  if (e.target.value.length >= 4) {
+                    handlePinSubmit(e.target.value);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handlePinSubmit(e.currentTarget.value);
+                  }
+                }}
+              />
+              {pinError && <p className="text-error text-sm font-bold mt-3 text-center">{pinError}</p>}
+            </div>
+            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-outline-variant/10 flex justify-end">
+              <button 
+                onClick={handlePinCancel}
+                className="px-4 py-2 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppContext.Provider>
   );
 };

@@ -129,7 +129,7 @@
           "type": "string"
         }
       },
-      "required": ["userId", "name", "email", "document", "status"]
+      "required": ["userId", "name", "status"]
     },
     "Supplier": {
       "title": "Supplier",
@@ -155,7 +155,7 @@
           "type": "string"
         }
       },
-      "required": ["userId", "name", "email", "document", "category"]
+      "required": ["userId", "name", "category"]
     },
     "Product": {
       "title": "Product",

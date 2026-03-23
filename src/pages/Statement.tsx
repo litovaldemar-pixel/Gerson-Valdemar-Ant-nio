@@ -9,6 +9,7 @@ interface AccountBalance {
   credito: number;
   saldoDevedor?: number;
   saldoCredor?: number;
+  movimentos: any[];
 }
 
 const Statement = () => {
@@ -36,52 +37,62 @@ const Statement = () => {
 
   const balanceteData = useMemo(() => {
     const accountsMap: Record<string, AccountBalance> = {
-      '11': { conta: '11', descricao: 'Caixa', categoria: 'Ativos', debito: 0, credito: 0 },
-      '12': { conta: '12', descricao: 'Bancos', categoria: 'Ativos', debito: 0, credito: 0 },
-      '21': { conta: '21', descricao: 'Compras', categoria: 'Ativos', debito: 0, credito: 0 },
-      '22': { conta: '22', descricao: 'Mercadorias', categoria: 'Ativos', debito: 0, credito: 0 },
-      '31': { conta: '31', descricao: 'Clientes', categoria: 'Clientes', debito: 0, credito: 0 },
-      '42': { conta: '42', descricao: 'Fornecedores', categoria: 'Fornecedores', debito: 0, credito: 0 },
-      '44': { conta: '44', descricao: 'Estado', categoria: 'Passivos', debito: 0, credito: 0 },
-      '51': { conta: '51', descricao: 'Capital', categoria: 'Capital', debito: 0, credito: 0 },
-      '61': { conta: '61', descricao: 'Custo das Mercadorias Vendidas', categoria: 'Despesas', debito: 0, credito: 0 },
-      '62': { conta: '62', descricao: 'Fornecimentos e Serviços de Terceiros', categoria: 'Despesas', debito: 0, credito: 0 },
-      '63': { conta: '63', descricao: 'Gastos com o Pessoal', categoria: 'Despesas', debito: 0, credito: 0 },
-      '64': { conta: '64', descricao: 'Impostos e Taxas', categoria: 'Despesas', debito: 0, credito: 0 },
-      '68': { conta: '68', descricao: 'Outros Gastos', categoria: 'Despesas', debito: 0, credito: 0 },
-      '71': { conta: '71', descricao: 'Vendas', categoria: 'Receitas', debito: 0, credito: 0 },
-      '72': { conta: '72', descricao: 'Prestações de Serviços', categoria: 'Receitas', debito: 0, credito: 0 },
-      '78': { conta: '78', descricao: 'Outros Rendimentos', categoria: 'Receitas', debito: 0, credito: 0 },
+      '11': { conta: '11', descricao: 'Caixa', categoria: 'Ativos', debito: 0, credito: 0, movimentos: [] },
+      '12': { conta: '12', descricao: 'Bancos', categoria: 'Ativos', debito: 0, credito: 0, movimentos: [] },
+      '21': { conta: '21', descricao: 'Compras', categoria: 'Ativos', debito: 0, credito: 0, movimentos: [] },
+      '22': { conta: '22', descricao: 'Mercadorias', categoria: 'Ativos', debito: 0, credito: 0, movimentos: [] },
+      '31': { conta: '31', descricao: 'Clientes', categoria: 'Clientes', debito: 0, credito: 0, movimentos: [] },
+      '42': { conta: '42', descricao: 'Fornecedores', categoria: 'Fornecedores', debito: 0, credito: 0, movimentos: [] },
+      '44': { conta: '44', descricao: 'Estado', categoria: 'Passivos', debito: 0, credito: 0, movimentos: [] },
+      '51': { conta: '51', descricao: 'Capital', categoria: 'Capital', debito: 0, credito: 0, movimentos: [] },
+      '61': { conta: '61', descricao: 'Custo das Mercadorias Vendidas', categoria: 'Despesas', debito: 0, credito: 0, movimentos: [] },
+      '62': { conta: '62', descricao: 'Fornecimentos e Serviços de Terceiros', categoria: 'Despesas', debito: 0, credito: 0, movimentos: [] },
+      '63': { conta: '63', descricao: 'Gastos com o Pessoal', categoria: 'Despesas', debito: 0, credito: 0, movimentos: [] },
+      '64': { conta: '64', descricao: 'Impostos e Taxas', categoria: 'Despesas', debito: 0, credito: 0, movimentos: [] },
+      '68': { conta: '68', descricao: 'Outros Gastos', categoria: 'Despesas', debito: 0, credito: 0, movimentos: [] },
+      '71': { conta: '71', descricao: 'Vendas', categoria: 'Receitas', debito: 0, credito: 0, movimentos: [] },
+      '72': { conta: '72', descricao: 'Prestações de Serviços', categoria: 'Receitas', debito: 0, credito: 0, movimentos: [] },
+      '78': { conta: '78', descricao: 'Outros Rendimentos', categoria: 'Receitas', debito: 0, credito: 0, movimentos: [] },
     };
 
     filteredTransactions.forEach(t => {
       if (t.type === 'receita') {
         // Debit Caixa/Bancos (11/12)
         accountsMap['12'].debito += t.value;
+        accountsMap['12'].movimentos.push({ ...t, tipoMovimento: 'debito' });
         
         // Credit Vendas/Serviços (71/72)
         if (t.category === 'Serviços') {
           accountsMap['72'].credito += t.value;
+          accountsMap['72'].movimentos.push({ ...t, tipoMovimento: 'credito' });
         } else {
           accountsMap['71'].credito += t.value;
+          accountsMap['71'].movimentos.push({ ...t, tipoMovimento: 'credito' });
         }
       } else {
         // Credit Caixa/Bancos (11/12)
         accountsMap['12'].credito += t.value;
+        accountsMap['12'].movimentos.push({ ...t, tipoMovimento: 'credito' });
         
         // Debit specific expense account
         if (t.category === 'Produto' || t.supplierId) {
           accountsMap['21'].debito += t.value;
-        } else if (t.category === 'Pessoal') {
+          accountsMap['21'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+        } else if (t.category === 'Pessoal' || t.category === 'Salário' || t.category === 'Assistência Médica') {
           accountsMap['63'].debito += t.value;
+          accountsMap['63'].movimentos.push({ ...t, tipoMovimento: 'debito' });
         } else if (t.category === 'Impostos') {
           accountsMap['64'].debito += t.value;
+          accountsMap['64'].movimentos.push({ ...t, tipoMovimento: 'debito' });
         } else if (t.category === 'Estado') {
           accountsMap['44'].debito += t.value;
-        } else if (t.category === 'Operacional' || t.category === 'Infraestrutura' || t.category === 'Marketing' || t.category === 'SaaS') {
+          accountsMap['44'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+        } else if (t.category === 'Operacional' || t.category === 'Infraestrutura' || t.category === 'Marketing' || t.category === 'SaaS' || t.category === 'Água' || t.category === 'Energia' || t.category === 'Renda' || t.category === 'Combustível') {
           accountsMap['62'].debito += t.value;
+          accountsMap['62'].movimentos.push({ ...t, tipoMovimento: 'debito' });
         } else {
           accountsMap['68'].debito += t.value;
+          accountsMap['68'].movimentos.push({ ...t, tipoMovimento: 'debito' });
         }
       }
     });
@@ -114,6 +125,15 @@ const Statement = () => {
   const totalCredito = balanceteData.reduce((acc, curr) => acc + curr.credito, 0);
   const totalSaldoDevedor = balanceteData.reduce((acc, curr) => acc + (curr.saldoDevedor || 0), 0);
   const totalSaldoCredor = balanceteData.reduce((acc, curr) => acc + (curr.saldoCredor || 0), 0);
+
+  const [showMovements, setShowMovements] = useState<Record<string, boolean>>({});
+
+  const toggleMovements = (conta: string) => {
+    setShowMovements(prev => ({
+      ...prev,
+      [conta]: !prev[conta]
+    }));
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-MZ', {
@@ -193,8 +213,8 @@ const Statement = () => {
                 <th className="px-6 py-2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center border-b border-outline-variant/20" colSpan={2}>Saldos</th>
               </tr>
               <tr className="bg-surface-container-low/30 print:bg-transparent print:border-b print:border-outline-variant/20">
-                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Débito</th>
-                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Crédito</th>
+                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Débito (Entrada)</th>
+                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Crédito (Saída)</th>
                 <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Devedor</th>
                 <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Credor</th>
               </tr>
@@ -217,14 +237,34 @@ const Statement = () => {
                         </td>
                       </tr>
                       {accs.map(acc => (
-                        <tr key={acc.conta} className="hover:bg-surface-container-low/30 transition-colors print:hover:bg-transparent">
-                          <td className="px-6 py-3 text-sm font-mono font-bold text-primary">{acc.conta}</td>
-                          <td className="px-6 py-3 text-sm font-medium text-on-surface-variant">{acc.descricao}</td>
-                          <td className="px-6 py-3 text-sm text-right text-on-surface-variant">{acc.debito > 0 ? formatCurrency(acc.debito) : '-'}</td>
-                          <td className="px-6 py-3 text-sm text-right text-on-surface-variant">{acc.credito > 0 ? formatCurrency(acc.credito) : '-'}</td>
-                          <td className="px-6 py-3 text-sm font-bold text-right text-secondary">{(acc.saldoDevedor || 0) > 0 ? formatCurrency(acc.saldoDevedor!) : '-'}</td>
-                          <td className="px-6 py-3 text-sm font-bold text-right text-error">{(acc.saldoCredor || 0) > 0 ? formatCurrency(acc.saldoCredor!) : '-'}</td>
-                        </tr>
+                        <React.Fragment key={acc.conta}>
+                          <tr 
+                            onClick={() => toggleMovements(acc.conta)}
+                            className="hover:bg-surface-container-low/30 transition-colors print:hover:bg-transparent bg-surface-container-lowest cursor-pointer group"
+                          >
+                            <td className="px-6 py-3 text-sm font-mono font-bold text-primary flex items-center gap-2">
+                              <span className={`material-symbols-outlined text-sm transition-transform ${showMovements[acc.conta] ? 'rotate-180' : ''}`}>
+                                expand_more
+                              </span>
+                              {acc.conta}
+                            </td>
+                            <td className="px-6 py-3 text-sm font-bold text-on-surface-variant">{acc.descricao}</td>
+                            <td className="px-6 py-3 text-sm font-bold text-right text-on-surface-variant">{acc.debito > 0 ? formatCurrency(acc.debito) : '-'}</td>
+                            <td className="px-6 py-3 text-sm font-bold text-right text-on-surface-variant">{acc.credito > 0 ? formatCurrency(acc.credito) : '-'}</td>
+                            <td className="px-6 py-3 text-sm font-bold text-right text-secondary">{(acc.saldoDevedor || 0) > 0 ? formatCurrency(acc.saldoDevedor!) : '-'}</td>
+                            <td className="px-6 py-3 text-sm font-bold text-right text-error">{(acc.saldoCredor || 0) > 0 ? formatCurrency(acc.saldoCredor!) : '-'}</td>
+                          </tr>
+                          {showMovements[acc.conta] && acc.movimentos.map((mov, idx) => (
+                            <tr key={`${acc.conta}-mov-${idx}`} className="text-xs bg-surface-container-lowest/50 border-b border-outline-variant/5">
+                              <td className="px-6 py-2 text-right text-on-surface-variant/70 font-mono">{new Date(mov.date).toLocaleDateString('pt-MZ')}</td>
+                              <td className="px-6 py-2 pl-10 text-on-surface-variant/80">{mov.description}</td>
+                              <td className="px-6 py-2 text-right text-on-surface-variant/80">{mov.tipoMovimento === 'debito' ? formatCurrency(mov.value) : '-'}</td>
+                              <td className="px-6 py-2 text-right text-on-surface-variant/80">{mov.tipoMovimento === 'credito' ? formatCurrency(mov.value) : '-'}</td>
+                              <td className="px-6 py-2"></td>
+                              <td className="px-6 py-2"></td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
                       ))}
                     </React.Fragment>
                   );

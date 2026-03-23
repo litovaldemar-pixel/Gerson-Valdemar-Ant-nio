@@ -14,15 +14,16 @@ const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) =>
     name: '',
     nuit: '',
     contact: '',
-    location: ''
+    location: '',
+    pin: ''
   });
 
   useEffect(() => {
     if (isOpen) {
       if (isCreating) {
-        setFormData({ name: '', nuit: '', contact: '', location: '' });
+        setFormData({ name: '', nuit: '', contact: '', location: '', pin: '' });
       } else if (companyInfo) {
-        setFormData(companyInfo);
+        setFormData({ ...companyInfo, pin: companyInfo.pin || '' });
       }
     }
   }, [companyInfo, isOpen, isCreating]);
@@ -123,6 +124,20 @@ const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) =>
                 className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 placeholder="Ex: Av. 24 de Julho, Maputo"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-on-surface-variant mb-1">PIN de Acesso (Opcional)</label>
+              <input
+                type="password"
+                value={formData.pin}
+                onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
+                className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                placeholder="Deixe em branco para não usar PIN"
+                maxLength={10}
+              />
+              <p className="text-xs text-on-surface-variant mt-1">
+                Adicione um PIN para proteger o acesso a esta empresa.
+              </p>
             </div>
             <div className="pt-4 flex justify-end gap-3">
               {companies.length > 0 && (

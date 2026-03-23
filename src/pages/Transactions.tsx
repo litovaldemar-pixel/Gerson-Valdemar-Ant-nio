@@ -27,6 +27,13 @@ const Transactions = () => {
   const [paymentMethod, setPaymentMethod] = useState('Numerário');
   const [paymentStatus, setPaymentStatus] = useState<'pago' | 'pendente'>('pago');
 
+  // Filters
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterType, setFilterType] = useState<TransactionType | 'all'>('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterDateStart, setFilterDateStart] = useState('');
+  const [filterDateEnd, setFilterDateEnd] = useState('');
+
   // Calculate total for cart
   const cartTotal = cartItems.reduce((acc, item) => acc + item.subtotal, 0);
 
@@ -229,8 +236,16 @@ const Transactions = () => {
     }).format(date);
   };
 
-  const totalReceitas = transactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
-  const totalDespesas = transactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
+  const filteredTransactions = transactions.filter(t => {
+    if (filterType !== 'all' && t.type !== filterType) return false;
+    if (filterCategory !== 'all' && t.category !== filterCategory) return false;
+    if (filterDateStart && new Date(t.date) < new Date(filterDateStart)) return false;
+    if (filterDateEnd && new Date(t.date) > new Date(filterDateEnd + 'T23:59:59')) return false;
+    return true;
+  });
+
+  const totalReceitas = filteredTransactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
+  const totalDespesas = filteredTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
   const saldoPrevisto = totalReceitas - totalDespesas;
 
   return (
@@ -249,16 +264,95 @@ const Transactions = () => {
             <span className="material-symbols-outlined text-lg">print</span>
             Imprimir
           </button>
-          <button className="px-5 py-2.5 bg-surface-container-lowest text-primary border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-container-low transition-colors">
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className={`px-5 py-2.5 ${showFilters ? 'bg-primary text-on-primary' : 'bg-surface-container-lowest text-primary border border-outline-variant/20'} rounded-lg font-bold text-sm flex items-center gap-2 hover:brightness-110 transition-colors`}
+          >
             <span className="material-symbols-outlined text-lg">filter_list</span>
             Filtros Avançados
           </button>
-          <button className="px-5 py-2.5 bg-secondary text-on-secondary rounded-lg font-bold text-sm flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all">
+          <button 
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="px-5 py-2.5 bg-secondary text-on-secondary rounded-lg font-bold text-sm flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all"
+          >
             <span className="material-symbols-outlined text-lg">add_circle</span>
             Novo Lançamento
           </button>
         </div>
       </section>
+
+      {/* Advanced Filters Section */}
+      {showFilters && (
+        <section className="bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-6 print:hidden animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Filtros Avançados</h3>
+            <button 
+              onClick={() => {
+                setFilterType('all');
+                setFilterCategory('all');
+                setFilterDateStart('');
+                setFilterDateEnd('');
+              }}
+              className="text-xs font-bold text-primary hover:underline"
+            >
+              Limpar Filtros
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">Tipo</label>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value as TransactionType | 'all')}
+                className="w-full mt-1 bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              >
+                <option value="all">Todos</option>
+                <option value="receita">Receitas</option>
+                <option value="despesa">Despesas</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">Categoria</label>
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="w-full mt-1 bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              >
+                <option value="all">Todas</option>
+                <option value="Operacional">Operacional</option>
+                <option value="Administrativo">Administrativo</option>
+                <option value="Vendas">Vendas</option>
+                <option value="Impostos">Impostos</option>
+                <option value="Salário">Salário</option>
+                <option value="Assistência Médica">Assistência Médica</option>
+                <option value="Água">Água</option>
+                <option value="Energia">Energia</option>
+                <option value="Renda">Renda</option>
+                <option value="Combustível">Combustível</option>
+                <option value="Outras Despesas">Outras Despesas</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">Data Inicial</label>
+              <input
+                type="date"
+                value={filterDateStart}
+                onChange={(e) => setFilterDateStart(e.target.value)}
+                className="w-full mt-1 bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">Data Final</label>
+              <input
+                type="date"
+                value={filterDateEnd}
+                onChange={(e) => setFilterDateEnd(e.target.value)}
+                className="w-full mt-1 bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Quick Entry Form Section */}
       <section className="bg-surface-container-low rounded-xl p-6 print:hidden">
@@ -320,11 +414,18 @@ const Transactions = () => {
                 <option value="Operacional">Operacional</option>
                 <option value="Marketing">Marketing</option>
                 <option value="Pessoal">Pessoal</option>
+                <option value="Salário">Salário</option>
+                <option value="Assistência Médica">Assistência Médica</option>
                 <option value="Infraestrutura">Infraestrutura</option>
+                <option value="Água">Água</option>
+                <option value="Energia">Energia</option>
+                <option value="Renda">Renda</option>
+                <option value="Combustível">Combustível</option>
                 <option value="Estado">Estado (Impostos)</option>
                 <option value="Serviços">Serviços</option>
                 <option value="SaaS">SaaS</option>
                 <option value="Produto">Produto</option>
+                <option value="Outras Despesas">Outras Despesas</option>
               </select>
             </div>
           </div>
@@ -502,7 +603,7 @@ const Transactions = () => {
         <div className="p-6 border-b border-outline-variant/10 flex justify-between items-center">
           <h3 className="font-headline font-bold text-lg text-primary">Histórico de Movimentações</h3>
           <div className="flex items-center gap-4 print:hidden">
-            <span className="text-xs text-on-surface-variant">Mostrando 1-{transactions.length} de {transactions.length} lançamentos</span>
+            <span className="text-xs text-on-surface-variant">Mostrando {filteredTransactions.length > 0 ? 1 : 0}-{filteredTransactions.length} de {filteredTransactions.length} lançamentos</span>
             <div className="flex gap-1">
               <button className="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container"><span className="material-symbols-outlined text-sm">chevron_left</span></button>
               <button className="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container"><span className="material-symbols-outlined text-sm">chevron_right</span></button>
@@ -524,14 +625,21 @@ const Transactions = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5 print:divide-outline-variant/20">
-              {transactions.map((t) => {
-                const isMultiItem = t.items && t.items.length > 0;
-                const product = !isMultiItem && t.productId ? products.find(p => p.id === t.productId) : null;
-                const customer = t.customerId ? customers.find(c => c.id === t.customerId) : null;
-                const supplier = t.supplierId ? suppliers.find(s => s.id === t.supplierId) : null;
-                
-                return (
-                <tr key={t.id} className="hover:bg-surface-container-low/30 transition-colors group print:hover:bg-transparent">
+              {filteredTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-6 py-12 text-center text-on-surface-variant">
+                    Nenhum lançamento encontrado.
+                  </td>
+                </tr>
+              ) : (
+                filteredTransactions.map((t) => {
+                  const isMultiItem = t.items && t.items.length > 0;
+                  const product = !isMultiItem && t.productId ? products.find(p => p.id === t.productId) : null;
+                  const customer = t.customerId ? customers.find(c => c.id === t.customerId) : null;
+                  const supplier = t.supplierId ? suppliers.find(s => s.id === t.supplierId) : null;
+                  
+                  return (
+                  <tr key={t.id} className="hover:bg-surface-container-low/30 transition-colors group print:hover:bg-transparent">
                   <td className="px-6 py-4 text-sm font-mono text-on-surface-variant">
                     {t.receiptNumber ? String(t.receiptNumber).padStart(3, '0') : '-'}
                   </td>
@@ -582,7 +690,9 @@ const Transactions = () => {
                     </div>
                   </td>
                 </tr>
-              )})}
+              );
+                })
+              )}
             </tbody>
           </table>
         </div>

@@ -34,7 +34,7 @@ const Customers = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !document) return;
+    if (!name) return;
 
     if (editingId) {
       updateCustomer(editingId, {
@@ -94,25 +94,23 @@ const Customers = () => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">E-mail</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">E-mail (Opcional)</label>
             <input
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               placeholder="contato@empresa.com"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">CPF/CNPJ</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">CPF/CNPJ (Opcional)</label>
             <input
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               placeholder="00.000.000/0000-00"
               type="text"
               value={document}
               onChange={(e) => setDocument(e.target.value)}
-              required
             />
           </div>
           <div className="space-y-2">

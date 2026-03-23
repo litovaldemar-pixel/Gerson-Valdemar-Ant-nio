@@ -8,6 +8,7 @@ import {
   reauthenticateWithCredential, 
   EmailAuthProvider, 
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   User 
 } from 'firebase/auth';
 
@@ -17,6 +18,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updatePassword: (email: string, oldPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+  resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   loading: boolean;
 }
 
@@ -42,17 +44,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       console.error('Error logging in:', error.message);
       
-      // If it's the demo user and login failed (e.g., user not found), try to sign them up automatically
-      if (email === 'admin@capitalcorp.com' && password === 'admin123') {
-        try {
-          await createUserWithEmailAndPassword(auth, email, password);
-          return true;
-        } catch (signUpError: any) {
-          console.error('Error signing up demo user:', signUpError.message);
-          return false;
+      // Try to sign them up automatically if login fails (e.g., user not found)
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        return true;
+      } catch (signUpError: any) {
+        if (signUpError.code !== 'auth/email-already-in-use') {
+          console.error('Error signing up user:', signUpError.message);
         }
+        return false;
       }
-      return false;
     }
   };
 
@@ -87,10 +88,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error resetting password:', error);
+      return { success: false, error: error.message || 'Erro ao enviar email de recuperação' };
+    }
+  };
+
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updatePassword, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updatePassword, resetPassword, loading }}>
       {!loading && children}
     </AuthContext.Provider>
   );

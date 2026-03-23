@@ -13,6 +13,7 @@ export interface CompanyInfo {
   location: string;
   userId?: string;
   subscription?: Subscription;
+  pin?: string;
 }
 
 export type TransactionType = 'receita' | 'despesa';
