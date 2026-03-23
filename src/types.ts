@@ -17,6 +17,7 @@ export interface CompanyInfo {
 }
 
 export type TransactionType = 'receita' | 'despesa';
+export type MeasurementUnit = 'un' | 'kg' | 'lt' | 'mt' | 'cx' | 'pct' | 'par' | 'saco' | 'fardo';
 
 export interface TransactionItem {
   productId: string;
@@ -24,6 +25,7 @@ export interface TransactionItem {
   quantity: number;
   unitPrice: number;
   subtotal: number;
+  unit?: MeasurementUnit;
 }
 
 export interface Transaction {
@@ -38,6 +40,7 @@ export interface Transaction {
   productId?: string;
   quantity?: number;
   unitPrice?: number;
+  unit?: MeasurementUnit;
   customerId?: string;
   supplierId?: string;
   paymentMethod?: string;
@@ -74,5 +77,8 @@ export interface Product {
   cost: number;
   stock: number;
   minStock: number;
+  unit?: MeasurementUnit;
+  purchaseUnit?: MeasurementUnit;
+  conversionFactor?: number;
   supplierId?: string;
 }

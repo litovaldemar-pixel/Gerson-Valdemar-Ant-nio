@@ -12,6 +12,9 @@ const Products = () => {
   const [cost, setCost] = useState('');
   const [stock, setStock] = useState('');
   const [minStock, setMinStock] = useState('');
+  const [unit, setUnit] = useState<string>('un');
+  const [purchaseUnit, setPurchaseUnit] = useState<string>('un');
+  const [conversionFactor, setConversionFactor] = useState<string>('1');
   const [supplierId, setSupplierId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -26,6 +29,9 @@ const Products = () => {
     setCost(p.cost.toString());
     setStock(p.stock.toString());
     setMinStock(p.minStock.toString());
+    setUnit(p.unit || 'un');
+    setPurchaseUnit(p.purchaseUnit || 'un');
+    setConversionFactor(p.conversionFactor?.toString() || '1');
     setSupplierId(p.supplierId || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -39,6 +45,9 @@ const Products = () => {
     setCost('');
     setStock('');
     setMinStock('');
+    setUnit('un');
+    setPurchaseUnit('un');
+    setConversionFactor('1');
     setSupplierId('');
   };
 
@@ -52,8 +61,11 @@ const Products = () => {
       category,
       price: parseFloat(price),
       cost: parseFloat(cost),
-      stock: parseInt(stock, 10),
-      minStock: parseInt(minStock || '0', 10),
+      stock: parseFloat(stock),
+      minStock: parseFloat(minStock || '0'),
+      unit,
+      purchaseUnit,
+      conversionFactor: parseFloat(conversionFactor || '1'),
       supplierId: supplierId || null,
     };
 
@@ -71,6 +83,9 @@ const Products = () => {
     setCost('');
     setStock('');
     setMinStock('');
+    setUnit('un');
+    setPurchaseUnit('un');
+    setConversionFactor('1');
     setSupplierId('');
   };
 
@@ -176,9 +191,62 @@ const Products = () => {
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               placeholder="0"
               type="number"
+              step="0.01"
               value={minStock}
               onChange={(e) => setMinStock(e.target.value)}
             />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-on-surface-variant ml-1">Unidade de Venda</label>
+            <select
+              className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+            >
+              <option value="un">Unidade (un)</option>
+              <option value="kg">Quilograma (kg)</option>
+              <option value="lt">Litro (lt)</option>
+              <option value="mt">Metro (mt)</option>
+              <option value="cx">Caixa (cx)</option>
+              <option value="pct">Pacote (pct)</option>
+              <option value="par">Par (par)</option>
+              <option value="saco">Saco (saco)</option>
+              <option value="fardo">Fardo (fardo)</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-on-surface-variant ml-1">Unidade de Compra</label>
+            <select
+              className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              value={purchaseUnit}
+              onChange={(e) => setPurchaseUnit(e.target.value)}
+            >
+              <option value="un">Unidade (un)</option>
+              <option value="kg">Quilograma (kg)</option>
+              <option value="lt">Litro (lt)</option>
+              <option value="mt">Metro (mt)</option>
+              <option value="cx">Caixa (cx)</option>
+              <option value="pct">Pacote (pct)</option>
+              <option value="par">Par (par)</option>
+              <option value="saco">Saco (saco)</option>
+              <option value="fardo">Fardo (fardo)</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-on-surface-variant ml-1">Fator de Conversão</label>
+            <input
+              className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              placeholder="Ex: 25"
+              type="number"
+              step="0.01"
+              value={conversionFactor}
+              onChange={(e) => setConversionFactor(e.target.value)}
+            />
+            {purchaseUnit !== unit && conversionFactor && parseFloat(conversionFactor) > 1 && (
+              <p className="text-[10px] font-bold text-primary ml-1 animate-pulse">
+                Regra: 1 {purchaseUnit} = {conversionFactor} {unit}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-on-surface-variant ml-1">Fornecedor</label>
@@ -245,6 +313,11 @@ const Products = () => {
                   <td className="px-6 py-4 text-sm font-bold text-primary">
                     {p.name}
                     <div className="text-xs font-normal text-on-surface-variant mt-1">{p.sku} | {p.category}</div>
+                    {p.purchaseUnit && p.purchaseUnit !== p.unit && (
+                      <div className="text-[10px] font-bold text-primary mt-1">
+                        1 {p.purchaseUnit} = {p.conversionFactor} {p.unit}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm text-on-surface-variant">{supplier ? supplier.name : '-'}</td>
                   <td className="px-6 py-4 text-sm font-mono text-right text-primary">
@@ -255,7 +328,7 @@ const Products = () => {
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${p.stock <= p.minStock ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container'}`}>
-                      {p.stock} un
+                      {p.stock} {p.unit || 'un'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm font-mono text-right text-error">

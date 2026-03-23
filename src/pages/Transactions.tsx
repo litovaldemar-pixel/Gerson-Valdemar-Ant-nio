@@ -16,7 +16,11 @@ const Transactions = () => {
   const [productId, setProductId] = useState('');
   const [quantity, setQuantity] = useState('');
   const [itemUnitPrice, setItemUnitPrice] = useState('');
+  const [itemTotal, setItemTotal] = useState('');
+  const [usePurchaseUnit, setUsePurchaseUnit] = useState(false);
   
+  const selectedProduct = products.find(p => p.id === productId);
+
   // For multiple items
   const [customerId, setCustomerId] = useState('');
   const [supplierId, setSupplierId] = useState('');
@@ -38,16 +42,25 @@ const Transactions = () => {
   // Calculate total for cart
   const cartTotal = cartItems.reduce((acc, item) => acc + item.subtotal, 0);
 
-  // Calculate total for single item if not using cart
+  // Calculate item total for cart
   useEffect(() => {
-    if (cartItems.length === 0 && quantity && itemUnitPrice) {
-      const q = parseInt(quantity, 10);
+    if (quantity && itemUnitPrice) {
+      const q = parseFloat(quantity);
       const p = parseFloat(itemUnitPrice);
       if (!isNaN(q) && !isNaN(p)) {
-        setValue((q * p).toString());
+        setItemTotal((q * p).toFixed(2));
       }
+    } else {
+      setItemTotal('');
     }
-  }, [quantity, itemUnitPrice, cartItems.length]);
+  }, [quantity, itemUnitPrice]);
+
+  // Calculate total for single item if not using cart
+  useEffect(() => {
+    if (cartItems.length === 0 && itemTotal) {
+      setValue(itemTotal);
+    }
+  }, [itemTotal, cartItems.length]);
 
   useEffect(() => {
     if (cartItems.length > 0) {
@@ -78,6 +91,11 @@ const Transactions = () => {
     setPaymentMethod(t.paymentMethod || 'Numerário');
     setPaymentStatus(t.paymentStatus || 'pago');
     setCartItems(t.items || []);
+    if (t.productId && t.quantity && t.unitPrice) {
+      setItemTotal((t.quantity * t.unitPrice).toFixed(2));
+    } else {
+      setItemTotal('');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -95,6 +113,8 @@ const Transactions = () => {
     setPaymentMethod('Numerário');
     setPaymentStatus('pago');
     setCartItems([]);
+    setItemTotal('');
+    setUsePurchaseUnit(false);
   };
 
   const handleAddToCart = () => {
@@ -102,11 +122,15 @@ const Transactions = () => {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
-    const qty = parseInt(quantity, 10);
+    const qty = parseFloat(quantity);
     if (qty <= 0) return;
 
-    if (type === 'receita' && product.stock < qty) {
-      alert(`Quantidade solicitada (${qty}) é maior que o stock disponível (${product.stock}).`);
+    const factor = usePurchaseUnit ? (product.conversionFactor || 1) : 1;
+    const finalQty = qty * factor;
+    const finalUnitPrice = parseFloat(itemUnitPrice) / factor;
+
+    if (type === 'receita' && product.stock < finalQty) {
+      alert(`Quantidade solicitada (${finalQty} ${product.unit || 'un'}) é maior que o stock disponível (${product.stock} ${product.unit || 'un'}).`);
       return;
     }
 
@@ -116,15 +140,18 @@ const Transactions = () => {
     const newItem: TransactionItem = {
       productId: product.id,
       name: product.name,
-      quantity: qty,
-      unitPrice: unitPrice,
-      subtotal: unitPrice * qty
+      quantity: finalQty,
+      unitPrice: finalUnitPrice,
+      subtotal: parseFloat(itemTotal),
+      unit: product.unit || 'un'
     };
 
     setCartItems([...cartItems, newItem]);
     setProductId('');
     setQuantity('');
     setItemUnitPrice('');
+    setItemTotal('');
+    setUsePurchaseUnit(false);
   };
 
   const handleRemoveFromCart = (index: number) => {
@@ -153,8 +180,9 @@ const Transactions = () => {
           alert('Não é possível realizar a venda: Stock zero.');
           return;
         }
-        if (parseInt(quantity, 10) > product.stock) {
-          alert(`Não é possível realizar a venda: Quantidade solicitada (${quantity}) é maior que o stock disponível (${product.stock}).`);
+        const qty = parseFloat(quantity);
+        if (qty > product.stock) {
+          alert(`Não é possível realizar a venda: Quantidade solicitada (${qty} ${product.unit || 'un'}) é maior que o stock disponível (${product.stock} ${product.unit || 'un'}).`);
           return;
         }
       }
@@ -182,15 +210,23 @@ const Transactions = () => {
       transactionData.productId = null;
       transactionData.quantity = null;
       transactionData.unitPrice = null;
+      transactionData.unit = null;
     } else {
       if (productId && quantity) {
+        const product = products.find(p => p.id === productId);
+        const factor = usePurchaseUnit ? (product?.conversionFactor || 1) : 1;
+        const finalQty = parseFloat(quantity) * factor;
+        const finalUnitPrice = (itemUnitPrice ? parseFloat(itemUnitPrice) : 0) / factor;
+
         transactionData.productId = productId;
-        transactionData.quantity = parseInt(quantity, 10);
-        transactionData.unitPrice = itemUnitPrice ? parseFloat(itemUnitPrice) : null;
+        transactionData.quantity = finalQty;
+        transactionData.unitPrice = finalUnitPrice;
+        transactionData.unit = product?.unit || 'un';
       } else {
         transactionData.productId = null;
         transactionData.quantity = null;
         transactionData.unitPrice = null;
+        transactionData.unit = null;
       }
       transactionData.items = null;
       transactionData.customerId = type === 'receita' ? (customerId || null) : null;
@@ -219,6 +255,8 @@ const Transactions = () => {
     setPaymentMethod('Numerário');
     setPaymentStatus('pago');
     setCartItems([]);
+    setItemTotal('');
+    setUsePurchaseUnit(false);
   };
 
   const formatCurrency = (value: number) => {
@@ -440,7 +478,7 @@ const Transactions = () => {
               {type === 'receita' ? 'Produtos a Vender (Opcional)' : 'Produtos para Entrada de Stock (Opcional)'}
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-              <div className="space-y-2 md:col-span-4">
+              <div className="space-y-2 md:col-span-3">
                 <label className="text-xs font-bold text-on-surface-variant ml-1">Produto</label>
                 <select
                   className="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
@@ -453,6 +491,7 @@ const Transactions = () => {
                     } else {
                       setItemUnitPrice('');
                     }
+                    setUsePurchaseUnit(false);
                   }}
                 >
                   <option value="">Selecione um produto</option>
@@ -460,21 +499,45 @@ const Transactions = () => {
                     <option key={p.id} value={p.id}>{p.name} (Stock: {p.stock} | {formatCurrency(type === 'receita' ? p.price : p.cost)})</option>
                   ))}
                 </select>
+                {selectedProduct?.purchaseUnit && selectedProduct.purchaseUnit !== selectedProduct.unit && (
+                  <p className="text-[10px] font-bold text-on-surface-variant ml-1 mt-1">
+                    Regra: 1 {selectedProduct.purchaseUnit} = {selectedProduct.conversionFactor} {selectedProduct.unit}
+                  </p>
+                )}
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="text-xs font-bold text-on-surface-variant ml-1">Qtd</label>
+                <label className="text-xs font-bold text-on-surface-variant ml-1 flex justify-between items-center">
+                  <span>Qtd {selectedProduct && <span className="text-primary font-black">({usePurchaseUnit ? selectedProduct.purchaseUnit : selectedProduct.unit || 'un'})</span>}</span>
+                  {selectedProduct?.purchaseUnit && selectedProduct.purchaseUnit !== selectedProduct.unit && (
+                    <button 
+                      type="button"
+                      onClick={() => setUsePurchaseUnit(!usePurchaseUnit)}
+                      className={`text-[10px] px-1.5 py-0.5 rounded transition-all font-black ${usePurchaseUnit ? 'bg-primary text-on-primary shadow-sm' : 'bg-primary/10 text-primary hover:bg-primary/20'}`}
+                    >
+                      {usePurchaseUnit ? 'Usando Compra' : 'Usar Compra'}
+                    </button>
+                  )}
+                </label>
                 <input
                   className="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
                   placeholder="0"
                   type="number"
-                  min="1"
+                  min="0"
+                  step="0.01"
                   value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
+                  onChange={(e) => {
+                    setQuantity(e.target.value);
+                  }}
                   disabled={!productId}
                 />
+                {usePurchaseUnit && selectedProduct && quantity && (
+                  <p className="text-[10px] font-bold text-primary ml-1">
+                    = {(parseFloat(quantity) * (selectedProduct.conversionFactor || 1)).toFixed(2)} {selectedProduct.unit}
+                  </p>
+                )}
               </div>
-              <div className="space-y-2 md:col-span-3">
-                <label className="text-xs font-bold text-on-surface-variant ml-1">Preço Unit.</label>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-bold text-on-surface-variant ml-1">Preço {usePurchaseUnit ? 'da Un. Compra' : 'Unit.'}</label>
                 <input
                   className="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
                   placeholder="0.00"
@@ -482,7 +545,35 @@ const Transactions = () => {
                   min="0"
                   step="0.01"
                   value={itemUnitPrice}
-                  onChange={(e) => setItemUnitPrice(e.target.value)}
+                  onChange={(e) => {
+                    setItemUnitPrice(e.target.value);
+                  }}
+                  disabled={!productId}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-bold text-on-surface-variant ml-1">Total Item</label>
+                <input
+                  className="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim font-bold text-secondary"
+                  placeholder="0.00"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={itemTotal}
+                  onChange={(e) => {
+                    const newTotal = e.target.value;
+                    setItemTotal(newTotal);
+                    const total = parseFloat(newTotal);
+                    if (!isNaN(total) && total > 0) {
+                      const p = parseFloat(itemUnitPrice);
+                      const q = parseFloat(quantity);
+                      if (!isNaN(p) && p > 0) {
+                        setQuantity((total / p).toFixed(2));
+                      } else if (!isNaN(q) && q > 0) {
+                        setItemUnitPrice((total / q).toFixed(2));
+                      }
+                    }
+                  }}
                   disabled={!productId}
                 />
               </div>
@@ -514,7 +605,7 @@ const Transactions = () => {
                     {cartItems.map((item, idx) => (
                       <tr key={idx} className="border-b border-outline-variant/10">
                         <td className="px-4 py-2 font-medium">{item.name}</td>
-                        <td className="px-4 py-2 text-center">{item.quantity}</td>
+                        <td className="px-4 py-2 text-center">{item.quantity} {item.unit || 'un'}</td>
                         <td className="px-4 py-2 text-right">{formatCurrency(item.unitPrice)}</td>
                         <td className="px-4 py-2 text-right font-bold text-primary">{formatCurrency(item.subtotal)}</td>
                         <td className="px-4 py-2 text-center">
@@ -671,7 +762,9 @@ const Transactions = () => {
                     {isMultiItem ? `${t.items!.length} itens` : (product ? product.name : '-')}
                   </td>
                   <td className="px-6 py-4 text-sm text-center font-mono">
-                    {isMultiItem ? t.items!.reduce((acc, i) => acc + i.quantity, 0) : (t.quantity || '-')}
+                    {isMultiItem 
+                      ? t.items!.reduce((acc, i) => acc + i.quantity, 0) 
+                      : (t.quantity ? `${t.quantity} ${t.unit || 'un'}` : '-')}
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full print:border print:border-outline-variant/20 print:bg-transparent print:text-on-surface ${t.type === 'receita' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}`}>

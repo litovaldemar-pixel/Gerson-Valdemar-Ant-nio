@@ -117,7 +117,7 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
                 {isMultiItem ? (
                   transaction.items!.map((item, idx) => (
                     <tr key={idx}>
-                      <td className="py-1 align-top">{item.quantity}</td>
+                      <td className="py-1 align-top">{item.quantity} {item.unit || 'un'}</td>
                       <td className="py-1 pr-2">
                         <div className="font-medium">{item.name}</div>
                       </td>
@@ -126,7 +126,7 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
                   ))
                 ) : (
                   <tr>
-                    <td className="py-1 align-top">{quantity}</td>
+                    <td className="py-1 align-top">{quantity} {transaction.unit || 'un'}</td>
                     <td className="py-1 pr-2">
                       <div className="font-medium">{product ? product.name : transaction.description}</div>
                     </td>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 
 const Suppliers = () => {
-  const { suppliers, addSupplier, deleteSupplier, updateSupplier, products } = useAppContext();
+  const { suppliers, addSupplier, deleteSupplier, updateSupplier, products, transactions } = useAppContext();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -229,17 +229,39 @@ const Suppliers = () => {
                 const totalStock = supplierProducts.reduce((acc, p) => acc + p.stock, 0);
                 const totalCostValue = supplierProducts.reduce((acc, p) => acc + (p.cost * p.stock), 0);
                 const totalSaleValue = supplierProducts.reduce((acc, p) => acc + (p.price * p.stock), 0);
+                
+                // Recent purchases from this supplier
+                const recentPurchases = transactions
+                  .filter(t => t.supplierId === s.id)
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .slice(0, 3);
 
                 return (
                 <tr key={s.id} className="hover:bg-surface-container-low/30 transition-colors group">
                   <td className="px-6 py-4 text-sm font-bold text-primary">
                     {s.name}
                     <div className="text-xs font-normal text-on-surface-variant mt-1">{s.category}</div>
+                    {recentPurchases.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        <p className="text-[10px] font-bold uppercase text-on-surface-variant">Últimas Compras:</p>
+                        {recentPurchases.map(rp => (
+                          <div key={rp.id} className="text-[10px] flex justify-between gap-2 text-on-surface-variant border-l-2 border-primary/20 pl-2">
+                            <span>{new Date(rp.date).toLocaleDateString('pt-MZ')}</span>
+                            <span className="font-bold">{new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(rp.value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm text-on-surface-variant">{s.email}</td>
                   <td className="px-6 py-4 text-sm text-on-surface-variant">{s.document}</td>
                   <td className="px-6 py-4 text-center text-sm font-bold text-on-surface-variant">{supplierProducts.length}</td>
-                  <td className="px-6 py-4 text-center text-sm font-mono">{totalStock} un</td>
+                  <td className="px-6 py-4 text-center text-sm font-mono">
+                    <div className="flex flex-col items-center">
+                      <span className="font-bold">{totalStock.toFixed(2)}</span>
+                      <span className="text-[10px] text-on-surface-variant">unidades base</span>
+                    </div>
+                  </td>
                   <td className="px-6 py-4 text-sm font-mono text-right text-error">
                     {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(totalCostValue)}
                   </td>
