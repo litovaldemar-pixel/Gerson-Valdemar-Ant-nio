@@ -28,6 +28,7 @@ export interface TransactionItem {
 
 export interface Transaction {
   id: string;
+  userId?: string;
   companyId?: string;
   date: string;
   description: string;
