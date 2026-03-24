@@ -165,13 +165,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       </nav>
       <div className="px-4 mt-auto flex flex-col gap-2">
         <button 
-          onClick={() => { onClose(); navigate('/lancamentos'); }}
-          className="w-full py-3 bg-primary text-on-primary rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 duration-200"
-        >
-          <span className="material-symbols-outlined">add</span>
-          <span>Novo Lançamento</span>
-        </button>
-        <button 
           onClick={handleLogout}
           className="w-full py-3 bg-error/10 text-error hover:bg-error/20 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 duration-200 transition-colors"
         >

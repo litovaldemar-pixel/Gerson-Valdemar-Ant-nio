@@ -44,7 +44,7 @@ const Layout = () => {
 
       {/* Print Footer */}
       <div className="hidden print:block print-footer">
-        Desenvolvido por Gerson Valdemar Antonio, contacto +258 848807062 ou +258 871788070.
+        Gv Control & Business Solutions - transformamos dados em decisões inteligentes
       </div>
 
       {showLock && <SubscriptionLock />}

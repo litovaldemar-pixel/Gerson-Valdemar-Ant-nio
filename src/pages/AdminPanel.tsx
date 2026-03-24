@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import React, { useState, useEffect, useMemo } from 'react';
+import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { motion } from 'motion/react';
 import { CompanyInfo } from '../types';
@@ -10,6 +10,7 @@ const AdminPanel = () => {
   const [companies, setCompanies] = useState<CompanyInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const isAdmin = 
     user?.email?.toLowerCase().includes('litovaldemar') || 
@@ -39,9 +40,19 @@ const AdminPanel = () => {
     fetchCompanies();
   }, []);
 
-  const handleAction = async (companyId: string, action: 'block' | 'unblock' | '30days' | '1year' | 'lifetime') => {
+  const handleAction = async (companyId: string, action: 'block' | 'unblock' | '30days' | '1year' | 'lifetime' | 'delete') => {
     try {
       const companyRef = doc(db, 'companies', companyId);
+
+      if (action === 'delete') {
+        const confirmDelete = window.confirm('Tem certeza que deseja APAGAR esta empresa? Esta ação não pode ser desfeita.');
+        if (!confirmDelete) return;
+        
+        await deleteDoc(companyRef);
+        fetchCompanies();
+        return;
+      }
+
       const newDate = new Date();
       let plan = 'Manual';
       let status: 'active' | 'inactive' = 'active';
@@ -74,9 +85,20 @@ const AdminPanel = () => {
       fetchCompanies();
     } catch (err) {
       console.error('Error updating company:', err);
-      alert('Erro ao atualizar empresa.');
+      alert('Erro ao processar a ação na empresa.');
     }
   };
+
+  const filteredCompanies = useMemo(() => {
+    if (!searchTerm) return companies;
+    const lowerSearch = searchTerm.toLowerCase();
+    return companies.filter(company => 
+      company.name?.toLowerCase().includes(lowerSearch) ||
+      company.nuit?.toLowerCase().includes(lowerSearch) ||
+      company.contact?.toLowerCase().includes(lowerSearch) ||
+      company.email?.toLowerCase().includes(lowerSearch)
+    );
+  }, [companies, searchTerm]);
 
   if (loading) {
     return (
@@ -102,7 +124,7 @@ const AdminPanel = () => {
       animate={{ opacity: 1, y: 0 }}
       className="p-4 md:p-6 lg:p-8 flex-1 space-y-6"
     >
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h2 className="text-3xl font-extrabold font-headline text-primary flex items-center gap-3">
             <span className="material-symbols-outlined text-4xl">admin_panel_settings</span>
@@ -110,13 +132,60 @@ const AdminPanel = () => {
           </h2>
           <p className="text-on-surface-variant font-medium mt-1">Gerencie todas as empresas registradas no sistema.</p>
         </div>
-        <button 
-          onClick={fetchCompanies}
-          className="px-4 py-2 bg-surface-container-highest text-on-surface rounded-lg font-bold flex items-center gap-2 hover:bg-surface-variant transition-colors"
-        >
-          <span className="material-symbols-outlined">refresh</span>
-          Atualizar
-        </button>
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+            <input
+              type="text"
+              placeholder="Pesquisar empresa..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+            />
+          </div>
+          <button 
+            onClick={fetchCompanies}
+            className="px-4 py-2 bg-surface-container-highest text-on-surface rounded-lg font-bold flex items-center gap-2 hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined">refresh</span>
+            Atualizar
+          </button>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/20 shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+            <span className="material-symbols-outlined">business</span>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">Total de Empresas</p>
+            <p className="text-2xl font-black text-on-surface">{companies.length}</p>
+          </div>
+        </div>
+        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/20 shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-secondary/10 text-secondary flex items-center justify-center">
+            <span className="material-symbols-outlined">check_circle</span>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">Empresas Ativas</p>
+            <p className="text-2xl font-black text-on-surface">
+              {companies.filter(c => c.subscription?.status === 'active' && new Date(c.subscription.validUntil) > new Date()).length}
+            </p>
+          </div>
+        </div>
+        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/20 shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-error/10 text-error flex items-center justify-center">
+            <span className="material-symbols-outlined">block</span>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">Empresas Bloqueadas</p>
+            <p className="text-2xl font-black text-on-surface">
+              {companies.filter(c => c.subscription?.status !== 'active' || new Date(c.subscription.validUntil) <= new Date()).length}
+            </p>
+          </div>
+        </div>
       </div>
 
       {error && (
@@ -140,7 +209,7 @@ const AdminPanel = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10">
-              {companies.map((company) => {
+              {filteredCompanies.map((company) => {
                 const isActive = company.subscription?.status === 'active' && new Date(company.subscription.validUntil) > new Date();
                 
                 return (
@@ -151,6 +220,7 @@ const AdminPanel = () => {
                     </td>
                     <td className="p-4">
                       <p className="text-sm text-on-surface">{company.contact}</p>
+                      {company.email && <p className="text-xs text-on-surface-variant">{company.email}</p>}
                     </td>
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${isActive ? 'bg-primary/10 text-primary' : 'bg-error/10 text-error'}`}>
@@ -196,12 +266,20 @@ const AdminPanel = () => {
                         >
                           VIT
                         </button>
+                        <div className="w-px h-6 bg-outline-variant/30 mx-1"></div>
+                        <button 
+                          onClick={() => handleAction(company.id, 'delete')}
+                          className="p-2 bg-error text-on-error hover:brightness-110 rounded-lg transition-colors"
+                          title="Apagar Empresa"
+                        >
+                          <span className="material-symbols-outlined text-sm">delete</span>
+                        </button>
                       </div>
                     </td>
                   </tr>
                 );
               })}
-              {companies.length === 0 && (
+              {filteredCompanies.length === 0 && (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-on-surface-variant">
                     Nenhuma empresa encontrada.

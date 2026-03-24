@@ -35,6 +35,10 @@ const Dashboard = () => {
   const totalDespesas = filteredTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
   const saldoPrevisto = totalReceitas - totalDespesas;
 
+  // Financial Indicators
+  const margemLucro = totalReceitas > 0 ? ((saldoPrevisto / totalReceitas) * 100).toFixed(1) : '0.0';
+  const indiceDespesas = totalReceitas > 0 ? ((totalDespesas / totalReceitas) * 100).toFixed(1) : '0.0';
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-MZ', {
       style: 'currency',
@@ -153,13 +157,14 @@ const Dashboard = () => {
           className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 shadow-sm flex flex-col justify-between"
         >
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Subscrição</p>
-            <h4 className="text-xl font-headline font-extrabold mt-1 text-primary">
-              {companyInfo?.subscription?.status === 'active' ? 'Ativa' : 'Expirada'}
+            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Margem de Lucro</p>
+            <h4 className="text-3xl font-headline font-extrabold mt-1 text-primary">
+              {margemLucro}%
             </h4>
           </div>
-          <div className="mt-2 text-[10px] font-bold text-on-surface-variant">
-            Expira em: {companyInfo?.subscription?.validUntil ? new Date(companyInfo.subscription.validUntil).toLocaleDateString('pt-MZ') : 'N/A'}
+          <div className="mt-2 text-[10px] font-bold text-on-surface-variant flex items-center gap-1">
+            <span className="material-symbols-outlined text-sm">analytics</span>
+            Índice de Despesas: {indiceDespesas}%
           </div>
         </motion.div>
         <motion.div 
