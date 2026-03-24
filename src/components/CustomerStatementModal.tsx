@@ -61,6 +61,33 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
     window.print();
   };
 
+  const setQuickFilter = (filter: 'hoje' | 'semana' | 'mes' | 'ano' | 'todos') => {
+    const now = new Date();
+    
+    if (filter === 'todos') {
+      setStartDate('');
+      setEndDate('');
+      return;
+    }
+
+    const endStr = now.toISOString().split('T')[0];
+    setEndDate(endStr);
+
+    if (filter === 'hoje') {
+      setStartDate(endStr);
+    } else if (filter === 'semana') {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      setStartDate(startOfWeek.toISOString().split('T')[0]);
+    } else if (filter === 'mes') {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      setStartDate(startOfMonth.toISOString().split('T')[0]);
+    } else if (filter === 'ano') {
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      setStartDate(startOfYear.toISOString().split('T')[0]);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 print:bg-white print:p-0">
       <div className="bg-white rounded-xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] print:shadow-none print:w-full print:max-w-none print:max-h-none print:h-auto">
@@ -83,6 +110,20 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
         {/* Filters - Hidden on print */}
         <div className="p-6 border-b border-slate-200 bg-white print:hidden shrink-0">
           <div className="flex flex-wrap gap-4 items-end">
+            <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
+              {(['hoje', 'semana', 'mes', 'ano', 'todos'] as const).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setQuickFilter(filter)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-colors text-slate-600 hover:bg-slate-200/50`}
+                >
+                  {filter === 'hoje' ? 'Hoje' :
+                   filter === 'semana' ? 'Semana' :
+                   filter === 'mes' ? 'Mês' :
+                   filter === 'ano' ? 'Ano' : 'Todos'}
+                </button>
+              ))}
+            </div>
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Data Inicial</label>
               <input 

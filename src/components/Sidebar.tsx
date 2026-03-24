@@ -10,10 +10,16 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const { companyInfo } = useAppContext();
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const isDeveloper = 
+    user?.email?.toLowerCase().includes('litovaldemar') || 
+    user?.email?.toLowerCase().includes('admin') ||
+    user?.email?.toLowerCase().includes('gerson') ||
+    user?.email?.toLowerCase() === 'teste@teste.com';
 
   const handleLogout = async () => {
     await logout();
@@ -142,6 +148,20 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           <span className="material-symbols-outlined">receipt_long</span>
           <span>Balancete Geral</span>
         </NavLink>
+        <NavLink
+          to="/admin"
+          onClick={onClose}
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
+              isActive
+                ? 'text-primary font-bold border-r-4 border-primary bg-primary/10'
+                : 'text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10'
+            }`
+          }
+        >
+          <span className="material-symbols-outlined">admin_panel_settings</span>
+          <span>Painel Admin</span>
+        </NavLink>
       </nav>
       <div className="px-4 mt-auto flex flex-col gap-2">
         <button 
@@ -158,6 +178,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           <span className="material-symbols-outlined">logout</span>
           <span>Sair</span>
         </button>
+        {user?.email && (
+          <div className="text-center mt-2">
+            <p className="text-[10px] text-on-surface-variant opacity-60">Logado como: {user.email}</p>
+          </div>
+        )}
       </div>
       
       <CompanySettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />

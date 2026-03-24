@@ -11,7 +11,11 @@ const SubscriptionLock = () => {
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState('');
 
-  const isDeveloper = user?.email?.toLowerCase().includes('litovaldemar');
+  const isDeveloper = 
+    user?.email?.toLowerCase().includes('litovaldemar') || 
+    user?.email?.toLowerCase().includes('admin') ||
+    user?.email?.toLowerCase().includes('gerson') ||
+    user?.email?.toLowerCase() === 'teste@teste.com';
 
   const handleDeveloperAction = async (action: '30days' | '1year' | 'deactivate') => {
     if (!companyInfo) return;

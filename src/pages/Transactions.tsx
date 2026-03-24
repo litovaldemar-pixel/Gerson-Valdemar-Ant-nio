@@ -291,15 +291,56 @@ const Transactions = () => {
   const totalDespesas = filteredTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
   const saldoPrevisto = totalReceitas - totalDespesas;
 
+  const setQuickFilter = (filter: 'hoje' | 'semana' | 'mes' | 'ano' | 'todos') => {
+    const now = new Date();
+    
+    if (filter === 'todos') {
+      setFilterDateStart('');
+      setFilterDateEnd('');
+      return;
+    }
+
+    const endStr = now.toISOString().split('T')[0];
+    setFilterDateEnd(endStr);
+
+    if (filter === 'hoje') {
+      setFilterDateStart(endStr);
+    } else if (filter === 'semana') {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      setFilterDateStart(startOfWeek.toISOString().split('T')[0]);
+    } else if (filter === 'mes') {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      setFilterDateStart(startOfMonth.toISOString().split('T')[0]);
+    } else if (filter === 'ano') {
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      setFilterDateStart(startOfYear.toISOString().split('T')[0]);
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 lg:p-8 flex-1 space-y-8">
       {/* Header Section */}
-      <section className="flex justify-between items-end">
+      <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 print:hidden">
         <div>
           <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">Lançamentos</h2>
           <p className="text-on-surface-variant font-medium mt-1">Gerencie suas movimentações financeiras com precisão.</p>
         </div>
-        <div className="flex gap-3 print:hidden">
+        <div className="flex flex-wrap items-center gap-3 print:hidden">
+          <div className="flex bg-surface-container-low rounded-lg p-1 border border-outline-variant/20">
+            {(['hoje', 'semana', 'mes', 'ano', 'todos'] as const).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setQuickFilter(filter)}
+                className={`px-4 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors text-on-surface-variant hover:bg-surface-variant/50`}
+              >
+                {filter === 'hoje' ? 'Hoje' :
+                 filter === 'semana' ? 'Semana' :
+                 filter === 'mes' ? 'Mês' :
+                 filter === 'ano' ? 'Ano' : 'Todos'}
+              </button>
+            ))}
+          </div>
           <button 
             onClick={() => window.print()}
             className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"

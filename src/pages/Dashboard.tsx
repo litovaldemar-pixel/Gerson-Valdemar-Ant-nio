@@ -1,13 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { motion } from 'motion/react';
 
 const Dashboard = () => {
   const { transactions, customers, suppliers, products, companyInfo } = useAppContext();
+  const [dateFilter, setDateFilter] = useState<'hoje' | 'semana' | 'mes' | 'ano' | 'todos'>('mes');
 
-  const totalReceitas = transactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
-  const totalDespesas = transactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
+  const filterByDate = (dateString: string) => {
+    if (dateFilter === 'todos') return true;
+    const date = new Date(dateString);
+    const now = new Date();
+    
+    if (dateFilter === 'hoje') {
+      return date.toDateString() === now.toDateString();
+    }
+    if (dateFilter === 'semana') {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      return date >= startOfWeek;
+    }
+    if (dateFilter === 'mes') {
+      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    }
+    if (dateFilter === 'ano') {
+      return date.getFullYear() === now.getFullYear();
+    }
+    return true;
+  };
+
+  const filteredTransactions = transactions.filter(t => filterByDate(t.date));
+
+  const totalReceitas = filteredTransactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
+  const totalDespesas = filteredTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
   const saldoPrevisto = totalReceitas - totalDespesas;
 
   const formatCurrency = (value: number) => {
@@ -18,7 +43,7 @@ const Dashboard = () => {
   };
 
   // Process data for the chart (Group by Date)
-  const chartDataMap = transactions.reduce((acc, curr) => {
+  const chartDataMap = filteredTransactions.reduce((acc, curr) => {
     const date = new Date(curr.date).toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short' });
     if (!acc[date]) {
       acc[date] = { name: date, Receitas: 0, Despesas: 0 };
@@ -33,7 +58,7 @@ const Dashboard = () => {
   const lowStockProducts = products.filter(p => p.stock <= p.minStock);
 
   // Donut Chart Data
-  const despesasPorCategoria = transactions
+  const despesasPorCategoria = filteredTransactions
     .filter(t => t.type === 'despesa')
     .reduce((acc, curr) => {
       acc[curr.category] = (acc[curr.category] || 0) + curr.value;
@@ -41,7 +66,7 @@ const Dashboard = () => {
     }, {} as Record<string, number>);
   const despesasData = Object.entries(despesasPorCategoria).map(([name, value]) => ({ name, value }));
 
-  const receitasPorCategoria = transactions
+  const receitasPorCategoria = filteredTransactions
     .filter(t => t.type === 'receita')
     .reduce((acc, curr) => {
       acc[curr.category] = (acc[curr.category] || 0) + curr.value;
@@ -74,12 +99,30 @@ const Dashboard = () => {
       className="p-4 md:p-6 lg:p-8 flex-1 space-y-8"
     >
       {/* Header Section */}
-      <section className="flex justify-between items-end print:hidden">
+      <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 print:hidden">
         <div>
           <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">Dashboard</h2>
           <p className="text-on-surface-variant font-medium mt-1">Visão geral do seu negócio e saúde financeira.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex bg-surface-container-low rounded-lg p-1 border border-outline-variant/20">
+            {(['hoje', 'semana', 'mes', 'ano', 'todos'] as const).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setDateFilter(filter)}
+                className={`px-4 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
+                  dateFilter === filter
+                    ? 'bg-primary text-on-primary shadow-sm'
+                    : 'text-on-surface-variant hover:bg-surface-variant/50'
+                }`}
+              >
+                {filter === 'hoje' ? 'Hoje' :
+                 filter === 'semana' ? 'Semana' :
+                 filter === 'mes' ? 'Mês' :
+                 filter === 'ano' ? 'Ano' : 'Todos'}
+              </button>
+            ))}
+          </div>
           <button 
             onClick={() => window.print()}
             className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
@@ -170,7 +213,7 @@ const Dashboard = () => {
         >
           <h3 className="text-lg font-bold font-headline text-primary mb-6">Fluxo de Caixa (Últimos Dias)</h3>
           <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e1e3e4" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#737780' }} dy={10} />
@@ -197,7 +240,7 @@ const Dashboard = () => {
         >
           <h3 className="text-lg font-bold font-headline text-primary mb-2">Despesas por Categoria</h3>
           <div className="flex-1 w-full min-h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
                 <Pie
                   data={despesasData}
@@ -235,7 +278,7 @@ const Dashboard = () => {
         >
           <h3 className="text-lg font-bold font-headline text-primary mb-2">Receitas por Categoria</h3>
           <div className="flex-1 w-full min-h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
                 <Pie
                   data={receitasData}

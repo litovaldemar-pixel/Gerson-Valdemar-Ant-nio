@@ -1,23 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 
 const DRE = () => {
   const { transactions, companyInfo } = useAppContext();
 
-  // State for period selection
-  const [selectedMonth, setSelectedMonth] = React.useState<string>(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  });
+  const [dateFilter, setDateFilter] = useState<'hoje' | 'semana' | 'mes' | 'ano' | 'todos'>('mes');
 
-  // Filter transactions by selected month
+  const filterByDate = (dateString: string) => {
+    if (dateFilter === 'todos') return true;
+    const date = new Date(dateString);
+    const now = new Date();
+    
+    if (dateFilter === 'hoje') {
+      return date.toDateString() === now.toDateString();
+    }
+    if (dateFilter === 'semana') {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      return date >= startOfWeek;
+    }
+    if (dateFilter === 'mes') {
+      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    }
+    if (dateFilter === 'ano') {
+      return date.getFullYear() === now.getFullYear();
+    }
+    return true;
+  };
+
+  // Filter transactions by selected period
   const filteredTransactions = React.useMemo(() => {
-    return transactions.filter(t => {
-      const tDate = new Date(t.date);
-      const tMonth = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
-      return tMonth === selectedMonth;
-    });
-  }, [transactions, selectedMonth]);
+    return transactions.filter(t => filterByDate(t.date));
+  }, [transactions, dateFilter]);
 
   // Calculate values based on filtered transactions
   const receitaBruta = filteredTransactions
@@ -80,23 +94,28 @@ const DRE = () => {
       {/* Header Section with Period Selector */}
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
-          <h3 className="font-headline text-3xl font-extrabold text-primary tracking-tight">DRE Mensal</h3>
+          <h3 className="font-headline text-3xl font-extrabold text-primary tracking-tight">DRE</h3>
           <p className="text-on-surface-variant mt-1 text-sm">Visão analítica de performance financeira por competência.</p>
         </div>
-        <div className="flex items-center gap-3 bg-surface-container-low p-2 rounded-lg print:bg-transparent print:p-0">
-          <div className="flex flex-col px-3 print:px-0">
-            <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Período</label>
-            <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-              <span className="material-symbols-outlined text-sm">calendar_today</span>
-              <input 
-                type="month" 
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="bg-transparent border-none outline-none text-sm font-semibold text-primary cursor-pointer"
-              />
-            </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex bg-surface-container-low rounded-lg p-1 border border-outline-variant/20 print:hidden">
+            {(['hoje', 'semana', 'mes', 'ano', 'todos'] as const).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setDateFilter(filter)}
+                className={`px-4 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
+                  dateFilter === filter
+                    ? 'bg-primary text-on-primary shadow-sm'
+                    : 'text-on-surface-variant hover:bg-surface-variant/50'
+                }`}
+              >
+                {filter === 'hoje' ? 'Hoje' :
+                 filter === 'semana' ? 'Semana' :
+                 filter === 'mes' ? 'Mês' :
+                 filter === 'ano' ? 'Ano' : 'Todos'}
+              </button>
+            ))}
           </div>
-          <div className="h-8 w-[1px] bg-outline-variant/50 mx-2 print:hidden"></div>
           <button 
             onClick={() => window.print()}
             className="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded font-bold text-sm hover:opacity-90 transition-all print:hidden"
