@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { CompanyInfo } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { motion, useDragControls } from 'motion/react';
 
 interface CompanySettingsModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface CompanySettingsModalProps {
 const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) => {
   const { companyInfo, updateCompanyInfo, companies, currentCompanyId, setCurrentCompanyId, addCompany } = useAppContext();
   const { logout } = useAuth();
+  const dragControls = useDragControls();
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -60,15 +62,26 @@ const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) =>
 
   return (
     <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 print:hidden">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
+      <motion.div 
+        drag
+        dragControls={dragControls}
+        dragListener={false}
+        dragMomentum={false}
+        className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]"
+      >
         
         {/* Sidebar with Company List */}
         {companies.length > 0 && (
           <div className="w-full md:w-1/3 bg-slate-50 dark:bg-slate-800 border-r border-outline-variant/10 flex flex-col">
-            <div className="p-4 border-b border-outline-variant/10 flex justify-between items-center bg-white dark:bg-slate-900">
+            <div 
+              className="p-4 border-b border-outline-variant/10 flex justify-between items-center bg-white dark:bg-slate-900 select-none"
+              onPointerDown={(e) => dragControls.start(e)}
+              style={{ touchAction: "none", cursor: "grab" }}
+            >
               <h3 className="font-bold text-slate-700 dark:text-slate-300">Minhas Empresas</h3>
               <button 
                 onClick={() => setIsCreating(true)}
+                onPointerDown={(e) => e.stopPropagation()}
                 className="p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
                 title="Nova Empresa"
               >
@@ -105,23 +118,42 @@ const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) =>
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
-          <div className="px-6 py-4 border-b border-outline-variant/10 flex justify-between items-center shrink-0">
+          <div 
+            className="px-6 py-4 border-b border-outline-variant/10 flex justify-between items-center shrink-0 select-none"
+            onPointerDown={(e) => dragControls.start(e)}
+            style={{ touchAction: "none", cursor: "grab" }}
+          >
             <h2 className="text-xl font-bold font-headline text-primary">
               {isCreating || companies.length === 0 ? 'Nova Empresa' : 'Dados da Empresa'}
             </h2>
             <div className="flex items-center gap-2">
               {isCreating && companies.length > 0 && (
-                <button onClick={() => setIsCreating(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 p-2" title="Cancelar Criação">
+                <button 
+                  onClick={() => setIsCreating(false)} 
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 p-2" 
+                  title="Cancelar Criação"
+                >
                   <span className="material-symbols-outlined">close</span>
                 </button>
               )}
               {companies.length > 0 && !isCreating && (
-                <button onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 p-2" title="Fechar">
+                <button 
+                  onClick={onClose} 
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 p-2" 
+                  title="Fechar"
+                >
                   <span className="material-symbols-outlined">close</span>
                 </button>
               )}
               {companies.length === 0 && (
-                <button onClick={() => logout()} className="text-error hover:text-error/80 p-2 flex items-center gap-1 text-sm font-bold" title="Sair da Conta">
+                <button 
+                  onClick={() => logout()} 
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="text-error hover:text-error/80 p-2 flex items-center gap-1 text-sm font-bold" 
+                  title="Sair da Conta"
+                >
                   <span className="material-symbols-outlined text-sm">logout</span>
                   Sair
                 </button>
@@ -238,7 +270,7 @@ const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) =>
             </form>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
