@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { motion } from 'motion/react';
 
 const Dashboard = () => {
-  const { transactions, customers, suppliers, products, companyInfo } = useAppContext();
+  const { transactions, customers, suppliers, products, companyInfo, globalSearchTerm } = useAppContext();
   const [dateFilter, setDateFilter] = useState<'hoje' | 'semana' | 'mes' | 'ano' | 'todos'>('mes');
 
   const filterByDate = (dateString: string) => {
@@ -29,7 +29,21 @@ const Dashboard = () => {
     return true;
   };
 
-  const filteredTransactions = transactions.filter(t => filterByDate(t.date));
+  const filteredTransactions = transactions.filter(t => {
+    if (!filterByDate(t.date)) return false;
+    
+    if (globalSearchTerm) {
+      const term = globalSearchTerm.toLowerCase();
+      const matchDescription = t.description.toLowerCase().includes(term);
+      const matchCategory = t.category.toLowerCase().includes(term);
+      const matchCustomer = t.customerId ? customers.find(c => c.id === t.customerId)?.name.toLowerCase().includes(term) : false;
+      const matchSupplier = t.supplierId ? suppliers.find(s => s.id === t.supplierId)?.name.toLowerCase().includes(term) : false;
+      
+      if (!matchDescription && !matchCategory && !matchCustomer && !matchSupplier) return false;
+    }
+    
+    return true;
+  });
 
   const totalReceitas = filteredTransactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
   const totalDespesas = filteredTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 
 const Products = () => {
-  const { products, addProduct, deleteProduct, updateProduct } = useAppContext();
+  const { products, addProduct, deleteProduct, updateProduct, globalSearchTerm } = useAppContext();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -89,11 +89,13 @@ const Products = () => {
     setSupplierId('');
   };
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products.filter(p => {
+    const term = (searchTerm || globalSearchTerm).toLowerCase();
+    if (!term) return true;
+    return p.name.toLowerCase().includes(term) ||
+      p.sku.toLowerCase().includes(term) ||
+      p.category.toLowerCase().includes(term);
+  });
 
   return (
     <div className="p-4 md:p-6 lg:p-8 flex-1 space-y-8">

@@ -8,8 +8,21 @@ import SubscriptionLock from './SubscriptionLock';
 import CompanySettingsModal from './CompanySettingsModal';
 
 const Layout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
   const { companyInfo, companies, loading } = useAppContext();
+
+  // Handle window resize to auto-hide/show sidebar
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsSidebarOpen(true);
+      } else {
+        setIsSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -28,7 +41,7 @@ const Layout = () => {
   return (
     <>
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <main className="flex-1 lg:ml-64 min-h-screen flex flex-col print:ml-0">
+      <main className={`flex-1 min-h-screen flex flex-col print:ml-0 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'lg:ml-64' : 'ml-0'}`}>
         <Header onMenuClick={toggleSidebar} />
         <PrintHeader />
         <Outlet />

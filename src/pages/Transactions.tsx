@@ -4,13 +4,29 @@ import { TransactionType, Transaction, TransactionItem } from '../types';
 import ReceiptModal from '../components/ReceiptModal';
 
 const Transactions = () => {
-  const { transactions, addTransaction, deleteTransaction, updateTransaction, products, customers, suppliers } = useAppContext();
+  const { transactions, addTransaction, deleteTransaction, updateTransaction, products, customers, suppliers, globalSearchTerm } = useAppContext();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [value, setValue] = useState('');
   const [type, setType] = useState<TransactionType>('receita');
   const [category, setCategory] = useState('Operacional');
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+  const [showColumnMenu, setShowColumnMenu] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState({
+    receipt: true,
+    date: true,
+    description: true,
+    items: true,
+    quantity: true,
+    type: true,
+    value: true,
+    actions: true
+  });
+
+  const toggleColumn = (col: keyof typeof visibleColumns) => {
+    setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }));
+  };
   
   // For single product (legacy)
   const [productId, setProductId] = useState('');
@@ -280,6 +296,17 @@ const Transactions = () => {
     if (filterCategory !== 'all' && t.category !== filterCategory) return false;
     if (filterDateStart && new Date(t.date) < new Date(filterDateStart)) return false;
     if (filterDateEnd && new Date(t.date) > new Date(filterDateEnd + 'T23:59:59')) return false;
+    
+    const term = (localSearchTerm || globalSearchTerm).toLowerCase();
+    if (term) {
+      const matchDescription = t.description.toLowerCase().includes(term);
+      const matchCategory = t.category.toLowerCase().includes(term);
+      const matchCustomer = t.customerId ? customers.find(c => c.id === t.customerId)?.name.toLowerCase().includes(term) : false;
+      const matchSupplier = t.supplierId ? suppliers.find(s => s.id === t.supplierId)?.name.toLowerCase().includes(term) : false;
+      
+      if (!matchDescription && !matchCategory && !matchCustomer && !matchSupplier) return false;
+    }
+    
     return true;
   });
 
@@ -737,10 +764,71 @@ const Transactions = () => {
 
       {/* Transactions Table Section */}
       <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden print:shadow-none print:border print:border-outline-variant/20">
-        <div className="p-6 border-b border-outline-variant/10 flex justify-between items-center">
+        <div className="p-6 border-b border-outline-variant/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h3 className="font-headline font-bold text-lg text-primary">Histórico de Movimentações</h3>
-          <div className="flex items-center gap-4 print:hidden">
-            <span className="text-xs text-on-surface-variant">Mostrando {filteredTransactions.length > 0 ? 1 : 0}-{filteredTransactions.length} de {filteredTransactions.length} lançamentos</span>
+          <div className="flex items-center gap-4 w-full md:w-auto print:hidden">
+            <div className="relative w-full md:w-64">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+              <input
+                type="text"
+                placeholder="Buscar transações..."
+                className="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                value={localSearchTerm}
+                onChange={(e) => setLocalSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="relative">
+              <button 
+                onClick={() => setShowColumnMenu(!showColumnMenu)}
+                className="flex items-center gap-2 bg-surface-container-low hover:bg-surface-container px-3 py-2 rounded-lg text-sm font-bold text-on-surface-variant transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">view_column</span>
+                <span className="hidden sm:inline">Colunas</span>
+              </button>
+              
+              {showColumnMenu && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-lg z-10 py-2">
+                  <div className="px-4 py-2 text-xs font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/10 mb-2">
+                    Mostrar Colunas
+                  </div>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.receipt} onChange={() => toggleColumn('receipt')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Recibo</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.date} onChange={() => toggleColumn('date')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Data</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.description} onChange={() => toggleColumn('description')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Descrição</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.items} onChange={() => toggleColumn('items')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Itens/Produto</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.quantity} onChange={() => toggleColumn('quantity')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Qtd</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.type} onChange={() => toggleColumn('type')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Tipo</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.value} onChange={() => toggleColumn('value')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Valor Total</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.actions} onChange={() => toggleColumn('actions')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Ações</span>
+                  </label>
+                </div>
+              )}
+            </div>
+            
+            <span className="text-xs text-on-surface-variant whitespace-nowrap hidden sm:inline">Mostrando {filteredTransactions.length > 0 ? 1 : 0}-{filteredTransactions.length} de {filteredTransactions.length} lançamentos</span>
             <div className="flex gap-1">
               <button className="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container"><span className="material-symbols-outlined text-sm">chevron_left</span></button>
               <button className="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container"><span className="material-symbols-outlined text-sm">chevron_right</span></button>
@@ -751,14 +839,14 @@ const Transactions = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low/50 print:bg-transparent print:border-b print:border-outline-variant/20">
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Recibo</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Data</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Descrição</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Itens/Produto</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Qtd</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Tipo</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Valor Total</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">Ações</th>
+                {visibleColumns.receipt && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Recibo</th>}
+                {visibleColumns.date && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Data</th>}
+                {visibleColumns.description && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Descrição</th>}
+                {visibleColumns.items && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Itens/Produto</th>}
+                {visibleColumns.quantity && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Qtd</th>}
+                {visibleColumns.type && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Tipo</th>}
+                {visibleColumns.value && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Valor Total</th>}
+                {visibleColumns.actions && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">Ações</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5 print:divide-outline-variant/20">

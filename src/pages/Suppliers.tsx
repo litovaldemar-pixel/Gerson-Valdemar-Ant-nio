@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 
 const Suppliers = () => {
-  const { suppliers, addSupplier, deleteSupplier, updateSupplier, products, transactions } = useAppContext();
+  const { suppliers, addSupplier, deleteSupplier, updateSupplier, products, transactions, globalSearchTerm } = useAppContext();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -10,6 +10,33 @@ const Suppliers = () => {
   const [document, setDocument] = useState('');
   const [category, setCategory] = useState('Infraestrutura');
   const [documentError, setDocumentError] = useState('');
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+  const [showColumnMenu, setShowColumnMenu] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState({
+    name: true,
+    email: true,
+    document: true,
+    category: true,
+    metrics: true,
+    stockValue: true,
+    saleValue: true,
+    actions: true
+  });
+
+  const toggleColumn = (col: keyof typeof visibleColumns) => {
+    setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }));
+  };
+
+  const filteredSuppliers = useMemo(() => {
+    const term = (localSearchTerm || globalSearchTerm).toLowerCase();
+    if (!term) return suppliers;
+    return suppliers.filter(s => 
+      s.name.toLowerCase().includes(term) || 
+      (s.email && s.email.toLowerCase().includes(term)) ||
+      (s.document && s.document.toLowerCase().includes(term)) ||
+      (s.category && s.category.toLowerCase().includes(term))
+    );
+  }, [suppliers, localSearchTerm, globalSearchTerm]);
 
   const formatCNPJ = (value: string) => {
     return value
@@ -203,28 +230,96 @@ const Suppliers = () => {
 
       {/* Suppliers Table Section */}
       <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-outline-variant/10 flex justify-between items-center">
+        <div className="p-6 border-b border-outline-variant/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h3 className="font-headline font-bold text-lg text-primary">Lista de Fornecedores</h3>
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-on-surface-variant">Total: {suppliers.length} fornecedores</span>
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="relative w-full md:w-64">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+              <input
+                type="text"
+                placeholder="Buscar por nome, email ou documento..."
+                className="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                value={localSearchTerm}
+                onChange={(e) => setLocalSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="relative">
+              <button 
+                onClick={() => setShowColumnMenu(!showColumnMenu)}
+                className="flex items-center gap-2 bg-surface-container-low hover:bg-surface-container px-3 py-2 rounded-lg text-sm font-bold text-on-surface-variant transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">view_column</span>
+                <span className="hidden sm:inline">Colunas</span>
+              </button>
+              
+              {showColumnMenu && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-lg z-10 py-2">
+                  <div className="px-4 py-2 text-xs font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/10 mb-2">
+                    Mostrar Colunas
+                  </div>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.name} onChange={() => toggleColumn('name')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Nome</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.email} onChange={() => toggleColumn('email')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Contato</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.document} onChange={() => toggleColumn('document')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Documento</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.category} onChange={() => toggleColumn('category')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Categoria</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.metrics} onChange={() => toggleColumn('metrics')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Métricas</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.stockValue} onChange={() => toggleColumn('stockValue')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Valor (Custo)</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.saleValue} onChange={() => toggleColumn('saleValue')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Valor (Venda)</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.actions} onChange={() => toggleColumn('actions')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Ações</span>
+                  </label>
+                </div>
+              )}
+            </div>
+            
+            <span className="text-xs text-on-surface-variant whitespace-nowrap hidden sm:inline">Total: {filteredSuppliers.length} fornecedores</span>
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low/50">
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Nome</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">E-mail</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">CNPJ</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Produtos</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Stock Total</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Valor em Stock (Custo)</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Valor em Stock (Venda)</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">Ações</th>
+                {visibleColumns.name && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Nome</th>}
+                {visibleColumns.email && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">E-mail</th>}
+                {visibleColumns.document && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">CNPJ</th>}
+                {visibleColumns.category && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Produtos</th>}
+                {visibleColumns.metrics && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Stock Total</th>}
+                {visibleColumns.stockValue && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Valor em Stock (Custo)</th>}
+                {visibleColumns.saleValue && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Valor em Stock (Venda)</th>}
+                {visibleColumns.actions && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">Ações</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5">
-              {suppliers.map((s) => {
+              {filteredSuppliers.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-6 py-8 text-center text-on-surface-variant">
+                    {suppliers.length === 0 ? 'Nenhum fornecedor cadastrado ainda.' : 'Nenhum fornecedor encontrado na busca.'}
+                  </td>
+                </tr>
+              ) : (
+                filteredSuppliers.map((s) => {
                 const supplierProducts = products.filter(p => p.supplierId === s.id);
                 const totalStock = supplierProducts.reduce((acc, p) => acc + p.stock, 0);
                 const totalCostValue = supplierProducts.reduce((acc, p) => acc + (p.cost * p.stock), 0);
@@ -238,7 +333,7 @@ const Suppliers = () => {
 
                 return (
                 <tr key={s.id} className="hover:bg-surface-container-low/30 transition-colors group">
-                  <td className="px-6 py-4 text-sm font-bold text-primary">
+                  {visibleColumns.name && <td className="px-6 py-4 text-sm font-bold text-primary">
                     {s.name}
                     <div className="text-xs font-normal text-on-surface-variant mt-1">{s.category}</div>
                     {recentPurchases.length > 0 && (
@@ -252,23 +347,23 @@ const Suppliers = () => {
                         ))}
                       </div>
                     )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-on-surface-variant">{s.email}</td>
-                  <td className="px-6 py-4 text-sm text-on-surface-variant">{s.document}</td>
-                  <td className="px-6 py-4 text-center text-sm font-bold text-on-surface-variant">{supplierProducts.length}</td>
-                  <td className="px-6 py-4 text-center text-sm font-mono">
+                  </td>}
+                  {visibleColumns.email && <td className="px-6 py-4 text-sm text-on-surface-variant">{s.email}</td>}
+                  {visibleColumns.document && <td className="px-6 py-4 text-sm text-on-surface-variant">{s.document}</td>}
+                  {visibleColumns.category && <td className="px-6 py-4 text-center text-sm font-bold text-on-surface-variant">{supplierProducts.length}</td>}
+                  {visibleColumns.metrics && <td className="px-6 py-4 text-center text-sm font-mono">
                     <div className="flex flex-col items-center">
                       <span className="font-bold">{totalStock.toFixed(2)}</span>
                       <span className="text-[10px] text-on-surface-variant">unidades base</span>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-mono text-right text-error">
+                  </td>}
+                  {visibleColumns.stockValue && <td className="px-6 py-4 text-sm font-mono text-right text-error">
                     {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(totalCostValue)}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-mono text-right text-primary">
+                  </td>}
+                  {visibleColumns.saleValue && <td className="px-6 py-4 text-sm font-mono text-right text-primary">
                     {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(totalSaleValue)}
-                  </td>
-                  <td className="px-6 py-4 print:hidden">
+                  </td>}
+                  {visibleColumns.actions && <td className="px-6 py-4 print:hidden">
                     <div className="flex justify-center gap-2">
                       <button onClick={() => handleEdit(s)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all">
                         <span className="material-symbols-outlined text-lg">edit</span>

@@ -11,7 +11,7 @@ interface HeaderProps {
 
 const Header = ({ onMenuClick }: HeaderProps) => {
   const { logout } = useAuth();
-  const { companyInfo } = useAppContext();
+  const { companyInfo, globalSearchTerm, setGlobalSearchTerm } = useAppContext();
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -25,7 +25,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
     <header className="flex justify-between items-center px-4 lg:px-8 w-full sticky top-0 z-30 h-16 bg-slate-50 dark:bg-slate-900 border-b border-outline-variant/10 print:hidden">
       <div className="flex items-center gap-4">
         <button 
-          className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors active:scale-95"
+          className="w-10 h-10 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors active:scale-95"
           onClick={onMenuClick}
         >
           <span className="material-symbols-outlined">menu</span>
@@ -34,8 +34,10 @@ const Header = ({ onMenuClick }: HeaderProps) => {
           <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
           <input
             className="pl-10 pr-4 py-1.5 bg-slate-100 dark:bg-slate-800 border-none rounded-full text-sm w-64 lg:w-80 focus:ring-2 focus:ring-primary-fixed-dim"
-            placeholder="Buscar lançamentos..."
+            placeholder="Buscar em todo o sistema..."
             type="text"
+            value={globalSearchTerm}
+            onChange={(e) => setGlobalSearchTerm(e.target.value)}
           />
         </div>
       </div>

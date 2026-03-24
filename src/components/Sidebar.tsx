@@ -27,7 +27,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   };
 
   return (
-    <aside className={`fixed left-0 top-0 h-full flex flex-col py-6 w-64 bg-slate-100 dark:bg-slate-800/50 z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} print:hidden`}>
+    <aside className={`fixed left-0 top-0 h-full flex flex-col py-6 w-64 bg-slate-100 dark:bg-slate-800/50 z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} print:hidden`}>
       <div className="px-6 mb-8 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-primary rounded flex items-center justify-center text-on-primary font-black text-xl">

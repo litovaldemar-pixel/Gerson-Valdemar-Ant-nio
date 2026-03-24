@@ -76,6 +76,9 @@ interface AppContextType {
   companyInfo: CompanyInfo | null;
   updateCompanyInfo: (info: CompanyInfo) => void;
 
+  globalSearchTerm: string;
+  setGlobalSearchTerm: (term: string) => void;
+
   loading: boolean;
 }
 
@@ -96,6 +99,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [globalSearchTerm, setGlobalSearchTerm] = useState<string>('');
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(() => {
     const saved = localStorage.getItem('@FinancialArchitect:companyInfo');
     return saved ? JSON.parse(saved) : null;
@@ -555,6 +559,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       companies, currentCompanyId, setCurrentCompanyId: handleSetCurrentCompanyId,
       addCompany, updateCompany, deleteCompany,
       companyInfo, updateCompanyInfo,
+      globalSearchTerm, setGlobalSearchTerm,
       loading
     }}>
       {children}
