@@ -66,24 +66,24 @@ service cloud.firestore {
 
     // Check if user owns the resource (for user-owned documents)
     function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+      return isAuthenticated() && (request.auth.uid == userId || isAdmin());
     }
     
     // Check if user is owner based on document's userId field
     function isDocOwner() {
-      return isAuthenticated() && request.auth.uid == resource.data.userId;
+      return isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
     }
     
     // Verify userId hasn't been tampered with on create
     function uidUnchanged() {
       return !('userId' in request.resource.data) ||
-        request.resource.data.userId == request.auth.uid;
+        request.resource.data.userId == request.auth.uid || isAdmin();
     }
     
     // Ensure userId field is not modified on update
     function uidNotModified() {
       return !('userId' in request.resource.data) ||
-        request.resource.data.userId == resource.data.userId;
+        request.resource.data.userId == resource.data.userId || isAdmin();
     }
     
     // Validate required fields exist

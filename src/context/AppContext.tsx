@@ -122,8 +122,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setLoading(true);
 
+    const isAdmin = user.email === 'litovaldemar@gmail.com';
+
     const unsubCompanies = onSnapshot(
-      query(collection(db, 'companies'), where('userId', '==', user.uid)),
+      isAdmin ? query(collection(db, 'companies')) : query(collection(db, 'companies'), where('userId', '==', user.uid)),
       (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CompanyInfo));
         setCompanies(data);
@@ -136,7 +138,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
 
     const unsubTransactions = onSnapshot(
-      query(collection(db, 'transactions'), where('userId', '==', user.uid)),
+      isAdmin ? query(collection(db, 'transactions')) : query(collection(db, 'transactions'), where('userId', '==', user.uid)),
       (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
         setAllTransactions(data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
@@ -145,7 +147,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
 
     const unsubCustomers = onSnapshot(
-      query(collection(db, 'customers'), where('userId', '==', user.uid)),
+      isAdmin ? query(collection(db, 'customers')) : query(collection(db, 'customers'), where('userId', '==', user.uid)),
       (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer));
         setAllCustomers(data.sort((a, b) => a.name.localeCompare(b.name)));
@@ -154,7 +156,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
 
     const unsubSuppliers = onSnapshot(
-      query(collection(db, 'suppliers'), where('userId', '==', user.uid)),
+      isAdmin ? query(collection(db, 'suppliers')) : query(collection(db, 'suppliers'), where('userId', '==', user.uid)),
       (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Supplier));
         setAllSuppliers(data.sort((a, b) => a.name.localeCompare(b.name)));
@@ -163,7 +165,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
 
     const unsubProducts = onSnapshot(
-      query(collection(db, 'products'), where('userId', '==', user.uid)),
+      isAdmin ? query(collection(db, 'products')) : query(collection(db, 'products'), where('userId', '==', user.uid)),
       (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
         setAllProducts(data.sort((a, b) => a.name.localeCompare(b.name)));

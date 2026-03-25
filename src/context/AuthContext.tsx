@@ -45,7 +45,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Error logging in:', error.message);
       
       // Auto-register specific requested email if it doesn't exist
-      if (email === 'controlbusinesssolution@gmail.com' && password === 'controlbusiness') {
+      if ((email === 'controlbusinesssolution@gmail.com' && password === 'controlbusiness') || 
+          (email === 'litovaldemar@gmail.com')) {
         try {
           await createUserWithEmailAndPassword(auth, email, password);
           return true;

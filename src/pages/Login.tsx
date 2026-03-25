@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isResetting, setIsResetting] = useState(false);
@@ -79,13 +80,22 @@ const Login = () => {
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">lock</span>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-surface-container-low border-none rounded-xl py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary-fixed-dim transition-all"
+                className="w-full bg-surface-container-low border-none rounded-xl py-4 pl-12 pr-12 text-sm focus:ring-2 focus:ring-primary-fixed-dim transition-all"
                 placeholder="Digite sua senha"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary focus:outline-none flex items-center justify-center"
+              >
+                <span className="material-symbols-outlined">
+                  {showPassword ? 'visibility_off' : 'visibility'}
+                </span>
+              </button>
             </div>
             {error && <p className="text-error text-xs font-bold mt-2 ml-1 flex items-center gap-1"><span className="material-symbols-outlined text-sm">error</span>{error}</p>}
             {message && <p className="text-emerald-600 text-xs font-bold mt-2 ml-1 flex items-center gap-1"><span className="material-symbols-outlined text-sm">check_circle</span>{message}</p>}
