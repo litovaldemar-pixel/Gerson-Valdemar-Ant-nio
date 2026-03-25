@@ -11,19 +11,6 @@ const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
   const { companyInfo, companies, loading } = useAppContext();
 
-  // Handle window resize to auto-hide/show sidebar
-  React.useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setIsSidebarOpen(true);
-      } else {
-        setIsSidebarOpen(false);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   // Check subscription status

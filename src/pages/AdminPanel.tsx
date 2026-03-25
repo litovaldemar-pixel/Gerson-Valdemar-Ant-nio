@@ -11,6 +11,19 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showColumnMenu, setShowColumnMenu] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState({
+    empresa: true,
+    contato: true,
+    status: true,
+    validade: true,
+    plano: true,
+    acoes: true
+  });
+
+  const toggleColumn = (col: keyof typeof visibleColumns) => {
+    setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }));
+  };
 
   const isAdmin = 
     user?.email?.toLowerCase().includes('litovaldemar') || 
@@ -143,6 +156,49 @@ const AdminPanel = () => {
               className="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-sm focus:ring-2 focus:ring-primary-fixed-dim"
             />
           </div>
+          
+          <div className="relative">
+            <button 
+              onClick={() => setShowColumnMenu(!showColumnMenu)}
+              className="px-4 py-2 bg-surface-container-low text-on-surface-variant rounded-lg font-bold flex items-center gap-2 hover:bg-surface-container transition-colors"
+            >
+              <span className="material-symbols-outlined">view_column</span>
+              <span className="hidden sm:inline">Colunas</span>
+            </button>
+            
+            {showColumnMenu && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-lg z-10 py-2">
+                <div className="px-4 py-2 text-xs font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/10 mb-2">
+                  Mostrar Colunas
+                </div>
+                <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                  <input type="checkbox" checked={visibleColumns.empresa} onChange={() => toggleColumn('empresa')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                  <span className="text-sm text-on-surface">Empresa</span>
+                </label>
+                <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                  <input type="checkbox" checked={visibleColumns.contato} onChange={() => toggleColumn('contato')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                  <span className="text-sm text-on-surface">Contato</span>
+                </label>
+                <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                  <input type="checkbox" checked={visibleColumns.status} onChange={() => toggleColumn('status')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                  <span className="text-sm text-on-surface">Status</span>
+                </label>
+                <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                  <input type="checkbox" checked={visibleColumns.validade} onChange={() => toggleColumn('validade')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                  <span className="text-sm text-on-surface">Validade</span>
+                </label>
+                <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                  <input type="checkbox" checked={visibleColumns.plano} onChange={() => toggleColumn('plano')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                  <span className="text-sm text-on-surface">Plano</span>
+                </label>
+                <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                  <input type="checkbox" checked={visibleColumns.acoes} onChange={() => toggleColumn('acoes')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                  <span className="text-sm text-on-surface">Ações</span>
+                </label>
+              </div>
+            )}
+          </div>
+
           <button 
             onClick={fetchCompanies}
             className="px-4 py-2 bg-surface-container-highest text-on-surface rounded-lg font-bold flex items-center gap-2 hover:bg-surface-variant transition-colors"
@@ -200,12 +256,12 @@ const AdminPanel = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low text-on-surface-variant text-sm uppercase tracking-wider">
-                <th className="p-4 font-bold">Empresa</th>
-                <th className="p-4 font-bold">Contato</th>
-                <th className="p-4 font-bold">Status</th>
-                <th className="p-4 font-bold">Validade</th>
-                <th className="p-4 font-bold">Plano</th>
-                <th className="p-4 font-bold text-right">Ações</th>
+                {visibleColumns.empresa && <th className="p-4 font-bold">Empresa</th>}
+                {visibleColumns.contato && <th className="p-4 font-bold">Contato</th>}
+                {visibleColumns.status && <th className="p-4 font-bold">Status</th>}
+                {visibleColumns.validade && <th className="p-4 font-bold">Validade</th>}
+                {visibleColumns.plano && <th className="p-4 font-bold">Plano</th>}
+                {visibleColumns.acoes && <th className="p-4 font-bold text-right">Ações</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10">
@@ -214,26 +270,26 @@ const AdminPanel = () => {
                 
                 return (
                   <tr key={company.id} className="hover:bg-surface-container-lowest/50 transition-colors">
-                    <td className="p-4">
+                    {visibleColumns.empresa && <td className="p-4">
                       <p className="font-bold text-on-surface">{company.name}</p>
                       <p className="text-xs text-on-surface-variant">NUIT: {company.nuit}</p>
-                    </td>
-                    <td className="p-4">
+                    </td>}
+                    {visibleColumns.contato && <td className="p-4">
                       <p className="text-sm text-on-surface">{company.contact}</p>
                       {company.email && <p className="text-xs text-on-surface-variant">{company.email}</p>}
-                    </td>
-                    <td className="p-4">
+                    </td>}
+                    {visibleColumns.status && <td className="p-4">
                       <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${isActive ? 'bg-primary/10 text-primary' : 'bg-error/10 text-error'}`}>
                         {isActive ? 'Ativa' : 'Bloqueada'}
                       </span>
-                    </td>
-                    <td className="p-4 text-sm text-on-surface-variant">
+                    </td>}
+                    {visibleColumns.validade && <td className="p-4 text-sm text-on-surface-variant">
                       {company.subscription?.validUntil ? new Date(company.subscription.validUntil).toLocaleDateString('pt-MZ') : 'N/A'}
-                    </td>
-                    <td className="p-4 text-sm text-on-surface-variant">
+                    </td>}
+                    {visibleColumns.plano && <td className="p-4 text-sm text-on-surface-variant">
                       {company.subscription?.plan || 'N/A'}
-                    </td>
-                    <td className="p-4 text-right">
+                    </td>}
+                    {visibleColumns.acoes && <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         {isActive ? (
                           <button 
@@ -275,7 +331,7 @@ const AdminPanel = () => {
                           <span className="material-symbols-outlined text-sm">delete</span>
                         </button>
                       </div>
-                    </td>
+                    </td>}
                   </tr>
                 );
               })}

@@ -73,7 +73,25 @@ const Dashboard = () => {
 
   const chartData = Object.values(chartDataMap).reverse(); // Reverse to show chronological order if sorted descending originally
 
-  const lowStockProducts = products.filter(p => p.stock <= p.minStock);
+  const filteredCustomers = customers.filter(c => {
+    if (!globalSearchTerm) return true;
+    const term = globalSearchTerm.toLowerCase();
+    return c.name.toLowerCase().includes(term) || c.email?.toLowerCase().includes(term) || c.document?.toLowerCase().includes(term);
+  });
+
+  const filteredSuppliers = suppliers.filter(s => {
+    if (!globalSearchTerm) return true;
+    const term = globalSearchTerm.toLowerCase();
+    return s.name.toLowerCase().includes(term) || s.email?.toLowerCase().includes(term) || s.document?.toLowerCase().includes(term);
+  });
+
+  const filteredProducts = products.filter(p => {
+    if (!globalSearchTerm) return true;
+    const term = globalSearchTerm.toLowerCase();
+    return p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term) || p.category.toLowerCase().includes(term);
+  });
+
+  const lowStockProducts = filteredProducts.filter(p => p.stock <= p.minStock);
 
   // Donut Chart Data
   const despesasPorCategoria = filteredTransactions
@@ -335,21 +353,21 @@ const Dashboard = () => {
             <div className="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center text-on-primary-fixed mb-3">
               <span className="material-symbols-outlined text-2xl">group</span>
             </div>
-            <h4 className="text-3xl font-extrabold font-headline text-primary">{customers.length}</h4>
+            <h4 className="text-3xl font-extrabold font-headline text-primary">{filteredCustomers.length}</h4>
             <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Clientes</p>
           </div>
           <div className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10 flex flex-col justify-center items-center text-center">
             <div className="w-14 h-14 bg-secondary-container rounded-full flex items-center justify-center text-on-secondary-container mb-3">
               <span className="material-symbols-outlined text-2xl">local_shipping</span>
             </div>
-            <h4 className="text-3xl font-extrabold font-headline text-primary">{suppliers.length}</h4>
+            <h4 className="text-3xl font-extrabold font-headline text-primary">{filteredSuppliers.length}</h4>
             <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Fornecedores</p>
           </div>
           <div className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10 flex flex-col justify-center items-center text-center">
             <div className="w-14 h-14 bg-tertiary-container rounded-full flex items-center justify-center text-on-tertiary-container mb-3">
               <span className="material-symbols-outlined text-2xl">inventory_2</span>
             </div>
-            <h4 className="text-3xl font-extrabold font-headline text-primary">{products.length}</h4>
+            <h4 className="text-3xl font-extrabold font-headline text-primary">{filteredProducts.length}</h4>
             <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Produtos</p>
           </div>
         </motion.div>

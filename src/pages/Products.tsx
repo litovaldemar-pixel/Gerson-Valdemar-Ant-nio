@@ -17,6 +17,20 @@ const Products = () => {
   const [conversionFactor, setConversionFactor] = useState<string>('1');
   const [supplierId, setSupplierId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showColumnMenu, setShowColumnMenu] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState({
+    product: true,
+    supplier: true,
+    price: true,
+    cost: true,
+    stock: true,
+    totalCost: true,
+    actions: true
+  });
+
+  const toggleColumn = (col: keyof typeof visibleColumns) => {
+    setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }));
+  };
 
   const { suppliers } = useAppContext();
 
@@ -291,20 +305,67 @@ const Products = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <span className="text-xs text-on-surface-variant whitespace-nowrap">Total: {filteredProducts.length} produtos</span>
+            
+            <div className="relative">
+              <button 
+                onClick={() => setShowColumnMenu(!showColumnMenu)}
+                className="flex items-center gap-2 bg-surface-container-low hover:bg-surface-container px-3 py-2 rounded-lg text-sm font-bold text-on-surface-variant transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">view_column</span>
+                <span className="hidden sm:inline">Colunas</span>
+              </button>
+              
+              {showColumnMenu && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-lg z-10 py-2">
+                  <div className="px-4 py-2 text-xs font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/10 mb-2">
+                    Mostrar Colunas
+                  </div>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.product} onChange={() => toggleColumn('product')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Produto</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.supplier} onChange={() => toggleColumn('supplier')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Fornecedor</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.price} onChange={() => toggleColumn('price')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Preço Venda</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.cost} onChange={() => toggleColumn('cost')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Custo</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.stock} onChange={() => toggleColumn('stock')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Stock</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.totalCost} onChange={() => toggleColumn('totalCost')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Total (Custo)</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.actions} onChange={() => toggleColumn('actions')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Ações</span>
+                  </label>
+                </div>
+              )}
+            </div>
+            
+            <span className="text-xs text-on-surface-variant whitespace-nowrap hidden sm:inline">Total: {filteredProducts.length} produtos</span>
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low/50">
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Produto</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Fornecedor</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Preço Venda</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Custo</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Stock</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Total (Custo)</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">Ações</th>
+                {visibleColumns.product && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Produto</th>}
+                {visibleColumns.supplier && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Fornecedor</th>}
+                {visibleColumns.price && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Preço Venda</th>}
+                {visibleColumns.cost && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Custo</th>}
+                {visibleColumns.stock && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Stock</th>}
+                {visibleColumns.totalCost && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Total (Custo)</th>}
+                {visibleColumns.actions && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">Ações</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5">
@@ -312,7 +373,7 @@ const Products = () => {
                 const supplier = suppliers.find(s => s.id === p.supplierId);
                 return (
                 <tr key={p.id} className="hover:bg-surface-container-low/30 transition-colors group">
-                  <td className="px-6 py-4 text-sm font-bold text-primary">
+                  {visibleColumns.product && <td className="px-6 py-4 text-sm font-bold text-primary">
                     {p.name}
                     <div className="text-xs font-normal text-on-surface-variant mt-1">{p.sku} | {p.category}</div>
                     {p.purchaseUnit && p.purchaseUnit !== p.unit && (
@@ -320,23 +381,23 @@ const Products = () => {
                         1 {p.purchaseUnit} = {p.conversionFactor} {p.unit}
                       </div>
                     )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-on-surface-variant">{supplier ? supplier.name : '-'}</td>
-                  <td className="px-6 py-4 text-sm font-mono text-right text-primary">
+                  </td>}
+                  {visibleColumns.supplier && <td className="px-6 py-4 text-sm text-on-surface-variant">{supplier ? supplier.name : '-'}</td>}
+                  {visibleColumns.price && <td className="px-6 py-4 text-sm font-mono text-right text-primary">
                     {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(p.price)}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-mono text-right text-error">
+                  </td>}
+                  {visibleColumns.cost && <td className="px-6 py-4 text-sm font-mono text-right text-error">
                     {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(p.cost)}
-                  </td>
-                  <td className="px-6 py-4 text-center">
+                  </td>}
+                  {visibleColumns.stock && <td className="px-6 py-4 text-center">
                     <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${p.stock <= p.minStock ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container'}`}>
                       {p.stock} {p.unit || 'un'}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-mono text-right text-error">
+                  </td>}
+                  {visibleColumns.totalCost && <td className="px-6 py-4 text-sm font-mono text-right text-error">
                     {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(p.cost * p.stock)}
-                  </td>
-                  <td className="px-6 py-4 print:hidden">
+                  </td>}
+                  {visibleColumns.actions && <td className="px-6 py-4 print:hidden">
                     <div className="flex justify-center gap-2">
                       <button onClick={() => handleEdit(p)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all">
                         <span className="material-symbols-outlined text-lg">edit</span>
@@ -345,7 +406,7 @@ const Products = () => {
                         <span className="material-symbols-outlined text-lg">delete</span>
                       </button>
                     </div>
-                  </td>
+                  </td>}
                 </tr>
               )})}
               {products.length === 0 && (

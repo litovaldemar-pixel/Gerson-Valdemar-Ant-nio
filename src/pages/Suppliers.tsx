@@ -372,14 +372,11 @@ const Suppliers = () => {
                         <span className="material-symbols-outlined text-lg">delete</span>
                       </button>
                     </div>
-                  </td>
+                  </td>}
                 </tr>
-              )})}
-              {suppliers.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-sm text-on-surface-variant">Nenhum fornecedor cadastrado.</td>
-                </tr>
-              )}
+                )
+              })
+            )}
             </tbody>
           </table>
         </div>

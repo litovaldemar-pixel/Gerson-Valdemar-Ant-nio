@@ -258,13 +258,9 @@ const Customers = () => {
                         <span className="material-symbols-outlined text-lg">delete</span>
                       </button>
                     </div>
-                  </td>
+                  </td>}
                 </tr>
-              ))}
-              {customers.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-sm text-on-surface-variant">Nenhum cliente cadastrado.</td>
-                </tr>
+                ))
               )}
             </tbody>
           </table>

@@ -43,17 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     } catch (error: any) {
       console.error('Error logging in:', error.message);
-      
-      // Try to sign them up automatically if login fails (e.g., user not found)
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        return true;
-      } catch (signUpError: any) {
-        if (signUpError.code !== 'auth/email-already-in-use') {
-          console.error('Error signing up user:', signUpError.message);
-        }
-        return false;
-      }
+      return false;
     }
   };
 
