@@ -28,7 +28,7 @@ const Layout = () => {
   return (
     <>
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <main className={`flex-1 min-h-screen flex flex-col print:ml-0 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'lg:ml-64' : 'ml-0'}`}>
+      <main className={`flex-1 min-h-[100dvh] flex flex-col print:ml-0 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'lg:ml-64' : 'ml-0'}`}>
         <Header onMenuClick={toggleSidebar} />
         <PrintHeader />
         <Outlet />

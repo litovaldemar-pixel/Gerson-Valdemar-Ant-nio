@@ -48,7 +48,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if ((email === 'controlbusinesssolution@gmail.com' && password === 'controlbusiness') || 
           (email === 'litovaldemar@gmail.com')) {
         try {
-          await createUserWithEmailAndPassword(auth, email, password);
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          
+          // Add to users collection if it's the specific user
+          if (email === 'controlbusinesssolution@gmail.com') {
+            const { getFirestore, doc, setDoc } = await import('firebase/firestore');
+            const db = getFirestore();
+            await setDoc(doc(db, 'users', userCredential.user.uid), {
+              email: email,
+              role: 'user',
+              createdAt: new Date().toISOString()
+            });
+          }
+          
           return true;
         } catch (createError: any) {
           console.error('Error creating user:', createError.message);

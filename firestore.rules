@@ -64,14 +64,19 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.token.email == 'litovaldemar@gmail.com';
     }
 
+    // Check if user is allowed (admin or exists in users collection)
+    function isAllowedUser() {
+      return isAdmin() || exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
     // Check if user owns the resource (for user-owned documents)
     function isOwner(userId) {
-      return isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      return isAuthenticated() && isAllowedUser() && (request.auth.uid == userId || isAdmin());
     }
     
     // Check if user is owner based on document's userId field
     function isDocOwner() {
-      return isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
+      return isAuthenticated() && isAllowedUser() && (request.auth.uid == resource.data.userId || isAdmin());
     }
     
     // Verify userId hasn't been tampered with on create
@@ -176,37 +181,44 @@ service cloud.firestore {
     // Rules
     // ===============================================================
 
+    match /users/{userId} {
+      allow read: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+      allow create: if isAdmin() || (isAuthenticated() && request.auth.uid == userId && request.auth.token.email == 'controlbusinesssolution@gmail.com');
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     match /companies/{companyId} {
       allow read: if isDocOwner() || isAdmin();
-      allow create: if isAuthenticated() && uidUnchanged() && isValidCompany(request.resource.data);
+      allow create: if isAuthenticated() && isAllowedUser() && uidUnchanged() && isValidCompany(request.resource.data);
       allow update: if (isDocOwner() && uidNotModified() && isValidCompany(request.resource.data)) || (isAdmin() && isValidCompany(request.resource.data));
       allow delete: if isDocOwner() || isAdmin();
     }
 
     match /transactions/{transactionId} {
       allow read: if isDocOwner();
-      allow create: if isAuthenticated() && uidUnchanged() && isValidTransaction(request.resource.data);
+      allow create: if isAuthenticated() && isAllowedUser() && uidUnchanged() && isValidTransaction(request.resource.data);
       allow update: if isDocOwner() && uidNotModified() && isValidTransaction(request.resource.data);
       allow delete: if isDocOwner();
     }
 
     match /customers/{customerId} {
       allow read: if isDocOwner();
-      allow create: if isAuthenticated() && uidUnchanged() && isValidCustomer(request.resource.data);
+      allow create: if isAuthenticated() && isAllowedUser() && uidUnchanged() && isValidCustomer(request.resource.data);
       allow update: if isDocOwner() && uidNotModified() && isValidCustomer(request.resource.data);
       allow delete: if isDocOwner();
     }
 
     match /suppliers/{supplierId} {
       allow read: if isDocOwner();
-      allow create: if isAuthenticated() && uidUnchanged() && isValidSupplier(request.resource.data);
+      allow create: if isAuthenticated() && isAllowedUser() && uidUnchanged() && isValidSupplier(request.resource.data);
       allow update: if isDocOwner() && uidNotModified() && isValidSupplier(request.resource.data);
       allow delete: if isDocOwner();
     }
 
     match /products/{productId} {
       allow read: if isDocOwner();
-      allow create: if isAuthenticated() && uidUnchanged() && isValidProduct(request.resource.data);
+      allow create: if isAuthenticated() && isAllowedUser() && uidUnchanged() && isValidProduct(request.resource.data);
       allow update: if isDocOwner() && uidNotModified() && isValidProduct(request.resource.data);
       allow delete: if isDocOwner();
     }

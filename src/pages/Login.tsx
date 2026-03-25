@@ -39,7 +39,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface p-4">
+    <div className="min-h-[100dvh] flex items-center justify-center bg-surface p-4">
       <div className="max-w-md w-full bg-surface-container-lowest p-8 rounded-3xl shadow-[0_20px_40px_-12px_rgba(0,30,64,0.12)] border border-outline-variant/20">
         <div className="flex flex-col items-center mb-10">
           <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center text-on-primary font-black text-4xl mb-6 shadow-lg shadow-primary/30">
