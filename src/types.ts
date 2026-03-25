@@ -14,6 +14,7 @@ export interface CompanyInfo {
   userId?: string;
   subscription?: Subscription;
   pin?: string;
+  sector?: 'servicos' | 'comercio' | 'misto';
 }
 
 export type TransactionType = 'receita' | 'despesa';

@@ -43,6 +43,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     } catch (error: any) {
       console.error('Error logging in:', error.message);
+      
+      // Auto-register specific requested email if it doesn't exist
+      if (email === 'controlbusinesssolution@gmail.com' && password === 'controlbusiness') {
+        try {
+          await createUserWithEmailAndPassword(auth, email, password);
+          return true;
+        } catch (createError: any) {
+          console.error('Error creating user:', createError.message);
+        }
+      }
+      
       return false;
     }
   };

@@ -19,7 +19,8 @@ const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) =>
     nuit: '',
     contact: '',
     location: '',
-    pin: ''
+    pin: '',
+    sector: 'comercio' as 'servicos' | 'comercio' | 'misto'
   });
 
   useEffect(() => {
@@ -30,13 +31,13 @@ const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) =>
 
   useEffect(() => {
     if (isOpen && isCreating) {
-      setFormData({ name: '', nuit: '', contact: '', location: '', pin: '' });
+      setFormData({ name: '', nuit: '', contact: '', location: '', pin: '', sector: 'comercio' });
     }
   }, [isOpen, isCreating]);
 
   useEffect(() => {
     if (isOpen && !isCreating && companyInfo) {
-      setFormData({ ...companyInfo, pin: companyInfo.pin || '' });
+      setFormData({ ...companyInfo, pin: companyInfo.pin || '', sector: companyInfo.sector || 'comercio' });
     }
   }, [isOpen, isCreating, companyInfo]);
 
@@ -228,6 +229,18 @@ const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) =>
                     className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                     placeholder="Ex: Av. 24 de Julho, Maputo"
                   />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">Sector de Actividade</label>
+                  <select
+                    value={formData.sector}
+                    onChange={(e) => setFormData({ ...formData, sector: e.target.value as any })}
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                  >
+                    <option value="comercio">Compra e Venda de Produtos</option>
+                    <option value="servicos">Prestação de Serviços</option>
+                    <option value="misto">Misto (Compra/Venda e Serviços)</option>
+                  </select>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-bold text-on-surface-variant mb-1">PIN de Acesso (Opcional)</label>

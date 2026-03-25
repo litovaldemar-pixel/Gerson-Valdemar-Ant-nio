@@ -9,41 +9,33 @@ const Dashboard = () => {
 
   const filterByDate = (dateString: string) => {
     if (dateFilter === 'todos') return true;
-    const date = new Date(dateString);
+    
     const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
     
     if (dateFilter === 'hoje') {
-      return date.toDateString() === now.toDateString();
+      return dateString === todayStr;
     }
     if (dateFilter === 'semana') {
       const startOfWeek = new Date(now);
       startOfWeek.setDate(now.getDate() - now.getDay());
-      return date >= startOfWeek;
+      const startStr = startOfWeek.toISOString().split('T')[0];
+      return dateString >= startStr && dateString <= todayStr;
     }
     if (dateFilter === 'mes') {
-      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+      return dateString >= startOfMonth && dateString <= endOfMonth;
     }
     if (dateFilter === 'ano') {
-      return date.getFullYear() === now.getFullYear();
+      const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+      const endOfYear = new Date(now.getFullYear(), 11, 31).toISOString().split('T')[0];
+      return dateString >= startOfYear && dateString <= endOfYear;
     }
     return true;
   };
 
-  const filteredTransactions = transactions.filter(t => {
-    if (!filterByDate(t.date)) return false;
-    
-    if (globalSearchTerm) {
-      const term = globalSearchTerm.toLowerCase();
-      const matchDescription = t.description.toLowerCase().includes(term);
-      const matchCategory = t.category.toLowerCase().includes(term);
-      const matchCustomer = t.customerId ? customers.find(c => c.id === t.customerId)?.name.toLowerCase().includes(term) : false;
-      const matchSupplier = t.supplierId ? suppliers.find(s => s.id === t.supplierId)?.name.toLowerCase().includes(term) : false;
-      
-      if (!matchDescription && !matchCategory && !matchCustomer && !matchSupplier) return false;
-    }
-    
-    return true;
-  });
+  const filteredTransactions = transactions.filter(t => filterByDate(t.date));
 
   const totalReceitas = filteredTransactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
   const totalDespesas = filteredTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);

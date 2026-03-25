@@ -8,22 +8,28 @@ const DRE = () => {
 
   const filterByDate = (dateString: string) => {
     if (dateFilter === 'todos') return true;
-    const date = new Date(dateString);
+    
     const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
     
     if (dateFilter === 'hoje') {
-      return date.toDateString() === now.toDateString();
+      return dateString === todayStr;
     }
     if (dateFilter === 'semana') {
       const startOfWeek = new Date(now);
       startOfWeek.setDate(now.getDate() - now.getDay());
-      return date >= startOfWeek;
+      const startStr = startOfWeek.toISOString().split('T')[0];
+      return dateString >= startStr && dateString <= todayStr;
     }
     if (dateFilter === 'mes') {
-      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+      return dateString >= startOfMonth && dateString <= endOfMonth;
     }
     if (dateFilter === 'ano') {
-      return date.getFullYear() === now.getFullYear();
+      const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+      const endOfYear = new Date(now.getFullYear(), 11, 31).toISOString().split('T')[0];
+      return dateString >= startOfYear && dateString <= endOfYear;
     }
     return true;
   };
@@ -38,26 +44,32 @@ const DRE = () => {
     .filter(t => t.type === 'receita')
     .reduce((acc, curr) => acc + curr.value, 0);
 
-  // Calculate taxes and CMV based on specific categories if they exist, otherwise use a default percentage for demonstration
-  const impostos = receitaBruta * 0.03; // ISPC Moçambique (3%)
+  const impostos = filteredTransactions
+    .filter(t => t.type === 'despesa' && (t.category === 'Impostos' || t.category === 'Estado'))
+    .reduce((acc, curr) => acc + curr.value, 0);
     
   const cmv = filteredTransactions
-    .filter(t => t.type === 'despesa' && (t.category === 'CMV' || t.category === 'Fornecedores'))
-    .reduce((acc, curr) => acc + curr.value, 0) || (receitaBruta * 0.2667);
+    .filter(t => t.type === 'despesa' && (t.category === 'Produto' || t.category === 'Fornecedores' || t.category === 'CMV' || t.supplierId))
+    .reduce((acc, curr) => acc + curr.value, 0);
     
   const margemContribuicao = receitaBruta - impostos - cmv;
 
-  const despesasAdmin = filteredTransactions
-    .filter(t => t.type === 'despesa' && (t.category === 'Operacional' || t.category === 'Infraestrutura' || t.category === 'Serviços'))
-    .reduce((acc, curr) => acc + curr.value, 0) || (receitaBruta * 0.1222);
-
   const folhaPagamento = filteredTransactions
-    .filter(t => t.type === 'despesa' && t.category === 'Pessoal')
-    .reduce((acc, curr) => acc + curr.value, 0) || (receitaBruta * 0.1889);
+    .filter(t => t.type === 'despesa' && (t.category === 'Pessoal' || t.category === 'Salário' || t.category === 'Assistência Médica'))
+    .reduce((acc, curr) => acc + curr.value, 0);
 
   const marketingVendas = filteredTransactions
     .filter(t => t.type === 'despesa' && t.category === 'Marketing')
-    .reduce((acc, curr) => acc + curr.value, 0) || (receitaBruta * 0.0278);
+    .reduce((acc, curr) => acc + curr.value, 0);
+
+  const despesasAdmin = filteredTransactions
+    .filter(t => t.type === 'despesa' && 
+      !(t.category === 'Impostos' || t.category === 'Estado') &&
+      !(t.category === 'Produto' || t.category === 'Fornecedores' || t.category === 'CMV' || t.supplierId) &&
+      !(t.category === 'Pessoal' || t.category === 'Salário' || t.category === 'Assistência Médica') &&
+      !(t.category === 'Marketing')
+    )
+    .reduce((acc, curr) => acc + curr.value, 0);
 
   const ebitda = margemContribuicao - despesasAdmin - folhaPagamento - marketingVendas;
 

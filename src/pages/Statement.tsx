@@ -23,7 +23,8 @@ const Statement = () => {
   
   const [endDate, setEndDate] = useState(() => {
     const date = new Date();
-    return date.toISOString().split('T')[0];
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return lastDay.toISOString().split('T')[0];
   });
 
   const filteredTransactions = useMemo(() => {
@@ -37,62 +38,78 @@ const Statement = () => {
 
   const balanceteData = useMemo(() => {
     const accountsMap: Record<string, AccountBalance> = {
-      '11': { conta: '11', descricao: 'Caixa', categoria: 'Ativos', debito: 0, credito: 0, movimentos: [] },
-      '12': { conta: '12', descricao: 'Bancos', categoria: 'Ativos', debito: 0, credito: 0, movimentos: [] },
-      '21': { conta: '21', descricao: 'Compras', categoria: 'Ativos', debito: 0, credito: 0, movimentos: [] },
-      '22': { conta: '22', descricao: 'Mercadorias', categoria: 'Ativos', debito: 0, credito: 0, movimentos: [] },
-      '31': { conta: '31', descricao: 'Clientes', categoria: 'Clientes', debito: 0, credito: 0, movimentos: [] },
-      '42': { conta: '42', descricao: 'Fornecedores', categoria: 'Fornecedores', debito: 0, credito: 0, movimentos: [] },
-      '44': { conta: '44', descricao: 'Estado', categoria: 'Passivos', debito: 0, credito: 0, movimentos: [] },
-      '51': { conta: '51', descricao: 'Capital', categoria: 'Capital', debito: 0, credito: 0, movimentos: [] },
-      '61': { conta: '61', descricao: 'Custo das Mercadorias Vendidas', categoria: 'Despesas', debito: 0, credito: 0, movimentos: [] },
-      '62': { conta: '62', descricao: 'Fornecimentos e Serviços de Terceiros', categoria: 'Despesas', debito: 0, credito: 0, movimentos: [] },
-      '63': { conta: '63', descricao: 'Gastos com o Pessoal', categoria: 'Despesas', debito: 0, credito: 0, movimentos: [] },
-      '64': { conta: '64', descricao: 'Impostos e Taxas', categoria: 'Despesas', debito: 0, credito: 0, movimentos: [] },
-      '68': { conta: '68', descricao: 'Outros Gastos', categoria: 'Despesas', debito: 0, credito: 0, movimentos: [] },
-      '71': { conta: '71', descricao: 'Vendas', categoria: 'Receitas', debito: 0, credito: 0, movimentos: [] },
-      '72': { conta: '72', descricao: 'Prestações de Serviços', categoria: 'Receitas', debito: 0, credito: 0, movimentos: [] },
-      '78': { conta: '78', descricao: 'Outros Rendimentos', categoria: 'Receitas', debito: 0, credito: 0, movimentos: [] },
+      '111': { conta: '111', descricao: 'Caixa Despesas', categoria: '11 Caixa', debito: 0, credito: 0, movimentos: [] },
+      '121': { conta: '121', descricao: 'Depósitos à Ordem', categoria: '12 Bancos', debito: 0, credito: 0, movimentos: [] },
+      '211': { conta: '211', descricao: 'Compras de Mercadorias', categoria: '21 Compras', debito: 0, credito: 0, movimentos: [] },
+      '261': { conta: '261', descricao: 'Matérias primas', categoria: '26 Matérias primas, auxiliares e materiais', debito: 0, credito: 0, movimentos: [] },
+      '321': { conta: '321', descricao: 'Edifícios e outras construções', categoria: '32 Activos tangíveis', debito: 0, credito: 0, movimentos: [] },
+      '381': { conta: '381', descricao: 'Amortizações acumuladas', categoria: '38 Amortizações acumuladas', debito: 0, credito: 0, movimentos: [] },
+      '411': { conta: '411', descricao: 'Clientes c/c', categoria: '41 Clientes', debito: 0, credito: 0, movimentos: [] },
+      '421': { conta: '421', descricao: 'Fornecedores c/c', categoria: '42 Fornecedores', debito: 0, credito: 0, movimentos: [] },
+      '441': { conta: '441', descricao: 'Imposto sobre o rendimento', categoria: '44 Estado', debito: 0, credito: 0, movimentos: [] },
+      '451': { conta: '451', descricao: 'Outros devedores', categoria: '45 Outros devedores', debito: 0, credito: 0, movimentos: [] },
+      '461': { conta: '461', descricao: 'Outros credores', categoria: '46 Outros credores', debito: 0, credito: 0, movimentos: [] },
+      '481': { conta: '481', descricao: 'Provisões para processos judiciais', categoria: '48 Provisões', debito: 0, credito: 0, movimentos: [] },
+      '491': { conta: '491', descricao: 'Acréscimos de rendimentos', categoria: '49 Acréscimos e diferimentos', debito: 0, credito: 0, movimentos: [] },
+      '511': { conta: '511', descricao: 'Capital social', categoria: '51 Capital', debito: 0, credito: 0, movimentos: [] },
+      '591': { conta: '591', descricao: 'Resultados transitados', categoria: '59 Resultados transitados', debito: 0, credito: 0, movimentos: [] },
+      '621': { conta: '621', descricao: 'Remunerações do pessoal', categoria: '62 Gastos com o pessoal', debito: 0, credito: 0, movimentos: [] },
+      '631': { conta: '631', descricao: 'Subcontratos', categoria: '63 Fornecimento e serviços de terceiros', debito: 0, credito: 0, movimentos: [] },
+      '681': { conta: '681', descricao: 'Impostos e taxas', categoria: '68 Outros gastos e perdas operacionais', debito: 0, credito: 0, movimentos: [] },
+      '711': { conta: '711', descricao: 'Vendas de mercadorias', categoria: '71 Vendas', debito: 0, credito: 0, movimentos: [] },
+      '721': { conta: '721', descricao: 'Prestação de serviços', categoria: '72 Prestação de serviços', debito: 0, credito: 0, movimentos: [] },
+      '781': { conta: '781', descricao: 'Juros obtidos', categoria: '78 Rendimentos e ganhos financeiros', debito: 0, credito: 0, movimentos: [] },
+      '881': { conta: '881', descricao: 'Resultado líquido do peródo', categoria: '88 Resultado líquido do peródo', debito: 0, credito: 0, movimentos: [] },
     };
 
     filteredTransactions.forEach(t => {
+      const isServicos = companyInfo?.sector === 'servicos';
+      const isComercio = companyInfo?.sector === 'comercio';
+      const isMisto = companyInfo?.sector === 'misto';
+
       if (t.type === 'receita') {
         // Debit Caixa/Bancos (11/12)
-        accountsMap['12'].debito += t.value;
-        accountsMap['12'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+        accountsMap['121'].debito += t.value;
+        accountsMap['121'].movimentos.push({ ...t, tipoMovimento: 'debito' });
         
         // Credit Vendas/Serviços (71/72)
-        if (t.category === 'Serviços') {
-          accountsMap['72'].credito += t.value;
-          accountsMap['72'].movimentos.push({ ...t, tipoMovimento: 'credito' });
+        if (isComercio || (isMisto && t.productId)) {
+          accountsMap['711'].credito += t.value;
+          accountsMap['711'].movimentos.push({ ...t, tipoMovimento: 'credito' });
         } else {
-          accountsMap['71'].credito += t.value;
-          accountsMap['71'].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          accountsMap['721'].credito += t.value;
+          accountsMap['721'].movimentos.push({ ...t, tipoMovimento: 'credito' });
         }
       } else {
         // Credit Caixa/Bancos (11/12)
-        accountsMap['12'].credito += t.value;
-        accountsMap['12'].movimentos.push({ ...t, tipoMovimento: 'credito' });
+        accountsMap['121'].credito += t.value;
+        accountsMap['121'].movimentos.push({ ...t, tipoMovimento: 'credito' });
         
         // Debit specific expense account
-        if (t.category === 'Produto' || t.supplierId) {
-          accountsMap['21'].debito += t.value;
-          accountsMap['21'].movimentos.push({ ...t, tipoMovimento: 'debito' });
-        } else if (t.category === 'Pessoal' || t.category === 'Salário' || t.category === 'Assistência Médica') {
-          accountsMap['63'].debito += t.value;
-          accountsMap['63'].movimentos.push({ ...t, tipoMovimento: 'debito' });
-        } else if (t.category === 'Impostos') {
-          accountsMap['64'].debito += t.value;
-          accountsMap['64'].movimentos.push({ ...t, tipoMovimento: 'debito' });
-        } else if (t.category === 'Estado') {
-          accountsMap['44'].debito += t.value;
-          accountsMap['44'].movimentos.push({ ...t, tipoMovimento: 'debito' });
-        } else if (t.category === 'Operacional' || t.category === 'Infraestrutura' || t.category === 'Marketing' || t.category === 'SaaS' || t.category === 'Água' || t.category === 'Energia' || t.category === 'Renda' || t.category === 'Combustível') {
-          accountsMap['62'].debito += t.value;
-          accountsMap['62'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+        const isSalary = t.category === 'Pessoal' || t.category === 'Salário' || t.category === 'Assistência Médica';
+
+        if (isSalary) {
+          accountsMap['621'].debito += t.value;
+          accountsMap['621'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+        } else if (isServicos) {
+          // Para empresas de serviços, todas as outras despesas vão para 63
+          accountsMap['631'].debito += t.value;
+          accountsMap['631'].movimentos.push({ ...t, tipoMovimento: 'debito' });
         } else {
-          accountsMap['68'].debito += t.value;
-          accountsMap['68'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          // Para empresas de comércio ou mistas
+          if (t.category === 'Produto' || t.supplierId) {
+            accountsMap['211'].debito += t.value;
+            accountsMap['211'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          } else if (t.category === 'Impostos' || t.category === 'Estado') {
+            accountsMap['441'].debito += t.value;
+            accountsMap['441'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          } else if (t.category === 'Operacional' || t.category === 'Infraestrutura' || t.category === 'Marketing' || t.category === 'SaaS' || t.category === 'Água' || t.category === 'Energia' || t.category === 'Renda' || t.category === 'Combustível') {
+            accountsMap['631'].debito += t.value;
+            accountsMap['631'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          } else {
+            accountsMap['681'].debito += t.value;
+            accountsMap['681'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          }
         }
       }
     });
@@ -248,16 +265,12 @@ const Statement = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low/50 print:bg-transparent print:border-b print:border-outline-variant/20">
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/20" rowSpan={2}>Conta</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/20" rowSpan={2}>Descrição</th>
-                <th className="px-6 py-2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center border-b border-outline-variant/20" colSpan={2}>Movimentos</th>
-                <th className="px-6 py-2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center border-b border-outline-variant/20" colSpan={2}>Saldos</th>
-              </tr>
-              <tr className="bg-surface-container-low/30 print:bg-transparent print:border-b print:border-outline-variant/20">
-                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Crédito (Saída)</th>
-                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Débito (Entrada)</th>
-                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Credor</th>
-                <th className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Devedor</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/20">Conta</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/20">Descrição</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Mov. Débito</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Mov. Crédito</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Saldo Débito</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Saldo Crédito</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5 print:divide-outline-variant/20">
@@ -270,12 +283,21 @@ const Statement = () => {
               ) : (
                 Object.entries(groupedBalancete).map(([categoria, accounts]) => {
                   const accs = accounts as AccountBalance[];
+                  const catDebito = accs.reduce((sum, acc) => sum + acc.debito, 0);
+                  const catCredito = accs.reduce((sum, acc) => sum + acc.credito, 0);
+                  const catSaldoDevedor = accs.reduce((sum, acc) => sum + (acc.saldoDevedor || 0), 0);
+                  const catSaldoCredor = accs.reduce((sum, acc) => sum + (acc.saldoCredor || 0), 0);
+                  
                   return (
                     <React.Fragment key={categoria}>
-                      <tr className="bg-surface-container-low/20 print:bg-transparent">
-                        <td colSpan={6} className="px-6 py-2 text-xs font-black uppercase tracking-widest text-primary border-y border-outline-variant/10">
+                      <tr className="bg-surface-container-low border-b border-outline-variant/20">
+                        <td colSpan={2} className="px-6 py-3 text-sm font-bold text-primary">
                           {categoria}
                         </td>
+                        <td className="px-6 py-3 text-sm font-bold text-right text-on-surface-variant"></td>
+                        <td className="px-6 py-3 text-sm font-bold text-right text-on-surface-variant"></td>
+                        <td className="px-6 py-3 text-sm font-bold text-right text-secondary"></td>
+                        <td className="px-6 py-3 text-sm font-bold text-right text-error"></td>
                       </tr>
                       {accs.map(acc => (
                         <React.Fragment key={acc.conta}>
@@ -283,30 +305,47 @@ const Statement = () => {
                             onClick={() => toggleMovements(acc.conta)}
                             className="hover:bg-surface-container-low/30 transition-colors print:hover:bg-transparent bg-surface-container-lowest cursor-pointer group"
                           >
-                            <td className="px-6 py-3 text-sm font-mono font-bold text-primary flex items-center gap-2">
+                            <td className="px-6 py-3 text-sm font-mono text-on-surface-variant flex items-center gap-2 pl-10">
                               <span className={`material-symbols-outlined text-sm transition-transform ${showMovements[acc.conta] ? 'rotate-180' : ''}`}>
                                 expand_more
                               </span>
                               {acc.conta}
                             </td>
-                            <td className="px-6 py-3 text-sm font-bold text-on-surface-variant">{acc.descricao}</td>
-                            <td className="px-6 py-3 text-sm font-bold text-right text-on-surface-variant">{acc.credito > 0 ? formatCurrency(acc.credito) : '-'}</td>
-                            <td className="px-6 py-3 text-sm font-bold text-right text-on-surface-variant">{acc.debito > 0 ? formatCurrency(acc.debito) : '-'}</td>
-                            <td className="px-6 py-3 text-sm font-bold text-right text-error">{(acc.saldoCredor || 0) > 0 ? formatCurrency(acc.saldoCredor!) : '-'}</td>
-                            <td className="px-6 py-3 text-sm font-bold text-right text-secondary">{(acc.saldoDevedor || 0) > 0 ? formatCurrency(acc.saldoDevedor!) : '-'}</td>
+                            <td className="px-6 py-3 text-sm text-on-surface-variant">{acc.descricao}</td>
+                            <td className="px-6 py-3 text-sm text-right text-on-surface-variant">{acc.debito > 0 ? formatCurrency(acc.debito) : '0,00'}</td>
+                            <td className="px-6 py-3 text-sm text-right text-on-surface-variant">{acc.credito > 0 ? formatCurrency(acc.credito) : '0,00'}</td>
+                            <td className="px-6 py-3 text-sm text-right text-secondary">{(acc.saldoDevedor || 0) > 0 ? formatCurrency(acc.saldoDevedor!) : '0,00'}</td>
+                            <td className="px-6 py-3 text-sm text-right text-error">{(acc.saldoCredor || 0) > 0 ? formatCurrency(acc.saldoCredor!) : '0,00'}</td>
                           </tr>
                           {showMovements[acc.conta] && acc.movimentos.map((mov, idx) => (
                             <tr key={`${acc.conta}-mov-${idx}`} className="text-xs bg-surface-container-lowest/50 border-b border-outline-variant/5">
                               <td className="px-6 py-2 text-right text-on-surface-variant/70 font-mono">{new Date(mov.date).toLocaleDateString('pt-MZ')}</td>
-                              <td className="px-6 py-2 pl-10 text-on-surface-variant/80">{mov.description}</td>
-                              <td className="px-6 py-2 text-right text-on-surface-variant/80">{mov.tipoMovimento === 'credito' ? formatCurrency(mov.value) : '-'}</td>
-                              <td className="px-6 py-2 text-right text-on-surface-variant/80">{mov.tipoMovimento === 'debito' ? formatCurrency(mov.value) : '-'}</td>
+                              <td className="px-6 py-2 pl-16 text-on-surface-variant/80">{mov.description}</td>
+                              <td className="px-6 py-2 text-right text-on-surface-variant/80">{mov.tipoMovimento === 'debito' ? formatCurrency(mov.value) : '0,00'}</td>
+                              <td className="px-6 py-2 text-right text-on-surface-variant/80">{mov.tipoMovimento === 'credito' ? formatCurrency(mov.value) : '0,00'}</td>
                               <td className="px-6 py-2"></td>
                               <td className="px-6 py-2"></td>
                             </tr>
                           ))}
                         </React.Fragment>
                       ))}
+                      <tr className="bg-surface-container-lowest border-t border-outline-variant/10">
+                        <td colSpan={2} className="px-6 py-2 text-sm font-bold text-right text-on-surface-variant">
+                          Soma Líquida
+                        </td>
+                        <td className="px-6 py-2 text-sm font-bold text-right text-on-surface-variant">{catDebito > 0 ? formatCurrency(catDebito) : '0,00'}</td>
+                        <td className="px-6 py-2 text-sm font-bold text-right text-on-surface-variant">{catCredito > 0 ? formatCurrency(catCredito) : '0,00'}</td>
+                        <td className="px-6 py-2 text-sm font-bold text-right text-secondary">{catSaldoDevedor > 0 ? formatCurrency(catSaldoDevedor) : '0,00'}</td>
+                        <td className="px-6 py-2 text-sm font-bold text-right text-error">{catSaldoCredor > 0 ? formatCurrency(catSaldoCredor) : '0,00'}</td>
+                      </tr>
+                      <tr className="bg-surface-container-lowest border-b-2 border-outline-variant/20">
+                        <td colSpan={2} className="px-6 py-2 text-sm font-bold text-right text-on-surface-variant">
+                          Soma Saldos
+                        </td>
+                        <td colSpan={2} className="px-6 py-2"></td>
+                        <td className="px-6 py-2 text-sm font-bold text-right text-secondary">{catSaldoDevedor > 0 ? formatCurrency(catSaldoDevedor) : '0,00'}</td>
+                        <td className="px-6 py-2 text-sm font-bold text-right text-error">{catSaldoCredor > 0 ? formatCurrency(catSaldoCredor) : '0,00'}</td>
+                      </tr>
                     </React.Fragment>
                   );
                 })
@@ -316,19 +355,31 @@ const Statement = () => {
               <tfoot className="bg-surface-container-low/50 print:bg-transparent">
                 <tr>
                   <td colSpan={2} className="px-6 py-4 text-right font-black text-primary uppercase tracking-wider border-t-2 border-outline-variant/30">
-                    Totais:
-                  </td>
-                  <td className="px-6 py-4 text-right font-black text-primary border-t-2 border-outline-variant/30">
-                    {formatCurrency(totalCredito)}
+                    Soma Líquida
                   </td>
                   <td className="px-6 py-4 text-right font-black text-primary border-t-2 border-outline-variant/30">
                     {formatCurrency(totalDebito)}
                   </td>
-                  <td className="px-6 py-4 text-right font-black text-error border-t-2 border-outline-variant/30">
-                    {formatCurrency(totalSaldoCredor)}
+                  <td className="px-6 py-4 text-right font-black text-primary border-t-2 border-outline-variant/30">
+                    {formatCurrency(totalCredito)}
                   </td>
                   <td className="px-6 py-4 text-right font-black text-secondary border-t-2 border-outline-variant/30">
                     {formatCurrency(totalSaldoDevedor)}
+                  </td>
+                  <td className="px-6 py-4 text-right font-black text-error border-t-2 border-outline-variant/30">
+                    {formatCurrency(totalSaldoCredor)}
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={2} className="px-6 py-4 text-right font-black text-primary uppercase tracking-wider border-b-2 border-outline-variant/30">
+                    Soma Saldos
+                  </td>
+                  <td colSpan={2} className="px-6 py-4 border-b-2 border-outline-variant/30"></td>
+                  <td className="px-6 py-4 text-right font-black text-secondary border-b-2 border-outline-variant/30">
+                    {formatCurrency(totalSaldoDevedor)}
+                  </td>
+                  <td className="px-6 py-4 text-right font-black text-error border-b-2 border-outline-variant/30">
+                    {formatCurrency(totalSaldoCredor)}
                   </td>
                 </tr>
               </tfoot>
