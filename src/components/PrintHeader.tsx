@@ -8,6 +8,13 @@ const PrintHeader = () => {
 
   return (
     <div className="hidden print:flex flex-col items-center justify-center w-full border-b-2 border-slate-800 pb-4 mb-8">
+      {companyInfo.logoUrl && (
+        <img 
+          src={companyInfo.logoUrl} 
+          alt="Company Logo" 
+          className="w-24 h-24 object-contain mb-4"
+        />
+      )}
       <h1 className="text-3xl font-black font-headline text-slate-900 uppercase tracking-widest mb-2">
         {companyInfo.name}
       </h1>

@@ -12,7 +12,7 @@ interface HeaderProps {
 
 const Header = ({ onMenuClick, hideMenuButton = false }: HeaderProps) => {
   const { logout } = useAuth();
-  const { companyInfo, globalSearchTerm, setGlobalSearchTerm } = useAppContext();
+  const { companyInfo, globalSearchTerm, setGlobalSearchTerm, setCurrentCompanyId } = useAppContext();
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -68,18 +68,28 @@ const Header = ({ onMenuClick, hideMenuButton = false }: HeaderProps) => {
             {companyInfo?.name || 'Financial Architect'}
           </button>
           <button 
+            onClick={() => {
+              setCurrentCompanyId(null);
+              navigate('/');
+            }}
+            title="Menu Principal"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-outline hover:text-primary hover:bg-primary-fixed/20 transition-colors active:scale-95 ml-2"
+          >
+            <span className="material-symbols-outlined text-xl">home</span>
+          </button>
+          <button 
             onClick={() => setIsPasswordModalOpen(true)}
             title="Mudar Senha"
-            className="w-8 h-8 flex items-center justify-center rounded-full text-outline hover:text-primary hover:bg-primary-fixed/20 transition-colors active:scale-95 ml-2"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-outline hover:text-primary hover:bg-primary-fixed/20 transition-colors active:scale-95 ml-1"
           >
             <span className="material-symbols-outlined text-xl">lock_reset</span>
           </button>
           <button 
             onClick={handleLogout}
-            title="Sair"
+            title="Sair do Aplicativo"
             className="w-8 h-8 flex items-center justify-center rounded-full text-error hover:bg-error/10 transition-colors active:scale-95 ml-1"
           >
-            <span className="material-symbols-outlined text-xl">logout</span>
+            <span className="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
       </div>

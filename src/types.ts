@@ -12,6 +12,7 @@ export interface CompanyInfo {
   contact: string;
   location: string;
   userId?: string;
+  logoUrl?: string;
   subscription?: Subscription;
   pin?: string;
   sector?: 'servicos' | 'comercio' | 'misto';

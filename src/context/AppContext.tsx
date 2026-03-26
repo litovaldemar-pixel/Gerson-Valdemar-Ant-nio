@@ -68,7 +68,7 @@ interface AppContextType {
   
   companies: CompanyInfo[];
   currentCompanyId: string | null;
-  setCurrentCompanyId: (id: string) => void;
+  setCurrentCompanyId: (id: string | null) => void;
   addCompany: (company: Omit<CompanyInfo, 'id'>) => Promise<void>;
   updateCompany: (id: string, data: Partial<CompanyInfo>) => Promise<void>;
   deleteCompany: (id: string) => Promise<void>;
@@ -199,7 +199,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [allTransactions, allCustomers, allSuppliers, allProducts, currentCompanyId, companies]);
 
-  const handleSetCurrentCompanyId = (id: string) => {
+  const handleSetCurrentCompanyId = (id: string | null) => {
+    if (id === null) {
+      setCurrentCompanyId(null);
+      localStorage.removeItem('@FinancialArchitect:currentCompanyId');
+      return;
+    }
     const targetCompany = companies.find(c => c.id === id);
     if (targetCompany && targetCompany.pin) {
       setPendingCompanyId(id);

@@ -9,7 +9,7 @@ interface CustomerStatementModalProps {
 }
 
 const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatementModalProps) => {
-  const { transactions, products } = useAppContext();
+  const { transactions, products, companyInfo } = useAppContext();
   
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
@@ -152,7 +152,14 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
         {/* Printable Content */}
         <div className="p-6 overflow-y-auto flex-1 print:overflow-visible print:p-0" id="statement-content">
           {/* Print Header */}
-          <div className="hidden print:block text-center mb-8 border-b border-slate-300 pb-6">
+          <div className="hidden print:flex flex-col items-center text-center mb-8 border-b border-slate-300 pb-6">
+            {companyInfo?.logoUrl && (
+              <img 
+                src={companyInfo.logoUrl} 
+                alt="Company Logo" 
+                className="w-20 h-20 object-contain mb-4"
+              />
+            )}
             <h1 className="text-2xl font-black uppercase tracking-wider mb-2">Balancete de Cliente</h1>
             <p className="text-lg font-bold text-slate-800">{customer.name}</p>
             <p className="text-sm text-slate-600">Documento: {customer.document}</p>

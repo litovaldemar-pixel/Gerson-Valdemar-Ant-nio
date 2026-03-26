@@ -8,6 +8,7 @@ const SubscriptionLock = () => {
   const { logout, user } = useAuth();
   const [showSwitch, setShowSwitch] = useState(false);
   const [transactionId, setTransactionId] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'mpesa' | 'emola'>('mpesa');
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState('');
 
@@ -16,6 +17,8 @@ const SubscriptionLock = () => {
     user?.email?.toLowerCase().includes('admin') ||
     user?.email?.toLowerCase().includes('gerson') ||
     user?.email?.toLowerCase() === 'teste@teste.com';
+
+  const paymentRef = companyInfo?.id ? `APPK-${companyInfo.id.substring(0, 6).toUpperCase()}` : 'APPK-000000';
 
   const handleDeveloperAction = async (action: '30days' | '1year' | 'deactivate') => {
     if (!companyInfo) return;
@@ -52,7 +55,7 @@ const SubscriptionLock = () => {
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!transactionId || transactionId.length < 5) {
+    if (transactionId.length < 5) {
       setError('Por favor, insira um ID de transação válido.');
       return;
     }
@@ -60,10 +63,13 @@ const SubscriptionLock = () => {
     setVerifying(true);
     setError('');
 
-    // Simulate automatic verification
+    // Simulate automatic verification with Firebase
     setTimeout(async () => {
       try {
         if (!companyInfo) return;
+        
+        // In a real app, we would verify the transaction ID with an API here
+        // For now, we simulate a successful payment validation
         
         const nextMonth = new Date();
         nextMonth.setMonth(nextMonth.getMonth() + 1);
@@ -105,21 +111,24 @@ const SubscriptionLock = () => {
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-primary">payments</span>
-              Pagamento Móvel
+              Pagamento de Serviços
             </h3>
             <span className="text-xl font-black text-primary">5.000,00 MT</span>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-outline-variant/20">
-              <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-1">M-Pesa (Vodacom)</p>
-              <p className="text-lg font-black text-primary">848807062</p>
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl text-center">
+              <p className="text-[10px] font-bold uppercase text-primary tracking-widest mb-1">Entidade</p>
+              <p className="text-2xl font-black text-primary font-mono tracking-widest">800900</p>
             </div>
-            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-outline-variant/20">
-              <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-1">E-mola (Movitel)</p>
-              <p className="text-lg font-black text-primary">871788070</p>
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl text-center">
+              <p className="text-[10px] font-bold uppercase text-primary tracking-widest mb-1">Referência</p>
+              <p className="text-2xl font-black text-primary font-mono tracking-widest">{paymentRef}</p>
             </div>
           </div>
+          <p className="text-[10px] text-on-surface-variant text-center font-bold uppercase tracking-widest">
+            Válido para M-Pesa e E-mola
+          </p>
           
           <p className="text-[10px] text-on-surface-variant text-center italic">
             O sistema desbloqueia automaticamente após a confirmação do ID da transação.
@@ -128,13 +137,13 @@ const SubscriptionLock = () => {
 
         <form onSubmit={handleVerify} className="space-y-4 mb-8">
           <div className="space-y-2 text-left">
-            <label className="text-xs font-bold text-on-surface-variant ml-1 uppercase tracking-widest">ID da Transação</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1 uppercase tracking-widest">ID da Transação (Recebido por SMS)</label>
             <input 
               type="text"
               placeholder="Ex: 8J3K9L2M..."
-              className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-outline-variant/30 rounded-xl focus:ring-2 focus:ring-primary outline-none font-mono tracking-wider"
+              className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-outline-variant/30 rounded-xl focus:ring-2 focus:ring-primary outline-none font-mono tracking-wider uppercase"
               value={transactionId}
-              onChange={(e) => setTransactionId(e.target.value)}
+              onChange={(e) => setTransactionId(e.target.value.toUpperCase())}
               required
             />
           </div>
@@ -143,13 +152,13 @@ const SubscriptionLock = () => {
 
           <button 
             type="submit"
-            disabled={verifying}
+            disabled={verifying || transactionId.length < 5}
             className="w-full bg-primary text-on-primary px-6 py-4 rounded-xl font-black text-lg shadow-lg hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
           >
             {verifying ? (
               <>
                 <div className="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
-                Verificando...
+                Verificando M-Pesa / E-mola...
               </>
             ) : (
               <>
@@ -217,23 +226,35 @@ const SubscriptionLock = () => {
             </div>
           )}
 
-          <div className="pt-4 flex gap-3">
+          <div className="pt-4 flex flex-col gap-3">
+            <div className="flex gap-3">
+              <button 
+                onClick={() => {
+                  setCurrentCompanyId(null);
+                  window.location.href = '/';
+                }}
+                className="flex-1 bg-surface-container-high text-on-surface px-4 py-3 rounded-xl font-bold hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 text-sm"
+              >
+                <span className="material-symbols-outlined text-lg">home</span>
+                Menu Principal
+              </button>
+              <button 
+                onClick={async () => {
+                  await logout();
+                  window.location.href = '/';
+                }}
+                className="flex-1 bg-error/10 text-error px-4 py-3 rounded-xl font-bold hover:bg-error/20 transition-colors flex items-center justify-center gap-2 text-sm"
+              >
+                <span className="material-symbols-outlined text-lg">close</span>
+                Sair do App
+              </button>
+            </div>
             <button 
-              onClick={() => window.location.href = 'https://wa.me/258848807062'}
-              className="flex-1 bg-secondary/10 text-secondary px-4 py-3 rounded-xl font-bold hover:bg-secondary/20 transition-colors flex items-center justify-center gap-2 text-sm"
+              onClick={() => window.location.href = 'https://wa.me/258871788070'}
+              className="w-full bg-[#25D366]/10 text-[#25D366] px-4 py-3 rounded-xl font-bold hover:bg-[#25D366]/20 transition-colors flex items-center justify-center gap-2 text-sm"
             >
               <span className="material-symbols-outlined text-lg">support_agent</span>
-              Suporte
-            </button>
-            <button 
-              onClick={async () => {
-                await logout();
-                window.location.href = '/';
-              }}
-              className="flex-1 bg-error/10 text-error px-4 py-3 rounded-xl font-bold hover:bg-error/20 transition-colors flex items-center justify-center gap-2 text-sm"
-            >
-              <span className="material-symbols-outlined text-lg">logout</span>
-              Sair
+              Suporte via WhatsApp
             </button>
           </div>
           <div className="pt-4 text-center">

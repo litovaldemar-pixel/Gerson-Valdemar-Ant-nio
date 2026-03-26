@@ -21,7 +21,8 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
     contact: '',
     location: '',
     pin: '',
-    sector: 'comercio' as 'servicos' | 'comercio' | 'misto'
+    sector: 'comercio' as 'servicos' | 'comercio' | 'misto',
+    logoUrl: ''
   });
 
   useEffect(() => {
@@ -36,13 +37,13 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
 
   useEffect(() => {
     if (isOpen && isCreating) {
-      setFormData({ name: '', nuit: '', contact: '', location: '', pin: '', sector: 'comercio' });
+      setFormData({ name: '', nuit: '', contact: '', location: '', pin: '', sector: 'comercio', logoUrl: '' });
     }
   }, [isOpen, isCreating]);
 
   useEffect(() => {
     if (isOpen && !isCreating && companyInfo) {
-      setFormData({ ...companyInfo, pin: companyInfo.pin || '', sector: companyInfo.sector || 'comercio' });
+      setFormData({ ...companyInfo, pin: companyInfo.pin || '', sector: companyInfo.sector || 'comercio', logoUrl: companyInfo.logoUrl || '' });
     }
   }, [isOpen, isCreating, companyInfo]);
 
@@ -64,6 +65,21 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
   const handleSelectCompany = (id: string) => {
     setCurrentCompanyId(id);
     setIsCreating(false);
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) { // 1MB limit
+        alert('O logotipo deve ter no máximo 1MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, logoUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -105,10 +121,14 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                       : 'hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                   }`}
                 >
-                  <div className={`w-8 h-8 rounded flex items-center justify-center font-bold shrink-0 ${
+                  <div className={`w-8 h-8 rounded flex items-center justify-center font-bold shrink-0 overflow-hidden ${
                     currentCompanyId === c.id && !isCreating ? 'bg-white/20' : 'bg-primary/10 text-primary'
                   }`}>
-                    {c.name.charAt(0).toUpperCase()}
+                    {c.logoUrl ? (
+                      <img src={c.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                    ) : (
+                      c.name.charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div className="flex-1 overflow-hidden">
                     <p className="font-bold truncate text-sm">{c.name}</p>
@@ -191,6 +211,41 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 flex items-center gap-4 mb-2">
+                  <div className="w-20 h-20 rounded-xl bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-outline-variant/30 flex items-center justify-center overflow-hidden shrink-0 relative group">
+                    {formData.logoUrl ? (
+                      <>
+                        <img src={formData.logoUrl} alt="Logo Preview" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="material-symbols-outlined text-white">edit</span>
+                        </div>
+                      </>
+                    ) : (
+                      <span className="material-symbols-outlined text-3xl text-outline-variant">add_photo_alternate</span>
+                    )}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleLogoUpload}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      title="Alterar Logotipo"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-on-surface">Logotipo da Empresa</h3>
+                    <p className="text-xs text-on-surface-variant">Recomendado: Imagem quadrada, máx. 1MB.</p>
+                    {formData.logoUrl && (
+                      <button 
+                        type="button" 
+                        onClick={() => setFormData(prev => ({ ...prev, logoUrl: '' }))}
+                        className="text-xs text-error font-bold mt-1 hover:underline"
+                      >
+                        Remover logotipo
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-bold text-on-surface-variant mb-1">Nome do Estabelecimento / Empresa</label>
                   <input

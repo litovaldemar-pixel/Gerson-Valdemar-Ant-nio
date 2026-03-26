@@ -67,7 +67,14 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
         {/* Receipt Content - This is what gets printed */}
         <div className="p-6 bg-white text-slate-900 print:p-4 overflow-y-auto" id="receipt-content">
           {/* Company Header */}
-          <div className="text-center mb-4 border-b border-dashed border-slate-300 pb-4">
+          <div className="text-center mb-4 border-b border-dashed border-slate-300 pb-4 flex flex-col items-center">
+            {companyInfo?.logoUrl && (
+              <img 
+                src={companyInfo.logoUrl} 
+                alt="Company Logo" 
+                className="w-16 h-16 object-contain mb-2"
+              />
+            )}
             <h1 className="text-xl font-black uppercase tracking-wider mb-1">{companyInfo?.name || 'SUA EMPRESA'}</h1>
             {companyInfo?.nuit && <p className="text-[10px] text-slate-600 font-medium">NUIT: {companyInfo.nuit}</p>}
             {companyInfo?.location && <p className="text-[10px] text-slate-600">{companyInfo.location}</p>}

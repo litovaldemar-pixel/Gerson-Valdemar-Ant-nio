@@ -45,8 +45,12 @@ const Home = () => {
                 onClick={() => handleSelectCompany(company.id)}
                 className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-left group flex flex-col h-full"
               >
-                <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined">storefront</span>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform overflow-hidden">
+                  {company.logoUrl ? (
+                    <img src={company.logoUrl} alt={company.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="material-symbols-outlined">storefront</span>
+                  )}
                 </div>
                 <h3 className="font-bold text-lg text-on-surface mb-1">{company.name}</h3>
                 <p className="text-sm text-on-surface-variant mb-4 flex-1">NUIT: {company.nuit}</p>
@@ -93,8 +97,12 @@ const Home = () => {
             onClick={() => handleSelectCompany(company.id)}
             className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-left group flex flex-col h-full"
           >
-            <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined">storefront</span>
+            <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform overflow-hidden">
+              {company.logoUrl ? (
+                <img src={company.logoUrl} alt={company.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="material-symbols-outlined">storefront</span>
+              )}
             </div>
             <h3 className="font-bold text-lg text-on-surface mb-1">{company.name}</h3>
             <p className="text-sm text-on-surface-variant mb-4 flex-1">NUIT: {company.nuit}</p>

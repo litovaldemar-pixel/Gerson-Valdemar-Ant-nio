@@ -11,7 +11,7 @@ interface SidebarProps {
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const { logout, user } = useAuth();
-  const { companyInfo } = useAppContext();
+  const { companyInfo, setCurrentCompanyId } = useAppContext();
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCreatingMode, setIsCreatingMode] = useState(false);
@@ -31,8 +31,12 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     <aside className={`fixed left-0 top-0 h-full flex flex-col py-6 w-64 bg-slate-100 dark:bg-slate-800/50 z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} print:hidden`}>
       <div className="px-6 mb-8 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded flex items-center justify-center text-on-primary font-black text-xl">
-            {companyInfo?.name ? companyInfo.name.charAt(0).toUpperCase() : 'C'}
+          <div className="w-10 h-10 bg-primary rounded flex items-center justify-center text-on-primary font-black text-xl overflow-hidden shrink-0">
+            {companyInfo?.logoUrl ? (
+              <img src={companyInfo.logoUrl} alt={companyInfo.name} className="w-full h-full object-cover" />
+            ) : (
+              companyInfo?.name ? companyInfo.name.charAt(0).toUpperCase() : 'C'
+            )}
           </div>
           <button 
             onClick={() => {
@@ -157,7 +161,10 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         </NavLink>
         <NavLink
           to="/"
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            setCurrentCompanyId(null);
+          }}
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
               isActive
@@ -166,8 +173,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             }`
           }
         >
-          <span className="material-symbols-outlined">domain</span>
-          <span>Trocar Empresa</span>
+          <span className="material-symbols-outlined">home</span>
+          <span>Menu Principal</span>
         </NavLink>
         <button
           onClick={() => {
@@ -186,8 +193,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           onClick={handleLogout}
           className="w-full py-3 bg-error/10 text-error hover:bg-error/20 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 duration-200 transition-colors"
         >
-          <span className="material-symbols-outlined">logout</span>
-          <span>Sair</span>
+          <span className="material-symbols-outlined">close</span>
+          <span>Sair do Aplicativo</span>
         </button>
         {user?.email && (
           <div className="text-center mt-2">
