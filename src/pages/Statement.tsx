@@ -12,6 +12,8 @@ interface AccountBalance {
   movimentos: any[];
 }
 
+import PrintHeader from '../components/PrintHeader';
+
 const Statement = () => {
   const { transactions, companyInfo } = useAppContext();
   
@@ -249,18 +251,10 @@ const Statement = () => {
 
       {/* Printable Content */}
       <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden print:shadow-none print:bg-transparent">
-        {/* Print Header */}
-        <div className="hidden print:flex flex-col items-center text-center mb-8 border-b border-outline-variant/20 pb-6">
-          {companyInfo?.logoUrl && (
-            <img 
-              src={companyInfo.logoUrl} 
-              alt="Company Logo" 
-              className="w-24 h-24 object-contain mb-4"
-            />
-          )}
-          <h1 className="text-2xl font-black uppercase tracking-wider mb-2">{companyInfo?.name || 'SUA EMPRESA'}</h1>
-          <h2 className="text-xl font-bold text-slate-800">Balancete do Razão</h2>
-          <p className="text-sm text-slate-600 mt-2">Período: {startDate ? new Date(startDate).toLocaleDateString('pt-MZ') : 'Início'} a {endDate ? new Date(endDate).toLocaleDateString('pt-MZ') : 'Hoje'}</p>
+        <PrintHeader />
+        <div className="hidden print:block text-center mb-6">
+          <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">Balancete do Razão</h2>
+          <p className="text-sm text-slate-600 mt-1">Período: {startDate ? new Date(startDate).toLocaleDateString('pt-MZ') : 'Início'} a {endDate ? new Date(endDate).toLocaleDateString('pt-MZ') : 'Hoje'}</p>
         </div>
 
         <div className="p-6 border-b border-outline-variant/10 flex justify-between items-center print:hidden">

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { TransactionType, Transaction, TransactionItem } from '../types';
 import ReceiptModal from '../components/ReceiptModal';
+import PrintHeader from '../components/PrintHeader';
 
 const Transactions = () => {
   const { transactions, addTransaction, deleteTransaction, updateTransaction, products, customers, suppliers, globalSearchTerm } = useAppContext();
@@ -347,6 +348,12 @@ const Transactions = () => {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 flex-1 space-y-8">
+      <PrintHeader />
+      <div className="hidden print:block text-center mb-6">
+        <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">Relatório de Lançamentos</h2>
+        <p className="text-sm text-slate-600 mt-2">Período: {filterDateStart ? new Date(filterDateStart).toLocaleDateString('pt-MZ') : 'Início'} a {filterDateEnd ? new Date(filterDateEnd).toLocaleDateString('pt-MZ') : 'Hoje'}</p>
+      </div>
+
       {/* Header Section */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 print:hidden">
         <div>

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Customer, Transaction } from '../types';
+import PrintHeader from './PrintHeader';
 
 interface CustomerStatementModalProps {
   isOpen: boolean;
@@ -151,17 +152,10 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
 
         {/* Printable Content */}
         <div className="p-6 overflow-y-auto flex-1 print:overflow-visible print:p-0" id="statement-content">
-          {/* Print Header */}
-          <div className="hidden print:flex flex-col items-center text-center mb-8 border-b border-slate-300 pb-6">
-            {companyInfo?.logoUrl && (
-              <img 
-                src={companyInfo.logoUrl} 
-                alt="Company Logo" 
-                className="w-20 h-20 object-contain mb-4"
-              />
-            )}
-            <h1 className="text-2xl font-black uppercase tracking-wider mb-2">Balancete de Cliente</h1>
-            <p className="text-lg font-bold text-slate-800">{customer.name}</p>
+          <PrintHeader />
+          <div className="hidden print:block text-center mb-6">
+            <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">Balancete de Cliente</h2>
+            <p className="text-lg font-bold text-slate-800 mt-2">{customer.name}</p>
             <p className="text-sm text-slate-600">Documento: {customer.document}</p>
             <p className="text-sm text-slate-600">E-mail: {customer.email}</p>
             <p className="text-sm text-slate-600 mt-2">Período: {startDate ? new Date(startDate).toLocaleDateString('pt-MZ') : 'Início'} a {endDate ? new Date(endDate).toLocaleDateString('pt-MZ') : 'Hoje'}</p>

@@ -143,7 +143,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           }
         >
           <span className="material-symbols-outlined">insert_chart</span>
-          <span>Relatórios</span>
+          <span>DRE (Resultados)</span>
         </NavLink>
         <NavLink
           to="/balancete"

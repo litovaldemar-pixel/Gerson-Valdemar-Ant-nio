@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
+import PrintHeader from '../components/PrintHeader';
 
 const DRE = () => {
   const { transactions, companyInfo } = useAppContext();
 
   const [dateFilter, setDateFilter] = useState<'hoje' | 'semana' | 'mes' | 'ano' | 'todos'>('mes');
+  const [ivaRate, setIvaRate] = useState<number>(3); // Default to 3%
 
   const filterByDate = (dateString: string) => {
     if (dateFilter === 'todos') return true;
@@ -44,7 +46,10 @@ const DRE = () => {
     .filter(t => t.type === 'receita')
     .reduce((acc, curr) => acc + curr.value, 0);
 
-  const impostos = filteredTransactions
+  // Calcula o IVA com base na Receita Bruta e na taxa selecionada
+  const impostosSobreVendas = receitaBruta * (ivaRate / 100);
+
+  const impostosRegistados = filteredTransactions
     .filter(t => t.type === 'despesa' && (t.category === 'Impostos' || t.category === 'Estado'))
     .reduce((acc, curr) => acc + curr.value, 0);
     
@@ -52,7 +57,7 @@ const DRE = () => {
     .filter(t => t.type === 'despesa' && (t.category === 'Produto' || t.category === 'Fornecedores' || t.category === 'CMV' || t.supplierId))
     .reduce((acc, curr) => acc + curr.value, 0);
     
-  const margemContribuicao = receitaBruta - impostos - cmv;
+  const margemContribuicao = receitaBruta - impostosSobreVendas - cmv;
 
   const folhaPagamento = filteredTransactions
     .filter(t => t.type === 'despesa' && (t.category === 'Pessoal' || t.category === 'Salário' || t.category === 'Assistência Médica'))
@@ -71,7 +76,7 @@ const DRE = () => {
     )
     .reduce((acc, curr) => acc + curr.value, 0);
 
-  const ebitda = margemContribuicao - despesasAdmin - folhaPagamento - marketingVendas;
+  const ebitda = margemContribuicao - despesasAdmin - folhaPagamento - marketingVendas - impostosRegistados;
 
   // Calculate Breakeven Point (Ponto de Equilíbrio)
   // PE = Fixed Costs / Contribution Margin Ratio
@@ -106,10 +111,23 @@ const DRE = () => {
       {/* Header Section with Period Selector */}
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
-          <h3 className="font-headline text-3xl font-extrabold text-primary tracking-tight">DRE</h3>
+          <h3 className="font-headline text-3xl font-extrabold text-primary tracking-tight">Demonstração de Resultados (DRE)</h3>
           <p className="text-on-surface-variant mt-1 text-sm">Visão analítica de performance financeira por competência.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 bg-surface-container-low rounded-lg p-1 border border-outline-variant/20 print:hidden">
+            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider ml-2">Taxa IVA:</span>
+            <select
+              value={ivaRate}
+              onChange={(e) => setIvaRate(Number(e.target.value))}
+              className="bg-transparent text-sm font-bold text-primary border-none focus:ring-0 cursor-pointer"
+            >
+              <option value={0}>Isento (0%)</option>
+              <option value={3}>3%</option>
+              <option value={5}>5%</option>
+              <option value={16}>16%</option>
+            </select>
+          </div>
           <div className="flex bg-surface-container-low rounded-lg p-1 border border-outline-variant/20 print:hidden">
             {(['hoje', 'semana', 'mes', 'ano', 'todos'] as const).map((filter) => (
               <button
@@ -138,8 +156,14 @@ const DRE = () => {
         </div>
       </section>
 
+      <PrintHeader />
+      <div className="hidden print:block text-center mb-6">
+        <h2 className="text-2xl font-black uppercase tracking-wider mb-2">Demonstração de Resultados (DRE)</h2>
+        <p className="text-sm text-slate-600">Período: {dateFilter.toUpperCase()}</p>
+      </div>
+
       {/* DRE Structured Table */}
-      <div className="bg-surface-container-lowest rounded-xl shadow-[0_12px_32px_-4px_rgba(0,30,64,0.08)] overflow-hidden">
+      <div className="bg-surface-container-lowest rounded-xl shadow-[0_12px_32px_-4px_rgba(0,30,64,0.08)] overflow-hidden print:shadow-none">
         <div className="grid grid-cols-12 bg-primary text-on-primary p-4 text-[10px] font-bold uppercase tracking-[0.2em]">
           <div className="col-span-6 md:col-span-8">Descrição da Conta</div>
           <div className="col-span-3 md:col-span-2 text-right">Valor (MZN)</div>
@@ -168,15 +192,31 @@ const DRE = () => {
           {/* Variable Costs */}
           <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
             <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
-              Impostos sobre Vendas (ISPC 3%) (-)
+              Impostos sobre Vendas (IVA {ivaRate}%) (-)
             </div>
             <div className="col-span-3 md:col-span-2 text-right text-sm text-tertiary-container font-semibold">
-              ({formatCurrency(impostos)})
+              ({formatCurrency(impostosSobreVendas)})
             </div>
             <div className="col-span-3 md:col-span-2 text-right text-xs text-on-surface-variant font-medium">
-              {formatPercent(impostos, receitaBruta)}
+              {formatPercent(impostosSobreVendas, receitaBruta)}
             </div>
           </div>
+
+          {/* Net Revenue */}
+          <div className="bg-surface-container-low/50">
+            <div className="grid grid-cols-12 p-4 items-center">
+              <div className="col-span-6 md:col-span-8 pl-4 border-l-4 border-secondary">
+                <span className="font-headline font-bold text-secondary uppercase text-xs tracking-wider">Receita Líquida (=)</span>
+              </div>
+              <div className="col-span-3 md:col-span-2 text-right font-headline font-bold text-secondary">
+                {formatCurrency(receitaBruta - impostosSobreVendas)}
+              </div>
+              <div className="col-span-3 md:col-span-2 text-right text-xs font-bold text-secondary">
+                {formatPercent(receitaBruta - impostosSobreVendas, receitaBruta)}
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
             <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
               Custos de Mercadoria/Serviços (CMV) (-)
@@ -238,24 +278,39 @@ const DRE = () => {
               {formatPercent(marketingVendas, receitaBruta)}
             </div>
           </div>
+          <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
+            <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
+              Outros Impostos (Registados) (-)
+            </div>
+            <div className="col-span-3 md:col-span-2 text-right text-sm text-tertiary-container font-semibold">
+              ({formatCurrency(impostosRegistados)})
+            </div>
+            <div className="col-span-3 md:col-span-2 text-right text-xs text-on-surface-variant font-medium">
+              {formatPercent(impostosRegistados, receitaBruta)}
+            </div>
+          </div>
 
-          {/* EBITDA */}
+          {/* Net Income */}
           <div className="bg-primary/5">
             <div className="grid grid-cols-12 p-6 items-center border-t-2 border-primary/20">
               <div className="col-span-6 md:col-span-8 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-lg shadow-primary/20">
-                  <span className="material-symbols-outlined">account_balance</span>
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-lg ${ebitda >= 0 ? 'bg-primary shadow-primary/20' : 'bg-error shadow-error/20'}`}>
+                  <span className="material-symbols-outlined">{ebitda >= 0 ? 'account_balance' : 'trending_down'}</span>
                 </div>
                 <div>
-                  <span className="font-headline font-black text-primary text-xl tracking-tight">EBITDA (=)</span>
-                  <p className="text-[10px] uppercase font-bold text-on-surface-variant tracking-tighter">Resultado Operacional</p>
+                  <span className={`font-headline font-black text-xl tracking-tight ${ebitda >= 0 ? 'text-primary' : 'text-error'}`}>
+                    Resultado Líquido (=)
+                  </span>
+                  <p className="text-[10px] uppercase font-bold text-on-surface-variant tracking-tighter">
+                    {ebitda >= 0 ? 'Lucro do Exercício' : 'Prejuízo do Exercício'}
+                  </p>
                 </div>
               </div>
-              <div className="col-span-3 md:col-span-2 text-right font-headline font-black text-primary text-2xl tracking-tighter">
+              <div className={`col-span-3 md:col-span-2 text-right font-headline font-black text-2xl tracking-tighter ${ebitda >= 0 ? 'text-primary' : 'text-error'}`}>
                 {formatCurrency(ebitda)}
               </div>
               <div className="col-span-3 md:col-span-2 text-right">
-                <span className="bg-primary text-on-primary px-4 py-1.5 rounded-full text-xs font-bold shadow-md">
+                <span className={`${ebitda >= 0 ? 'bg-primary text-on-primary' : 'bg-error text-white'} px-4 py-1.5 rounded-full text-xs font-bold shadow-md`}>
                   {formatPercent(ebitda, receitaBruta)}
                 </span>
               </div>

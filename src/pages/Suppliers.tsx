@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
+import PrintHeader from '../components/PrintHeader';
 
 const Suppliers = () => {
   const { suppliers, addSupplier, deleteSupplier, updateSupplier, products, transactions, globalSearchTerm } = useAppContext();
@@ -139,6 +140,11 @@ const Suppliers = () => {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 flex-1 space-y-8">
+      <PrintHeader />
+      <div className="hidden print:block text-center mb-6">
+        <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">Relatório de Fornecedores</h2>
+      </div>
+
       {/* Header Section */}
       <section className="flex justify-between items-end print:hidden">
         <div>
