@@ -7,9 +7,10 @@ import ChangePasswordModal from './ChangePasswordModal';
 
 interface HeaderProps {
   onMenuClick: () => void;
+  hideMenuButton?: boolean;
 }
 
-const Header = ({ onMenuClick }: HeaderProps) => {
+const Header = ({ onMenuClick, hideMenuButton = false }: HeaderProps) => {
   const { logout } = useAuth();
   const { companyInfo, globalSearchTerm, setGlobalSearchTerm } = useAppContext();
   const navigate = useNavigate();
@@ -24,12 +25,14 @@ const Header = ({ onMenuClick }: HeaderProps) => {
   return (
     <header className="flex justify-between items-center px-4 lg:px-8 w-full sticky top-0 z-30 h-16 bg-slate-50 dark:bg-slate-900 border-b border-outline-variant/10 print:hidden">
       <div className="flex items-center gap-4">
-        <button 
-          className="w-10 h-10 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors active:scale-95"
-          onClick={onMenuClick}
-        >
-          <span className="material-symbols-outlined">menu</span>
-        </button>
+        {!hideMenuButton && (
+          <button 
+            className="w-10 h-10 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors active:scale-95"
+            onClick={onMenuClick}
+          >
+            <span className="material-symbols-outlined">menu</span>
+          </button>
+        )}
         <div className="relative hidden sm:block">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
           <input

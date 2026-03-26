@@ -14,6 +14,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const { companyInfo } = useAppContext();
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isCreatingMode, setIsCreatingMode] = useState(false);
 
   const isDeveloper = 
     user?.email?.toLowerCase().includes('litovaldemar') || 
@@ -33,7 +34,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           <div className="w-10 h-10 bg-primary rounded flex items-center justify-center text-on-primary font-black text-xl">
             {companyInfo?.name ? companyInfo.name.charAt(0).toUpperCase() : 'C'}
           </div>
-          <button onClick={() => setIsSettingsOpen(true)} className="text-left hover:opacity-80 transition-opacity focus:outline-none">
+          <button 
+            onClick={() => {
+              setIsCreatingMode(false);
+              setIsSettingsOpen(true);
+            }} 
+            className="text-left hover:opacity-80 transition-opacity focus:outline-none"
+          >
             <h1 className="text-lg font-black text-blue-900 dark:text-blue-100 font-headline tracking-tight truncate max-w-[140px]">
               {companyInfo?.name || 'CapitalCorp'}
             </h1>
@@ -51,7 +58,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       </div>
       <nav className="flex-1 px-3 space-y-1">
         <NavLink
-          to="/"
+          to="/dashboard"
           onClick={onClose}
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
@@ -149,7 +156,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           <span>Balancete Geral</span>
         </NavLink>
         <NavLink
-          to="/admin"
+          to="/"
           onClick={onClose}
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
@@ -159,9 +166,20 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             }`
           }
         >
-          <span className="material-symbols-outlined">admin_panel_settings</span>
-          <span>Painel Admin</span>
+          <span className="material-symbols-outlined">domain</span>
+          <span>Trocar Empresa</span>
         </NavLink>
+        <button
+          onClick={() => {
+            onClose();
+            setIsCreatingMode(true);
+            setIsSettingsOpen(true);
+          }}
+          className="w-full flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10"
+        >
+          <span className="material-symbols-outlined">add_business</span>
+          <span>Adicionar Empresa</span>
+        </button>
       </nav>
       <div className="px-4 mt-auto flex flex-col gap-2">
         <button 
@@ -178,7 +196,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         )}
       </div>
       
-      <CompanySettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <CompanySettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => {
+          setIsSettingsOpen(false);
+          setIsCreatingMode(false);
+        }} 
+        defaultIsCreating={isCreatingMode}
+      />
     </aside>
   );
 };

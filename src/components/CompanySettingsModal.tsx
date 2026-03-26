@@ -7,9 +7,10 @@ import { motion, useDragControls } from 'motion/react';
 interface CompanySettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  defaultIsCreating?: boolean;
 }
 
-const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) => {
+const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: CompanySettingsModalProps) => {
   const { companyInfo, updateCompanyInfo, companies, currentCompanyId, setCurrentCompanyId, addCompany } = useAppContext();
   const { logout } = useAuth();
   const dragControls = useDragControls();
@@ -24,10 +25,14 @@ const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) =>
   });
 
   useEffect(() => {
-    if (isOpen && companies.length === 0) {
-      setIsCreating(true);
+    if (isOpen) {
+      if (companies.length === 0 || defaultIsCreating) {
+        setIsCreating(true);
+      } else {
+        setIsCreating(false);
+      }
     }
-  }, [isOpen, companies.length]);
+  }, [isOpen, companies.length, defaultIsCreating]);
 
   useEffect(() => {
     if (isOpen && isCreating) {
@@ -79,7 +84,7 @@ const CompanySettingsModal = ({ isOpen, onClose }: CompanySettingsModalProps) =>
               onPointerDown={(e) => dragControls.start(e)}
               style={{ touchAction: "none", cursor: "grab" }}
             >
-              <h3 className="font-bold text-slate-700 dark:text-slate-300">Minhas Empresas</h3>
+              <h3 className="font-bold text-slate-700 dark:text-slate-300">Lista de Empresas</h3>
               <button 
                 onClick={() => setIsCreating(true)}
                 onPointerDown={(e) => e.stopPropagation()}

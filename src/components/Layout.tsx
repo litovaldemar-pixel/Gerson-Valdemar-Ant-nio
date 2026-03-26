@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import PrintHeader from './PrintHeader';
@@ -9,7 +9,15 @@ import CompanySettingsModal from './CompanySettingsModal';
 
 const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
-  const { companyInfo, companies, loading } = useAppContext();
+  const { companyInfo, companies, loading, currentCompanyId } = useAppContext();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !currentCompanyId && location.pathname !== '/') {
+      navigate('/');
+    }
+  }, [currentCompanyId, location.pathname, navigate, loading]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -22,14 +30,14 @@ const Layout = () => {
     return validUntil > new Date();
   };
 
-  const showLock = !loading && companies.length > 0 && !isSubscriptionValid();
+  const showLock = !loading && companies.length > 0 && currentCompanyId && !isSubscriptionValid();
   const showCreateCompany = !loading && companies.length === 0;
 
   return (
     <>
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <main className={`flex-1 min-h-[100dvh] flex flex-col print:ml-0 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'lg:ml-64' : 'ml-0'}`}>
-        <Header onMenuClick={toggleSidebar} />
+      {currentCompanyId && <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />}
+      <main className={`flex-1 min-h-[100dvh] flex flex-col print:ml-0 transition-all duration-300 ease-in-out ${isSidebarOpen && currentCompanyId ? 'lg:ml-64' : 'ml-0'}`}>
+        <Header onMenuClick={toggleSidebar} hideMenuButton={!currentCompanyId} />
         <PrintHeader />
         <Outlet />
       </main>

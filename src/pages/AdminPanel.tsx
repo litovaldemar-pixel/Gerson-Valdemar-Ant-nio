@@ -15,7 +15,11 @@ interface AppUser {
   createdAt: string;
 }
 
-const AdminPanel = () => {
+interface AdminPanelProps {
+  embedded?: boolean;
+}
+
+const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'companies' | 'users'>('companies');
   const [companies, setCompanies] = useState<CompanyInfo[]>([]);
@@ -220,11 +224,11 @@ const AdminPanel = () => {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-4 md:p-6 lg:p-8 flex-1 space-y-6"
+      className={`${embedded ? 'p-4 md:p-6' : 'p-4 md:p-6 lg:p-8'} flex-1 space-y-6`}
     >
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h2 className="text-3xl font-extrabold font-headline text-primary flex items-center gap-3">
+          <h2 className={`${embedded ? 'text-2xl' : 'text-3xl'} font-extrabold font-headline text-primary flex items-center gap-3`}>
             <span className="material-symbols-outlined text-4xl">admin_panel_settings</span>
             Painel do Administrador
           </h2>

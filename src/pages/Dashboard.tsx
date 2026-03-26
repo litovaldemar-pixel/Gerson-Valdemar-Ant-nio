@@ -35,11 +35,74 @@ const Dashboard = () => {
     return true;
   };
 
+  const filterByPreviousDate = (dateString: string) => {
+    if (dateFilter === 'todos') return false;
+    
+    const now = new Date();
+    
+    if (dateFilter === 'hoje') {
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      return dateString === yesterday.toISOString().split('T')[0];
+    }
+    if (dateFilter === 'semana') {
+      const startOfPrevWeek = new Date(now);
+      startOfPrevWeek.setDate(now.getDate() - now.getDay() - 7);
+      const endOfPrevWeek = new Date(now);
+      endOfPrevWeek.setDate(now.getDate() - now.getDay() - 1);
+      const startStr = startOfPrevWeek.toISOString().split('T')[0];
+      const endStr = endOfPrevWeek.toISOString().split('T')[0];
+      return dateString >= startStr && dateString <= endStr;
+    }
+    if (dateFilter === 'mes') {
+      const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
+      const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
+      return dateString >= startOfPrevMonth && dateString <= endOfPrevMonth;
+    }
+    if (dateFilter === 'ano') {
+      const startOfPrevYear = new Date(now.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
+      const endOfPrevYear = new Date(now.getFullYear() - 1, 11, 31).toISOString().split('T')[0];
+      return dateString >= startOfPrevYear && dateString <= endOfPrevYear;
+    }
+    return false;
+  };
+
   const filteredTransactions = transactions.filter(t => filterByDate(t.date));
+  const previousTransactions = transactions.filter(t => filterByPreviousDate(t.date));
 
   const totalReceitas = filteredTransactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
   const totalDespesas = filteredTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
   const saldoPrevisto = totalReceitas - totalDespesas;
+
+  const prevReceitas = previousTransactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
+  const prevDespesas = previousTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
+
+  const calculatePercentage = (current: number, previous: number) => {
+    if (!companyInfo?.createdAt || dateFilter === 'todos') return 0;
+    
+    const createdDate = new Date(companyInfo.createdAt).toISOString().split('T')[0];
+    
+    let currentPeriodStart = '';
+    const now = new Date();
+    if (dateFilter === 'hoje') currentPeriodStart = now.toISOString().split('T')[0];
+    else if (dateFilter === 'semana') {
+      const d = new Date(now);
+      d.setDate(now.getDate() - now.getDay());
+      currentPeriodStart = d.toISOString().split('T')[0];
+    }
+    else if (dateFilter === 'mes') currentPeriodStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    else if (dateFilter === 'ano') currentPeriodStart = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+    
+    if (createdDate >= currentPeriodStart) {
+      return 0;
+    }
+
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return ((current - previous) / previous) * 100;
+  };
+
+  const receitaPercent = calculatePercentage(totalReceitas, prevReceitas);
+  const despesaPercent = calculatePercentage(totalDespesas, prevDespesas);
 
   // Financial Indicators
   const margemLucro = totalReceitas > 0 ? ((saldoPrevisto / totalReceitas) * 100).toFixed(1) : '0.0';
@@ -212,8 +275,10 @@ const Dashboard = () => {
           <p className="text-xs font-bold uppercase tracking-widest opacity-60">Total Receitas</p>
           <h4 className="text-3xl font-headline font-extrabold mt-1">{formatCurrency(totalReceitas)}</h4>
           <div className="mt-2 flex items-center gap-1 text-xs font-bold">
-            <span className="material-symbols-outlined text-sm">trending_up</span>
-            Bom desempenho
+            <span className="material-symbols-outlined text-sm">
+              {receitaPercent > 0 ? 'trending_up' : receitaPercent < 0 ? 'trending_down' : 'trending_flat'}
+            </span>
+            {receitaPercent === 0 ? 'Sem comparação' : `${receitaPercent > 0 ? '+' : ''}${receitaPercent.toFixed(1)}% vs anterior`}
           </div>
         </motion.div>
         <motion.div 
@@ -225,8 +290,10 @@ const Dashboard = () => {
           <p className="text-xs font-bold uppercase tracking-widest opacity-60">Total Despesas</p>
           <h4 className="text-3xl font-headline font-extrabold mt-1">{formatCurrency(totalDespesas)}</h4>
           <div className="mt-2 flex items-center gap-1 text-xs font-bold">
-            <span className="material-symbols-outlined text-sm">trending_down</span>
-            Dentro do esperado
+            <span className="material-symbols-outlined text-sm">
+              {despesaPercent > 0 ? 'trending_up' : despesaPercent < 0 ? 'trending_down' : 'trending_flat'}
+            </span>
+            {despesaPercent === 0 ? 'Sem comparação' : `${despesaPercent > 0 ? '+' : ''}${despesaPercent.toFixed(1)}% vs anterior`}
           </div>
         </motion.div>
       </section>

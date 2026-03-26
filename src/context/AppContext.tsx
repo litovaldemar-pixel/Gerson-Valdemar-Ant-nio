@@ -129,10 +129,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CompanyInfo));
         setCompanies(data);
-        if (data.length > 0 && !currentCompanyId) {
-          setCurrentCompanyId(data[0].id);
-          localStorage.setItem('@FinancialArchitect:currentCompanyId', data[0].id);
-        }
       },
       (error) => handleFirestoreError(error, OperationType.LIST, 'companies')
     );
