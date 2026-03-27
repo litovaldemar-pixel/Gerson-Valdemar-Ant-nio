@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import PrintHeader from './PrintHeader';
 import { useAppContext } from '../context/AppContext';
 import SubscriptionLock from './SubscriptionLock';
 import CompanySettingsModal from './CompanySettingsModal';
@@ -38,7 +37,6 @@ const Layout = () => {
       {currentCompanyId && <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />}
       <main className={`flex-1 min-h-[100dvh] flex flex-col print:ml-0 transition-all duration-300 ease-in-out ${isSidebarOpen && currentCompanyId ? 'lg:ml-64' : 'ml-0'}`}>
         <Header onMenuClick={toggleSidebar} hideMenuButton={!currentCompanyId} />
-        <PrintHeader />
         <Outlet />
       </main>
       
