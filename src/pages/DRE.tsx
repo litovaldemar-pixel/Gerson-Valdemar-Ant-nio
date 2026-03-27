@@ -6,7 +6,14 @@ const DRE = () => {
   const { transactions, companyInfo } = useAppContext();
 
   const [dateFilter, setDateFilter] = useState<'hoje' | 'semana' | 'mes' | 'ano' | 'todos'>('mes');
-  const [ivaRate, setIvaRate] = useState<number>(3); // Default to 3%
+  const [ivaRate, setIvaRate] = useState<number>(companyInfo?.ivaRate !== undefined ? companyInfo.ivaRate : 3); // Default to 3% or company setting
+
+  // Update ivaRate if companyInfo changes
+  React.useEffect(() => {
+    if (companyInfo?.ivaRate !== undefined) {
+      setIvaRate(companyInfo.ivaRate);
+    }
+  }, [companyInfo?.ivaRate]);
 
   const filterByDate = (dateString: string) => {
     if (dateFilter === 'todos') return true;
@@ -46,8 +53,11 @@ const DRE = () => {
     .filter(t => t.type === 'receita')
     .reduce((acc, curr) => acc + curr.value, 0);
 
-  // Calcula o IVA com base na Receita Bruta e na taxa selecionada
-  const impostosSobreVendas = receitaBruta * (ivaRate / 100);
+  // Calcula a Base Tributável e o IVA
+  // Base Tributável = Valor Total da Fatura / (1 + (% IVA / 100))
+  // IVA = Base Tributável * (% IVA / 100)
+  const baseTributavel = ivaRate > 0 ? receitaBruta / (1 + (ivaRate / 100)) : receitaBruta;
+  const impostosSobreVendas = ivaRate > 0 ? baseTributavel * (ivaRate / 100) : 0;
 
   const impostosRegistados = filteredTransactions
     .filter(t => t.type === 'despesa' && (t.category === 'Impostos' || t.category === 'Estado'))
@@ -57,7 +67,8 @@ const DRE = () => {
     .filter(t => t.type === 'despesa' && (t.category === 'Produto' || t.category === 'Fornecedores' || t.category === 'CMV' || t.supplierId))
     .reduce((acc, curr) => acc + curr.value, 0);
     
-  const margemContribuicao = receitaBruta - impostosSobreVendas - cmv;
+  const receitaLiquida = receitaBruta - impostosSobreVendas;
+  const margemContribuicao = receitaLiquida - cmv;
 
   const folhaPagamento = filteredTransactions
     .filter(t => t.type === 'despesa' && (t.category === 'Pessoal' || t.category === 'Salário' || t.category === 'Assistência Médica'))
@@ -178,7 +189,7 @@ const DRE = () => {
                 <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
                   <span className="material-symbols-outlined text-lg">trending_up</span>
                 </div>
-                <span className="font-headline font-bold text-primary">Receita Bruta Total (+)</span>
+                <span className="font-headline font-bold text-primary">Receita Bruta Total (Faturado) (+)</span>
               </div>
               <div className="col-span-3 md:col-span-2 text-right font-headline font-extrabold text-primary text-lg">
                 {formatCurrency(receitaBruta)}
@@ -189,10 +200,23 @@ const DRE = () => {
             </div>
           </div>
 
+          {/* Base Tributável */}
+          <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
+            <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
+              Base Tributável
+            </div>
+            <div className="col-span-3 md:col-span-2 text-right text-sm text-primary font-semibold">
+              {formatCurrency(baseTributavel)}
+            </div>
+            <div className="col-span-3 md:col-span-2 text-right text-xs text-on-surface-variant font-medium">
+              {formatPercent(baseTributavel, receitaBruta)}
+            </div>
+          </div>
+
           {/* Variable Costs */}
           <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
             <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
-              Impostos sobre Vendas (IVA {ivaRate}%) (-)
+              IVA ({ivaRate === 0 ? 'Isento' : `${ivaRate}%`}) (-)
             </div>
             <div className="col-span-3 md:col-span-2 text-right text-sm text-tertiary-container font-semibold">
               ({formatCurrency(impostosSobreVendas)})
@@ -209,10 +233,10 @@ const DRE = () => {
                 <span className="font-headline font-bold text-secondary uppercase text-xs tracking-wider">Receita Líquida (=)</span>
               </div>
               <div className="col-span-3 md:col-span-2 text-right font-headline font-bold text-secondary">
-                {formatCurrency(receitaBruta - impostosSobreVendas)}
+                {formatCurrency(receitaLiquida)}
               </div>
               <div className="col-span-3 md:col-span-2 text-right text-xs font-bold text-secondary">
-                {formatPercent(receitaBruta - impostosSobreVendas, receitaBruta)}
+                {formatPercent(receitaLiquida, receitaBruta)}
               </div>
             </div>
           </div>

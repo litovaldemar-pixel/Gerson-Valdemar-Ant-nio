@@ -16,6 +16,7 @@ export interface CompanyInfo {
   subscription?: Subscription;
   pin?: string;
   sector?: 'servicos' | 'comercio' | 'misto';
+  ivaRate?: number;
 }
 
 export type TransactionType = 'receita' | 'despesa';
