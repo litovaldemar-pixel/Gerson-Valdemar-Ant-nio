@@ -1,0 +1,55 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "transactions": "Transações",
+    "products": "Produtos",
+    "customers": "Clientes",
+    "suppliers": "Fornecedores",
+    "statement": "Extrato",
+    "dre": "DRE",
+    "settings": "Configurações",
+    "logout": "Sair",
+    "admin": "Painel Admin"
+  },
+  "header": {
+    "newTransaction": "Nova Transação",
+    "newSale": "Nova Venda",
+    "newExpense": "Nova Despesa",
+    "newPurchase": "Nova Compra",
+    "newProduct": "Novo Produto",
+    "newCustomer": "Novo Cliente",
+    "newSupplier": "Novo Fornecedor",
+    "language": "Idioma"
+  },
+  "dashboard": {
+    "totalRevenue": "Receita Total",
+    "totalExpenses": "Despesas Totais",
+    "netProfit": "Lucro Líquido",
+    "profitMargin": "Margem de Lucro",
+    "recentTransactions": "Transações Recentes",
+    "viewAll": "Ver todas",
+    "financialSummary": "Resumo Financeiro",
+    "revenueVsExpenses": "Receitas vs Despesas",
+    "expensesByCategory": "Despesas por Categoria",
+    "topProducts": "Produtos Mais Vendidos"
+  },
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "add": "Adicionar",
+    "search": "Buscar...",
+    "date": "Data",
+    "description": "Descrição",
+    "category": "Categoria",
+    "value": "Valor",
+    "type": "Tipo",
+    "status": "Status",
+    "actions": "Ações",
+    "yes": "Sim",
+    "no": "Não",
+    "confirm": "Confirmar",
+    "close": "Fechar"
+  }
+}

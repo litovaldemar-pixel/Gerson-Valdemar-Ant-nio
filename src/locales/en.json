@@ -1,0 +1,55 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "transactions": "Transactions",
+    "products": "Products",
+    "customers": "Customers",
+    "suppliers": "Suppliers",
+    "statement": "Statement",
+    "dre": "Income Statement",
+    "settings": "Settings",
+    "logout": "Logout",
+    "admin": "Admin Panel"
+  },
+  "header": {
+    "newTransaction": "New Transaction",
+    "newSale": "New Sale",
+    "newExpense": "New Expense",
+    "newPurchase": "New Purchase",
+    "newProduct": "New Product",
+    "newCustomer": "New Customer",
+    "newSupplier": "New Supplier",
+    "language": "Language"
+  },
+  "dashboard": {
+    "totalRevenue": "Total Revenue",
+    "totalExpenses": "Total Expenses",
+    "netProfit": "Net Profit",
+    "profitMargin": "Profit Margin",
+    "recentTransactions": "Recent Transactions",
+    "viewAll": "View all",
+    "financialSummary": "Financial Summary",
+    "revenueVsExpenses": "Revenue vs Expenses",
+    "expensesByCategory": "Expenses by Category",
+    "topProducts": "Top Products"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "search": "Search...",
+    "date": "Date",
+    "description": "Description",
+    "category": "Category",
+    "value": "Value",
+    "type": "Type",
+    "status": "Status",
+    "actions": "Actions",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm",
+    "close": "Close"
+  }
+}

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAppContext } from '../context/AppContext';
 import CompanySettingsModal from './CompanySettingsModal';
 import ChangePasswordModal from './ChangePasswordModal';
+import { useTranslation } from 'react-i18next';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -16,10 +17,15 @@ const Header = ({ onMenuClick, hideMenuButton = false }: HeaderProps) => {
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const { t, i18n } = useTranslation();
 
   const handleLogout = async () => {
     await logout();
     navigate('/');
+  };
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
   };
 
   return (
@@ -37,7 +43,7 @@ const Header = ({ onMenuClick, hideMenuButton = false }: HeaderProps) => {
           <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
           <input
             className="pl-10 pr-4 py-1.5 bg-slate-100 dark:bg-slate-800 border-none rounded-full text-sm w-64 lg:w-80 focus:ring-2 focus:ring-primary-fixed-dim"
-            placeholder="Buscar em todo o sistema..."
+            placeholder={t('common.search')}
             type="text"
             value={globalSearchTerm}
             onChange={(e) => setGlobalSearchTerm(e.target.value)}
@@ -45,6 +51,19 @@ const Header = ({ onMenuClick, hideMenuButton = false }: HeaderProps) => {
         </div>
       </div>
       <div className="flex items-center gap-4 lg:gap-6">
+        <div className="flex items-center gap-2">
+          <select 
+            value={i18n.language} 
+            onChange={(e) => changeLanguage(e.target.value)}
+            className="bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm py-1 px-2 focus:ring-2 focus:ring-primary-fixed-dim outline-none cursor-pointer"
+            title={t('header.language')}
+          >
+            <option value="pt">PT</option>
+            <option value="en">EN</option>
+            <option value="zh">ZH</option>
+            <option value="fr">FR</option>
+          </select>
+        </div>
         <div className="flex items-center gap-1 lg:gap-2">
           <button className="w-10 h-10 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors active:scale-95">
             <span className="material-symbols-outlined">notifications</span>

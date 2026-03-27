@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAppContext } from '../context/AppContext';
 import CompanySettingsModal from './CompanySettingsModal';
+import { useTranslation } from 'react-i18next';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCreatingMode, setIsCreatingMode] = useState(false);
+  const { t } = useTranslation();
 
   const isDeveloper = 
     user?.email?.toLowerCase().includes('litovaldemar') || 
@@ -73,7 +75,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           }
         >
           <span className="material-symbols-outlined">dashboard</span>
-          <span>Dashboard</span>
+          <span>{t('sidebar.dashboard')}</span>
         </NavLink>
         <NavLink
           to="/lancamentos"
@@ -87,7 +89,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           }
         >
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
-          <span>Lançamentos</span>
+          <span>{t('sidebar.transactions')}</span>
         </NavLink>
         <NavLink
           to="/clientes"
@@ -101,7 +103,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           }
         >
           <span className="material-symbols-outlined">group</span>
-          <span>Clientes</span>
+          <span>{t('sidebar.customers')}</span>
         </NavLink>
         <NavLink
           to="/fornecedores"
@@ -115,7 +117,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           }
         >
           <span className="material-symbols-outlined">local_shipping</span>
-          <span>Fornecedores</span>
+          <span>{t('sidebar.suppliers')}</span>
         </NavLink>
         <NavLink
           to="/mercadorias"
@@ -129,7 +131,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           }
         >
           <span className="material-symbols-outlined">inventory_2</span>
-          <span>Stock</span>
+          <span>{t('sidebar.products')}</span>
         </NavLink>
         <NavLink
           to="/dre"
@@ -143,7 +145,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           }
         >
           <span className="material-symbols-outlined">insert_chart</span>
-          <span>DRE (Resultados)</span>
+          <span>{t('sidebar.dre')}</span>
         </NavLink>
         <NavLink
           to="/balancete"
@@ -157,7 +159,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           }
         >
           <span className="material-symbols-outlined">receipt_long</span>
-          <span>Balancete Geral</span>
+          <span>{t('sidebar.statement')}</span>
         </NavLink>
         <NavLink
           to="/"

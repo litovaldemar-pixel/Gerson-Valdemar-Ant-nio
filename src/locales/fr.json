@@ -1,0 +1,55 @@
+{
+  "sidebar": {
+    "dashboard": "Tableau de bord",
+    "transactions": "Transactions",
+    "products": "Produits",
+    "customers": "Clients",
+    "suppliers": "Fournisseurs",
+    "statement": "Relevé",
+    "dre": "Compte de résultat",
+    "settings": "Paramètres",
+    "logout": "Déconnexion",
+    "admin": "Panneau d'administration"
+  },
+  "header": {
+    "newTransaction": "Nouvelle Transaction",
+    "newSale": "Nouvelle Vente",
+    "newExpense": "Nouvelle Dépense",
+    "newPurchase": "Nouvel Achat",
+    "newProduct": "Nouveau Produit",
+    "newCustomer": "Nouveau Client",
+    "newSupplier": "Nouveau Fournisseur",
+    "language": "Langue"
+  },
+  "dashboard": {
+    "totalRevenue": "Revenu Total",
+    "totalExpenses": "Dépenses Totales",
+    "netProfit": "Bénéfice Net",
+    "profitMargin": "Marge Bénéficiaire",
+    "recentTransactions": "Transactions Récentes",
+    "viewAll": "Voir tout",
+    "financialSummary": "Résumé Financier",
+    "revenueVsExpenses": "Revenus vs Dépenses",
+    "expensesByCategory": "Dépenses par Catégorie",
+    "topProducts": "Meilleurs Produits"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "add": "Ajouter",
+    "search": "Rechercher...",
+    "date": "Date",
+    "description": "Description",
+    "category": "Catégorie",
+    "value": "Valeur",
+    "type": "Type",
+    "status": "Statut",
+    "actions": "Actions",
+    "yes": "Oui",
+    "no": "Non",
+    "confirm": "Confirmer",
+    "close": "Fermer"
+  }
+}
