@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import PrintHeader from '../components/PrintHeader';
+import { useTranslation } from 'react-i18next';
 
 const DRE = () => {
   const { transactions, companyInfo } = useAppContext();
+  const { t } = useTranslation();
 
   const [dateFilter, setDateFilter] = useState<'hoje' | 'semana' | 'mes' | 'ano' | 'todos'>('mes');
   const [ivaRate, setIvaRate] = useState<number>(companyInfo?.ivaRate !== undefined ? companyInfo.ivaRate : 3); // Default to 3% or company setting
@@ -122,7 +124,7 @@ const DRE = () => {
       {/* Header Section with Period Selector */}
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
-          <h3 className="font-headline text-3xl font-extrabold text-primary tracking-tight">Demonstração de Resultados (DRE)</h3>
+          <h3 className="font-headline text-3xl font-extrabold text-primary tracking-tight">{t('sidebar.dre')}</h3>
           <p className="text-on-surface-variant mt-1 text-sm">Visão analítica de performance financeira por competência.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -150,10 +152,7 @@ const DRE = () => {
                     : 'text-on-surface-variant hover:bg-surface-variant/50'
                 }`}
               >
-                {filter === 'hoje' ? 'Hoje' :
-                 filter === 'semana' ? 'Semana' :
-                 filter === 'mes' ? 'Mês' :
-                 filter === 'ano' ? 'Ano' : 'Todos'}
+                {t(`dashboard.filters.${filter}`)}
               </button>
             ))}
           </div>
@@ -162,15 +161,15 @@ const DRE = () => {
             className="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded font-bold text-sm hover:opacity-90 transition-all print:hidden"
           >
             <span className="material-symbols-outlined text-sm">download</span>
-            Exportar PDF
+            {t('dashboard.print')}
           </button>
         </div>
       </section>
 
       <PrintHeader />
       <div className="hidden print:block text-center mb-6">
-        <h2 className="text-2xl font-black uppercase tracking-wider mb-2">Demonstração de Resultados (DRE)</h2>
-        <p className="text-sm text-slate-600">Período: {dateFilter.toUpperCase()}</p>
+        <h2 className="text-2xl font-black uppercase tracking-wider mb-2">{t('sidebar.dre')}</h2>
+        <p className="text-sm text-slate-600">Período: {t(`dashboard.filters.${dateFilter}`).toUpperCase()}</p>
       </div>
 
       {/* DRE Structured Table */}

@@ -4,11 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AdminPanel from './AdminPanel';
 import CompanySettingsModal from '../components/CompanySettingsModal';
+import { useTranslation } from 'react-i18next';
 
 const Home = () => {
   const { user } = useAuth();
   const { companies, setCurrentCompanyId } = useAppContext();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const isAdmin = user?.email === 'litovaldemar@gmail.com';
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -28,14 +30,14 @@ const Home = () => {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-extrabold font-headline text-primary flex items-center gap-3">
               <span className="material-symbols-outlined">domain</span>
-              Lista de Empresas
+              {t('sidebar.companies')}
             </h2>
             <button
               onClick={() => setIsModalOpen(true)}
               className="bg-primary text-on-primary px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-primary/90 transition-colors shadow-sm"
             >
               <span className="material-symbols-outlined text-sm">add</span>
-              Adicionar Empresa
+              {t('home.addCompany')}
             </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -55,7 +57,7 @@ const Home = () => {
                 <h3 className="font-bold text-lg text-on-surface mb-1">{company.name}</h3>
                 <p className="text-sm text-on-surface-variant mb-4 flex-1">NUIT: {company.nuit}</p>
                 <div className="flex items-center text-primary text-sm font-bold mt-auto">
-                  Acessar ERP
+                  {t('home.accessERP')}
                   <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
                 </div>
               </button>
@@ -63,7 +65,7 @@ const Home = () => {
             {companies.length === 0 && (
               <div className="col-span-full p-8 text-center bg-surface-container-lowest rounded-xl border border-outline-variant/20">
                 <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-2">domain_disabled</span>
-                <p className="text-on-surface-variant font-bold">Nenhuma empresa encontrada.</p>
+                <p className="text-on-surface-variant font-bold">{t('home.noCompanies')}</p>
               </div>
             )}
           </div>
@@ -78,17 +80,17 @@ const Home = () => {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-2">
         <h2 className="text-3xl font-extrabold font-headline text-primary flex items-center gap-3">
           <span className="material-symbols-outlined text-4xl">domain</span>
-          Lista de Empresas
+          {t('sidebar.companies')}
         </h2>
         <button
           onClick={() => setIsModalOpen(true)}
           className="bg-primary text-on-primary px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-primary/90 transition-colors shadow-sm"
         >
           <span className="material-symbols-outlined text-sm">add</span>
-          Adicionar Empresa
+          {t('home.addCompany')}
         </button>
       </div>
-      <p className="text-on-surface-variant font-medium mb-8">Selecione uma empresa para acessar o sistema ERP.</p>
+      <p className="text-on-surface-variant font-medium mb-8">{t('home.selectCompany')}</p>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {companies.map(company => (
@@ -96,7 +98,7 @@ const Home = () => {
             key={company.id}
             onClick={() => handleSelectCompany(company.id)}
             className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-left group flex flex-col h-full"
-          >
+            >
             <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform overflow-hidden">
               {company.logoUrl ? (
                 <img src={company.logoUrl} alt={company.name} className="w-full h-full object-cover" />
@@ -107,7 +109,7 @@ const Home = () => {
             <h3 className="font-bold text-lg text-on-surface mb-1">{company.name}</h3>
             <p className="text-sm text-on-surface-variant mb-4 flex-1">NUIT: {company.nuit}</p>
             <div className="flex items-center text-primary text-sm font-bold mt-auto">
-              Acessar ERP
+              {t('home.accessERP')}
               <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
             </div>
           </button>
@@ -115,7 +117,7 @@ const Home = () => {
         {companies.length === 0 && (
           <div className="col-span-full p-8 text-center bg-surface-container-lowest rounded-xl border border-outline-variant/20">
             <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-2">domain_disabled</span>
-            <p className="text-on-surface-variant font-bold">Nenhuma empresa encontrada.</p>
+            <p className="text-on-surface-variant font-bold">{t('home.noCompanies')}</p>
           </div>
         )}
       </div>

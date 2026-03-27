@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -9,6 +10,7 @@ const Login = () => {
   const [message, setMessage] = useState('');
   const [isResetting, setIsResetting] = useState(false);
   const { login, resetPassword } = useAuth();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,13 +18,13 @@ const Login = () => {
     setMessage('');
     const success = await login(email, password);
     if (!success) {
-      setError('Credenciais incorretas.');
+      setError(t('login.invalidCredentials'));
     }
   };
 
   const handleResetPassword = async () => {
     if (!email) {
-      setError('Por favor, insira seu e-mail para recuperar a senha.');
+      setError(t('login.enterEmailToReset'));
       return;
     }
     setError('');
@@ -32,9 +34,9 @@ const Login = () => {
     setIsResetting(false);
     
     if (success) {
-      setMessage('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+      setMessage(t('login.resetEmailSent'));
     } else {
-      setError(resetError || 'Erro ao enviar e-mail de recuperação.');
+      setError(resetError || t('login.resetEmailError'));
     }
   };
 
@@ -51,7 +53,7 @@ const Login = () => {
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-on-surface-variant ml-1">E-mail Corporativo</label>
+            <label className="block text-sm font-bold text-on-surface-variant ml-1">{t('login.corporateEmail')}</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">mail</span>
               <input
@@ -59,7 +61,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-surface-container-low border-none rounded-xl py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary-fixed-dim transition-all"
-                placeholder="seu.email@empresa.com"
+                placeholder={t('login.emailPlaceholder')}
                 required
               />
             </div>
@@ -67,14 +69,14 @@ const Login = () => {
 
           <div className="space-y-2">
             <div className="flex justify-between items-center ml-1">
-              <label className="block text-sm font-bold text-on-surface-variant">Senha de Acesso</label>
+              <label className="block text-sm font-bold text-on-surface-variant">{t('login.password')}</label>
               <button 
                 type="button" 
                 onClick={handleResetPassword}
                 disabled={isResetting}
                 className="text-xs font-bold text-primary hover:underline focus:outline-none"
               >
-                {isResetting ? 'Enviando...' : 'Esqueceu a senha?'}
+                {isResetting ? t('login.sending') : t('login.forgotPassword')}
               </button>
             </div>
             <div className="relative">
@@ -84,7 +86,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-surface-container-low border-none rounded-xl py-4 pl-12 pr-12 text-sm focus:ring-2 focus:ring-primary-fixed-dim transition-all"
-                placeholder="Digite sua senha"
+                placeholder={t('login.passwordPlaceholder')}
                 required
               />
               <button
@@ -102,13 +104,13 @@ const Login = () => {
           </div>
           
           <button type="submit" className="w-full bg-primary text-on-primary py-4 rounded-xl font-bold text-lg hover:bg-primary-container hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2">
-            Entrar no Sistema
+            {t('login.signIn')}
             <span className="material-symbols-outlined">arrow_forward</span>
           </button>
         </form>
         
         <div className="mt-8 text-center">
-          <p className="text-xs text-on-surface-variant opacity-60">Acesso restrito a colaboradores autorizados.</p>
+          <p className="text-xs text-on-surface-variant opacity-60">{t('login.restrictedAccess')}</p>
         </div>
       </div>
     </div>

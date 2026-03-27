@@ -3,6 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import { CompanyInfo } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { motion, useDragControls } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 
 interface CompanySettingsModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface CompanySettingsModalProps {
 }
 
 const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: CompanySettingsModalProps) => {
+  const { t } = useTranslation();
   const { companyInfo, updateCompanyInfo, companies, currentCompanyId, setCurrentCompanyId, addCompany } = useAppContext();
   const { logout } = useAuth();
   const dragControls = useDragControls();
@@ -101,12 +103,12 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
               onPointerDown={(e) => dragControls.start(e)}
               style={{ touchAction: "none", cursor: "grab" }}
             >
-              <h3 className="font-bold text-slate-700 dark:text-slate-300">Lista de Empresas</h3>
+              <h3 className="font-bold text-slate-700 dark:text-slate-300">{t('companySettings.companyList')}</h3>
               <button 
                 onClick={() => setIsCreating(true)}
                 onPointerDown={(e) => e.stopPropagation()}
                 className="p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-                title="Nova Empresa"
+                title={t('companySettings.newCompany')}
               >
                 <span className="material-symbols-outlined text-sm">add</span>
               </button>
@@ -134,7 +136,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                   <div className="flex-1 overflow-hidden">
                     <p className="font-bold truncate text-sm">{c.name}</p>
                     <p className={`text-[10px] truncate ${currentCompanyId === c.id && !isCreating ? 'text-on-primary/80' : 'text-slate-500'}`}>
-                      NUIT: {c.nuit}
+                      {t('companySettings.nuit')}: {c.nuit}
                     </p>
                   </div>
                 </button>
@@ -151,7 +153,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
             style={{ touchAction: "none", cursor: "grab" }}
           >
             <h2 className="text-xl font-bold font-headline text-primary">
-              {isCreating || companies.length === 0 ? 'Nova Empresa' : 'Dados da Empresa'}
+              {isCreating || companies.length === 0 ? t('companySettings.newCompany') : t('companySettings.companyData')}
             </h2>
             <div className="flex items-center gap-2">
               {isCreating && companies.length > 0 && (
@@ -159,7 +161,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                   onClick={() => setIsCreating(false)} 
                   onPointerDown={(e) => e.stopPropagation()}
                   className="text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 p-2" 
-                  title="Cancelar Criação"
+                  title={t('companySettings.cancelCreation')}
                 >
                   <span className="material-symbols-outlined">close</span>
                 </button>
@@ -169,7 +171,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                   onClick={onClose} 
                   onPointerDown={(e) => e.stopPropagation()}
                   className="text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 p-2" 
-                  title="Fechar"
+                  title={t('companySettings.close')}
                 >
                   <span className="material-symbols-outlined">close</span>
                 </button>
@@ -179,10 +181,10 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                   onClick={() => logout()} 
                   onPointerDown={(e) => e.stopPropagation()}
                   className="text-error hover:text-error/80 p-2 flex items-center gap-1 text-sm font-bold" 
-                  title="Sair da Conta"
+                  title={t('companySettings.logout')}
                 >
                   <span className="material-symbols-outlined text-sm">logout</span>
-                  Sair
+                  {t('companySettings.logout')}
                 </button>
               )}
             </div>
@@ -193,18 +195,18 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
               {!isCreating && companyInfo?.subscription && (
                 <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 mb-4">
                   <div className="flex justify-between items-center mb-2">
-                    <p className="text-xs font-bold text-primary uppercase tracking-widest">Estado da Subscrição</p>
+                    <p className="text-xs font-bold text-primary uppercase tracking-widest">{t('companySettings.subscriptionStatus')}</p>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${companyInfo.subscription.status === 'active' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
-                      {companyInfo.subscription.status === 'active' ? 'Ativa' : 'Expirada'}
+                      {companyInfo.subscription.status === 'active' ? t('companySettings.active') : t('companySettings.expired')}
                     </span>
                   </div>
                   <div className="flex justify-between items-end">
                     <div>
-                      <p className="text-[10px] text-on-surface-variant">Válido até:</p>
+                      <p className="text-[10px] text-on-surface-variant">{t('companySettings.validUntil')}:</p>
                       <p className="text-sm font-bold text-on-surface">{new Date(companyInfo.subscription.validUntil).toLocaleDateString('pt-MZ')}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] text-on-surface-variant">Plano:</p>
+                      <p className="text-[10px] text-on-surface-variant">{t('companySettings.plan')}:</p>
                       <p className="text-sm font-bold text-on-surface">{companyInfo.subscription.plan}</p>
                     </div>
                   </div>
@@ -229,12 +231,12 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                       accept="image/*" 
                       onChange={handleLogoUpload}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      title="Alterar Logotipo"
+                      title={t('companySettings.changeLogo')}
                     />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-on-surface">Logotipo da Empresa</h3>
-                    <p className="text-xs text-on-surface-variant">Recomendado: Imagem quadrada, máx. 1MB.</p>
+                    <h3 className="text-sm font-bold text-on-surface">{t('companySettings.companyLogo')}</h3>
+                    <p className="text-xs text-on-surface-variant">{t('companySettings.maxSize')}</p>
                     {formData.logoUrl && (
                       <button 
                         type="button" 
@@ -248,7 +250,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-bold text-on-surface-variant mb-1">Nome do Estabelecimento / Empresa</label>
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">{t('companySettings.companyName')}</label>
                   <input
                     type="text"
                     required
@@ -259,7 +261,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-on-surface-variant mb-1">NUIT</label>
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">{t('companySettings.nuit')}</label>
                   <input
                     type="text"
                     required
@@ -270,7 +272,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-on-surface-variant mb-1">Contacto</label>
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">{t('companySettings.contact')}</label>
                   <input
                     type="text"
                     required
@@ -281,7 +283,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-bold text-on-surface-variant mb-1">Localização</label>
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">{t('companySettings.location')}</label>
                   <input
                     type="text"
                     required
@@ -292,19 +294,19 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-bold text-on-surface-variant mb-1">Sector de Actividade</label>
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">{t('companySettings.sector')}</label>
                   <select
                     value={formData.sector}
                     onChange={(e) => setFormData({ ...formData, sector: e.target.value as any })}
                     className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                   >
-                    <option value="comercio">Compra e Venda de Produtos</option>
-                    <option value="servicos">Prestação de Serviços</option>
-                    <option value="misto">Misto (Compra/Venda e Serviços)</option>
+                    <option value="comercio">{t('companySettings.commerce')}</option>
+                    <option value="servicos">{t('companySettings.services')}</option>
+                    <option value="misto">{t('companySettings.mixed')}</option>
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-bold text-on-surface-variant mb-1">Taxa de IVA Padrão</label>
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">{t('companySettings.ivaRate')}</label>
                   <select
                     value={formData.ivaRate}
                     onChange={(e) => setFormData({ ...formData, ivaRate: Number(e.target.value) })}
@@ -320,13 +322,13 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                   </p>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-bold text-on-surface-variant mb-1">PIN de Acesso (Opcional)</label>
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">{t('companySettings.securityPin')}</label>
                   <input
                     type="password"
                     value={formData.pin}
                     onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
                     className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                    placeholder="Deixe em branco para não usar PIN"
+                    placeholder={t('companySettings.pinPlaceholder')}
                     maxLength={10}
                   />
                   <p className="text-xs text-on-surface-variant mt-1">
@@ -354,7 +356,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                   type="submit"
                   className="px-5 py-2.5 text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 rounded-lg transition-colors shadow-sm"
                 >
-                  {isCreating || companies.length === 0 ? 'Criar Empresa' : 'Salvar Dados'}
+                  {isCreating || companies.length === 0 ? t('companySettings.createCompany') : t('companySettings.saveChanges')}
                 </button>
               </div>
             </form>

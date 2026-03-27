@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
+import PrintHeader from '../components/PrintHeader';
+import { useTranslation } from 'react-i18next';
 
 interface AccountBalance {
   conta: string;
@@ -12,10 +14,9 @@ interface AccountBalance {
   movimentos: any[];
 }
 
-import PrintHeader from '../components/PrintHeader';
-
 const Statement = () => {
   const { transactions, companyInfo } = useAppContext();
+  const { t } = useTranslation();
   
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
@@ -197,7 +198,7 @@ const Statement = () => {
       {/* Header Section */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 print:hidden">
         <div>
-          <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">Balancete do Razão</h2>
+          <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">{t('sidebar.statement')}</h2>
           <p className="text-on-surface-variant font-medium mt-1">Balancete analítico estruturado por contas (PGC-NIRF).</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -208,10 +209,7 @@ const Statement = () => {
                 onClick={() => setQuickFilter(filter)}
                 className={`px-4 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors text-on-surface-variant hover:bg-surface-variant/50`}
               >
-                {filter === 'hoje' ? 'Hoje' :
-                 filter === 'semana' ? 'Semana' :
-                 filter === 'mes' ? 'Mês' :
-                 filter === 'ano' ? 'Ano' : 'Todos'}
+                {t(`dashboard.filters.${filter}`)}
               </button>
             ))}
           </div>
@@ -220,7 +218,7 @@ const Statement = () => {
             className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
           >
             <span className="material-symbols-outlined text-lg">print</span>
-            Imprimir
+            {t('dashboard.print')}
           </button>
         </div>
       </section>

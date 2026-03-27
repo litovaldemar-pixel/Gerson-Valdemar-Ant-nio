@@ -1,7 +1,9 @@
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
+import { useTranslation } from 'react-i18next';
 
 const PrintHeader = () => {
+  const { t } = useTranslation();
   const { companyInfo } = useAppContext();
 
   if (!companyInfo) return null;
@@ -21,19 +23,19 @@ const PrintHeader = () => {
       <div className="flex items-center gap-6 text-sm font-medium text-slate-700">
         {companyInfo.nuit && (
           <p>
-            <span className="font-bold mr-1">NUIT:</span>
+            <span className="font-bold mr-1">{t('companySettings.nuit')}:</span>
             {companyInfo.nuit}
           </p>
         )}
         {companyInfo.contact && (
           <p>
-            <span className="font-bold mr-1">Contacto:</span>
+            <span className="font-bold mr-1">{t('receipt.cellphone')}:</span>
             {companyInfo.contact}
           </p>
         )}
         {companyInfo.location && (
           <p>
-            <span className="font-bold mr-1">Localização:</span>
+            <span className="font-bold mr-1">{t('companySettings.location')}:</span>
             {companyInfo.location}
           </p>
         )}

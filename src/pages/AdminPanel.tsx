@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
+import { useTranslation } from 'react-i18next';
 
 interface AppUser {
   id: string;
@@ -21,6 +22,7 @@ interface AdminPanelProps {
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'companies' | 'users'>('companies');
   const [companies, setCompanies] = useState<CompanyInfo[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
@@ -230,7 +232,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
         <div>
           <h2 className={`${embedded ? 'text-2xl' : 'text-3xl'} font-extrabold font-headline text-primary flex items-center gap-3`}>
             <span className="material-symbols-outlined text-4xl">admin_panel_settings</span>
-            Painel do Administrador
+            {t('sidebar.admin')}
           </h2>
           <p className="text-on-surface-variant font-medium mt-1">Gerencie empresas e usuários do sistema.</p>
         </div>

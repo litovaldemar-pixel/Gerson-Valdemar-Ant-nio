@@ -3,9 +3,11 @@ import { useAppContext } from '../context/AppContext';
 import { TransactionType, Transaction, TransactionItem } from '../types';
 import ReceiptModal from '../components/ReceiptModal';
 import PrintHeader from '../components/PrintHeader';
+import { useTranslation } from 'react-i18next';
 
 const Transactions = () => {
   const { transactions, addTransaction, deleteTransaction, updateTransaction, products, customers, suppliers, globalSearchTerm } = useAppContext();
+  const { t } = useTranslation();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [description, setDescription] = useState('');
@@ -350,14 +352,14 @@ const Transactions = () => {
     <div className="p-4 md:p-6 lg:p-8 flex-1 space-y-8">
       <PrintHeader />
       <div className="hidden print:block text-center mb-6">
-        <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">Relatório de Lançamentos</h2>
+        <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">{t('sidebar.transactions')}</h2>
         <p className="text-sm text-slate-600 mt-2">Período: {filterDateStart ? new Date(filterDateStart).toLocaleDateString('pt-MZ') : 'Início'} a {filterDateEnd ? new Date(filterDateEnd).toLocaleDateString('pt-MZ') : 'Hoje'}</p>
       </div>
 
       {/* Header Section */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 print:hidden">
         <div>
-          <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">Lançamentos</h2>
+          <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">{t('sidebar.transactions')}</h2>
           <p className="text-on-surface-variant font-medium mt-1">Gerencie suas movimentações financeiras com precisão.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3 print:hidden">
@@ -368,10 +370,10 @@ const Transactions = () => {
                 onClick={() => setQuickFilter(filter)}
                 className={`px-4 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors text-on-surface-variant hover:bg-surface-variant/50`}
               >
-                {filter === 'hoje' ? 'Hoje' :
-                 filter === 'semana' ? 'Semana' :
-                 filter === 'mes' ? 'Mês' :
-                 filter === 'ano' ? 'Ano' : 'Todos'}
+                {filter === 'hoje' ? t('common.today') :
+                 filter === 'semana' ? t('common.week') :
+                 filter === 'mes' ? t('common.month') :
+                 filter === 'ano' ? t('common.year') : t('common.all')}
               </button>
             ))}
           </div>
@@ -380,7 +382,7 @@ const Transactions = () => {
             className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
           >
             <span className="material-symbols-outlined text-lg">print</span>
-            Imprimir
+            {t('dashboard.print')}
           </button>
           <button 
             onClick={() => setShowFilters(!showFilters)}
@@ -394,7 +396,7 @@ const Transactions = () => {
             className="px-5 py-2.5 bg-secondary text-on-secondary rounded-lg font-bold text-sm flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all"
           >
             <span className="material-symbols-outlined text-lg">add_circle</span>
-            Novo Lançamento
+            {t('header.newTransaction')}
           </button>
         </div>
       </section>

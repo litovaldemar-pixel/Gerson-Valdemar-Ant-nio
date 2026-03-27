@@ -3,10 +3,12 @@ import { useAppContext } from '../context/AppContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { motion } from 'motion/react';
 import PrintHeader from '../components/PrintHeader';
+import { useTranslation } from 'react-i18next';
 
 const Dashboard = () => {
   const { transactions, customers, suppliers, products, companyInfo, globalSearchTerm } = useAppContext();
   const [dateFilter, setDateFilter] = useState<'hoje' | 'semana' | 'mes' | 'ano' | 'todos'>('mes');
+  const { t } = useTranslation();
 
   const filterByDate = (dateString: string) => {
     if (dateFilter === 'todos') return true;
@@ -199,8 +201,8 @@ const Dashboard = () => {
       {/* Header Section */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 print:hidden">
         <div>
-          <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">Dashboard</h2>
-          <p className="text-on-surface-variant font-medium mt-1">Visão geral do seu negócio e saúde financeira.</p>
+          <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">{t('dashboard.title')}</h2>
+          <p className="text-on-surface-variant font-medium mt-1">{t('dashboard.subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex bg-surface-container-low rounded-lg p-1 border border-outline-variant/20">
@@ -214,10 +216,10 @@ const Dashboard = () => {
                     : 'text-on-surface-variant hover:bg-surface-variant/50'
                 }`}
               >
-                {filter === 'hoje' ? 'Hoje' :
-                 filter === 'semana' ? 'Semana' :
-                 filter === 'mes' ? 'Mês' :
-                 filter === 'ano' ? 'Ano' : 'Todos'}
+                {filter === 'hoje' ? t('common.today') :
+                 filter === 'semana' ? t('common.week') :
+                 filter === 'mes' ? t('common.month') :
+                 filter === 'ano' ? t('common.year') : t('common.all')}
               </button>
             ))}
           </div>
@@ -226,7 +228,7 @@ const Dashboard = () => {
             className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
           >
             <span className="material-symbols-outlined text-lg">print</span>
-            Imprimir
+            {t('dashboard.print')}
           </button>
         </div>
       </section>
@@ -251,7 +253,7 @@ const Dashboard = () => {
           className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 shadow-sm flex flex-col justify-between"
         >
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Margem de Lucro</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">{t('dashboard.profitMargin')}</p>
             <h4 className="text-3xl font-headline font-extrabold mt-1 text-primary">
               {margemLucro}%
             </h4>
@@ -268,7 +270,7 @@ const Dashboard = () => {
           className="bg-primary text-on-primary rounded-xl p-6 relative overflow-hidden shadow-sm"
         >
           <div className="relative z-10">
-            <p className="text-xs font-bold uppercase tracking-widest opacity-60">Saldo Atual</p>
+            <p className="text-xs font-bold uppercase tracking-widest opacity-60">{t('dashboard.currentBalance')}</p>
             <h4 className="text-3xl font-headline font-extrabold mt-1">{formatCurrency(saldoPrevisto)}</h4>
           </div>
           <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-8xl opacity-10">account_balance</span>
@@ -279,7 +281,7 @@ const Dashboard = () => {
           transition={{ duration: 0.3, delay: 0.2 }}
           className="bg-secondary-container text-on-secondary-container rounded-xl p-6 border border-secondary/10 shadow-sm"
         >
-          <p className="text-xs font-bold uppercase tracking-widest opacity-60">Total Receitas</p>
+          <p className="text-xs font-bold uppercase tracking-widest opacity-60">{t('dashboard.totalRevenue')}</p>
           <h4 className="text-3xl font-headline font-extrabold mt-1">{formatCurrency(totalReceitas)}</h4>
           <div className="mt-2 flex items-center gap-1 text-xs font-bold">
             <span className="material-symbols-outlined text-sm">
@@ -294,7 +296,7 @@ const Dashboard = () => {
           transition={{ duration: 0.3, delay: 0.3 }}
           className="bg-error-container text-on-error-container rounded-xl p-6 border border-error/10 shadow-sm"
         >
-          <p className="text-xs font-bold uppercase tracking-widest opacity-60">Total Despesas</p>
+          <p className="text-xs font-bold uppercase tracking-widest opacity-60">{t('dashboard.totalExpenses')}</p>
           <h4 className="text-3xl font-headline font-extrabold mt-1">{formatCurrency(totalDespesas)}</h4>
           <div className="mt-2 flex items-center gap-1 text-xs font-bold">
             <span className="material-symbols-outlined text-sm">

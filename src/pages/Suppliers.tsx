@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import PrintHeader from '../components/PrintHeader';
+import { useTranslation } from 'react-i18next';
 
 const Suppliers = () => {
   const { suppliers, addSupplier, deleteSupplier, updateSupplier, products, transactions, globalSearchTerm } = useAppContext();
+  const { t } = useTranslation();
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -142,13 +144,13 @@ const Suppliers = () => {
     <div className="p-4 md:p-6 lg:p-8 flex-1 space-y-8">
       <PrintHeader />
       <div className="hidden print:block text-center mb-6">
-        <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">Relatório de Fornecedores</h2>
+        <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">{t('sidebar.suppliers')}</h2>
       </div>
 
       {/* Header Section */}
       <section className="flex justify-between items-end print:hidden">
         <div>
-          <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">Fornecedores</h2>
+          <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">{t('sidebar.suppliers')}</h2>
           <p className="text-on-surface-variant font-medium mt-1">Gerencie seus fornecedores e parceiros.</p>
         </div>
         <div className="flex gap-3">
@@ -157,7 +159,7 @@ const Suppliers = () => {
             className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
           >
             <span className="material-symbols-outlined text-lg">print</span>
-            Imprimir
+            {t('dashboard.print')}
           </button>
         </div>
       </section>

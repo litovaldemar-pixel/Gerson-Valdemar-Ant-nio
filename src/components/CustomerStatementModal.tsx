@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Customer, Transaction } from '../types';
 import PrintHeader from './PrintHeader';
+import { useTranslation } from 'react-i18next';
 
 interface CustomerStatementModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface CustomerStatementModalProps {
 }
 
 const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatementModalProps) => {
+  const { t } = useTranslation();
   const { transactions, products, companyInfo } = useAppContext();
   
   const [startDate, setStartDate] = useState(() => {
@@ -96,13 +98,13 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
         <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 print:hidden shrink-0">
           <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
             <span className="material-symbols-outlined text-primary">account_balance_wallet</span>
-            Balancete de Cliente
+            {t('customerStatement.title')}
           </h2>
           <div className="flex gap-2">
-            <button onClick={handlePrint} className="p-2 text-slate-600 hover:bg-slate-200 rounded-full transition-colors" title="Imprimir Balancete">
+            <button onClick={handlePrint} className="p-2 text-slate-600 hover:bg-slate-200 rounded-full transition-colors" title={t('customerStatement.printStatement')}>
               <span className="material-symbols-outlined">print</span>
             </button>
-            <button onClick={onClose} className="p-2 text-slate-600 hover:bg-slate-200 rounded-full transition-colors" title="Fechar">
+            <button onClick={onClose} className="p-2 text-slate-600 hover:bg-slate-200 rounded-full transition-colors" title={t('companySettings.close')}>
               <span className="material-symbols-outlined">close</span>
             </button>
           </div>
@@ -118,15 +120,15 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
                   onClick={() => setQuickFilter(filter)}
                   className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-colors text-slate-600 hover:bg-slate-200/50`}
                 >
-                  {filter === 'hoje' ? 'Hoje' :
-                   filter === 'semana' ? 'Semana' :
-                   filter === 'mes' ? 'Mês' :
-                   filter === 'ano' ? 'Ano' : 'Todos'}
+                  {filter === 'hoje' ? t('customerStatement.today') :
+                   filter === 'semana' ? t('customerStatement.week') :
+                   filter === 'mes' ? t('customerStatement.month') :
+                   filter === 'ano' ? t('customerStatement.year') : t('customerStatement.all')}
                 </button>
               ))}
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Data Inicial</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('customerStatement.startDate')}</label>
               <input 
                 type="date" 
                 value={startDate}
@@ -135,7 +137,7 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Data Final</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('customerStatement.endDate')}</label>
               <input 
                 type="date" 
                 value={endDate}
@@ -144,7 +146,7 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
               />
             </div>
             <div className="ml-auto bg-primary/10 text-primary px-4 py-2 rounded-lg">
-              <span className="text-sm font-bold uppercase tracking-wider block text-primary/80">Total no Período</span>
+              <span className="text-sm font-bold uppercase tracking-wider block text-primary/80">{t('customerStatement.periodTotal')}</span>
               <span className="text-xl font-black">{formatCurrency(totalSpent)}</span>
             </div>
           </div>
@@ -154,11 +156,11 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
         <div className="p-6 overflow-y-auto flex-1 print:overflow-visible print:p-0" id="statement-content">
           <PrintHeader />
           <div className="hidden print:block text-center mb-6">
-            <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">Balancete de Cliente</h2>
+            <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">{t('customerStatement.title')}</h2>
             <p className="text-lg font-bold text-slate-800 mt-2">{customer.name}</p>
-            <p className="text-sm text-slate-600">Documento: {customer.document}</p>
-            <p className="text-sm text-slate-600">E-mail: {customer.email}</p>
-            <p className="text-sm text-slate-600 mt-2">Período: {startDate ? new Date(startDate).toLocaleDateString('pt-MZ') : 'Início'} a {endDate ? new Date(endDate).toLocaleDateString('pt-MZ') : 'Hoje'}</p>
+            <p className="text-sm text-slate-600">{t('customerStatement.document')}: {customer.document}</p>
+            <p className="text-sm text-slate-600">{t('customerStatement.email')}: {customer.email}</p>
+            <p className="text-sm text-slate-600 mt-2">{t('customerStatement.period')}: {startDate ? new Date(startDate).toLocaleDateString() : t('customerStatement.start')} {t('customerStatement.to')} {endDate ? new Date(endDate).toLocaleDateString() : t('customerStatement.today')}</p>
           </div>
 
           <div className="print:hidden mb-6">
@@ -169,18 +171,18 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-y border-slate-200 print:bg-transparent print:border-slate-300">
-                <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Data</th>
-                <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Recibo</th>
-                <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Descrição</th>
-                <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Itens</th>
-                <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Valor</th>
+                <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('customerStatement.date')}</th>
+                <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('customerStatement.receipt')}</th>
+                <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('customerStatement.description')}</th>
+                <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('customerStatement.items')}</th>
+                <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('customerStatement.value')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 print:divide-slate-200">
               {customerTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                    Nenhuma movimentação encontrada neste período.
+                    {t('customerStatement.noTransactions')}
                   </td>
                 </tr>
               ) : (
@@ -198,7 +200,7 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
                         {t.description}
                       </td>
                       <td className="px-4 py-3 text-sm text-slate-600">
-                        {isMultiItem ? `${t.items!.length} itens` : (product ? product.name : '-')}
+                        {isMultiItem ? `${t.items!.length} ${t('customerStatement.itemsCount')}` : (product ? product.name : '-')}
                       </td>
                       <td className="px-4 py-3 text-sm font-bold text-slate-800 text-right">
                         {formatCurrency(t.value)}
@@ -212,7 +214,7 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
               <tfoot className="hidden print:table-footer-group">
                 <tr>
                   <td colSpan={4} className="px-4 py-4 text-right font-bold text-slate-800 uppercase tracking-wider border-t border-slate-300">
-                    Total do Período:
+                    {t('customerStatement.periodTotal')}:
                   </td>
                   <td className="px-4 py-4 text-right font-black text-lg text-slate-800 border-t border-slate-300">
                     {formatCurrency(totalSpent)}
