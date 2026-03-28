@@ -194,8 +194,8 @@ const Dashboard = () => {
     >
       <PrintHeader />
       <div className="hidden print:block text-center mb-6">
-        <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">Dashboard</h2>
-        <p className="text-sm text-slate-600 mt-2">Período: {dateFilter === 'hoje' ? 'Hoje' : dateFilter === 'semana' ? 'Semana' : dateFilter === 'mes' ? 'Mês' : dateFilter === 'ano' ? 'Ano' : 'Todos'}</p>
+        <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">{t('dashboard.title')}</h2>
+        <p className="text-sm text-slate-600 mt-2">{t('common.period')}: {dateFilter === 'hoje' ? t('common.today') : dateFilter === 'semana' ? t('common.week') : dateFilter === 'mes' ? t('common.month') : dateFilter === 'ano' ? t('common.year') : t('common.all')}</p>
       </div>
 
       {/* Header Section */}
@@ -216,10 +216,7 @@ const Dashboard = () => {
                     : 'text-on-surface-variant hover:bg-surface-variant/50'
                 }`}
               >
-                {filter === 'hoje' ? t('common.today') :
-                 filter === 'semana' ? t('common.week') :
-                 filter === 'mes' ? t('common.month') :
-                 filter === 'ano' ? t('common.year') : t('common.all')}
+                {t(`dashboard.filters.${filter}`)}
               </button>
             ))}
           </div>
@@ -238,8 +235,8 @@ const Dashboard = () => {
         <section className="bg-error-container text-on-error-container rounded-xl p-4 flex items-center gap-4 shadow-sm">
           <span className="material-symbols-outlined text-3xl">warning</span>
           <div>
-            <h4 className="font-bold">Atenção: Stock Baixo</h4>
-            <p className="text-sm">Você tem {lowStockProducts.length} produto(s) com stock abaixo ou igual ao mínimo recomendado.</p>
+            <h4 className="font-bold">{t('dashboard.lowStockAlert')}</h4>
+            <p className="text-sm">{t('dashboard.lowStockMessage', { count: lowStockProducts.length })}</p>
           </div>
         </section>
       )}
@@ -260,7 +257,7 @@ const Dashboard = () => {
           </div>
           <div className="mt-2 text-[10px] font-bold text-on-surface-variant flex items-center gap-1">
             <span className="material-symbols-outlined text-sm">analytics</span>
-            Índice de Despesas: {indiceDespesas}%
+            {t('dashboard.expenseIndex')}: {indiceDespesas}%
           </div>
         </motion.div>
         <motion.div 
@@ -287,7 +284,7 @@ const Dashboard = () => {
             <span className="material-symbols-outlined text-sm">
               {receitaPercent > 0 ? 'trending_up' : receitaPercent < 0 ? 'trending_down' : 'trending_flat'}
             </span>
-            {receitaPercent === 0 ? 'Sem comparação' : `${receitaPercent > 0 ? '+' : ''}${receitaPercent.toFixed(1)}% vs anterior`}
+            {receitaPercent === 0 ? t('dashboard.noComparison') : `${receitaPercent > 0 ? '+' : ''}${receitaPercent.toFixed(1)}% ${t('dashboard.vsPrevious')}`}
           </div>
         </motion.div>
         <motion.div 
@@ -302,7 +299,7 @@ const Dashboard = () => {
             <span className="material-symbols-outlined text-sm">
               {despesaPercent > 0 ? 'trending_up' : despesaPercent < 0 ? 'trending_down' : 'trending_flat'}
             </span>
-            {despesaPercent === 0 ? 'Sem comparação' : `${despesaPercent > 0 ? '+' : ''}${despesaPercent.toFixed(1)}% vs anterior`}
+            {despesaPercent === 0 ? t('dashboard.noComparison') : `${despesaPercent > 0 ? '+' : ''}${despesaPercent.toFixed(1)}% ${t('dashboard.vsPrevious')}`}
           </div>
         </motion.div>
       </section>
@@ -316,7 +313,7 @@ const Dashboard = () => {
           transition={{ duration: 0.4, delay: 0.4 }}
           className="lg:col-span-2 bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10"
         >
-          <h3 className="text-lg font-bold font-headline text-primary mb-6">Fluxo de Caixa (Últimos Dias)</h3>
+          <h3 className="text-lg font-bold font-headline text-primary mb-6">{t('dashboard.cashFlow')}</h3>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -329,8 +326,8 @@ const Dashboard = () => {
                   formatter={(value: number) => formatCurrency(value)}
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
-                <Bar dataKey="Receitas" fill="#006c47" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                <Bar dataKey="Despesas" fill="#ba1a1a" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                <Bar dataKey="Receitas" name={t('dashboard.revenue')} fill="#006c47" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                <Bar dataKey="Despesas" name={t('dashboard.expenses')} fill="#ba1a1a" radius={[4, 4, 0, 0]} maxBarSize={40} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -343,7 +340,7 @@ const Dashboard = () => {
           transition={{ duration: 0.4, delay: 0.5 }}
           className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10 flex flex-col"
         >
-          <h3 className="text-lg font-bold font-headline text-primary mb-2">Despesas por Categoria</h3>
+          <h3 className="text-lg font-bold font-headline text-primary mb-2">{t('dashboard.expensesByCategory')}</h3>
           <div className="flex-1 w-full min-h-[250px]">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
@@ -381,7 +378,7 @@ const Dashboard = () => {
           transition={{ duration: 0.4, delay: 0.6 }}
           className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10 flex flex-col"
         >
-          <h3 className="text-lg font-bold font-headline text-primary mb-2">Receitas por Categoria</h3>
+          <h3 className="text-lg font-bold font-headline text-primary mb-2">{t('dashboard.revenueByCategory')}</h3>
           <div className="flex-1 w-full min-h-[250px]">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
@@ -422,21 +419,21 @@ const Dashboard = () => {
               <span className="material-symbols-outlined text-2xl">group</span>
             </div>
             <h4 className="text-3xl font-extrabold font-headline text-primary">{filteredCustomers.length}</h4>
-            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Clientes</p>
+            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">{t('dashboard.customers')}</p>
           </div>
           <div className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10 flex flex-col justify-center items-center text-center">
             <div className="w-14 h-14 bg-secondary-container rounded-full flex items-center justify-center text-on-secondary-container mb-3">
               <span className="material-symbols-outlined text-2xl">local_shipping</span>
             </div>
             <h4 className="text-3xl font-extrabold font-headline text-primary">{filteredSuppliers.length}</h4>
-            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Fornecedores</p>
+            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">{t('dashboard.suppliers')}</p>
           </div>
           <div className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10 flex flex-col justify-center items-center text-center">
             <div className="w-14 h-14 bg-tertiary-container rounded-full flex items-center justify-center text-on-tertiary-container mb-3">
               <span className="material-symbols-outlined text-2xl">inventory_2</span>
             </div>
             <h4 className="text-3xl font-extrabold font-headline text-primary">{filteredProducts.length}</h4>
-            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Produtos</p>
+            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">{t('dashboard.products')}</p>
           </div>
         </motion.div>
       </section>

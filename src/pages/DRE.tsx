@@ -125,17 +125,17 @@ const DRE = () => {
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
           <h3 className="font-headline text-3xl font-extrabold text-primary tracking-tight">{t('sidebar.dre')}</h3>
-          <p className="text-on-surface-variant mt-1 text-sm">Visão analítica de performance financeira por competência.</p>
+          <p className="text-on-surface-variant mt-1 text-sm">{t('dre.subtitle', 'Visão analítica de performance financeira por competência.')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 bg-surface-container-low rounded-lg p-1 border border-outline-variant/20 print:hidden">
-            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider ml-2">Taxa IVA:</span>
+            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider ml-2">{t('dre.ivaRate', 'Taxa IVA:')}</span>
             <select
               value={ivaRate}
               onChange={(e) => setIvaRate(Number(e.target.value))}
               className="bg-transparent text-sm font-bold text-primary border-none focus:ring-0 cursor-pointer"
             >
-              <option value={0}>Isento (0%)</option>
+              <option value={0}>{t('dre.exempt', 'Isento')} (0%)</option>
               <option value={3}>3%</option>
               <option value={5}>5%</option>
               <option value={16}>16%</option>
@@ -169,15 +169,15 @@ const DRE = () => {
       <PrintHeader />
       <div className="hidden print:block text-center mb-6">
         <h2 className="text-2xl font-black uppercase tracking-wider mb-2">{t('sidebar.dre')}</h2>
-        <p className="text-sm text-slate-600">Período: {t(`dashboard.filters.${dateFilter}`).toUpperCase()}</p>
+        <p className="text-sm text-slate-600">{t('dre.period', 'Período')}: {t(`dashboard.filters.${dateFilter}`).toUpperCase()}</p>
       </div>
 
       {/* DRE Structured Table */}
       <div className="bg-surface-container-lowest rounded-xl shadow-[0_12px_32px_-4px_rgba(0,30,64,0.08)] overflow-hidden print:shadow-none">
         <div className="grid grid-cols-12 bg-primary text-on-primary p-4 text-[10px] font-bold uppercase tracking-[0.2em]">
-          <div className="col-span-6 md:col-span-8">Descrição da Conta</div>
-          <div className="col-span-3 md:col-span-2 text-right">Valor (MZN)</div>
-          <div className="col-span-3 md:col-span-2 text-right">% Rec. Bruta</div>
+          <div className="col-span-6 md:col-span-8">{t('dre.accountDescription', 'Descrição da Conta')}</div>
+          <div className="col-span-3 md:col-span-2 text-right">{t('dre.value', 'Valor')} (MZN)</div>
+          <div className="col-span-3 md:col-span-2 text-right">% {t('dre.grossRev', 'Rec. Bruta')}</div>
         </div>
 
         <div className="divide-y divide-outline-variant/10">
@@ -188,7 +188,7 @@ const DRE = () => {
                 <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
                   <span className="material-symbols-outlined text-lg">trending_up</span>
                 </div>
-                <span className="font-headline font-bold text-primary">Receita Bruta Total (Faturado) (+)</span>
+                <span className="font-headline font-bold text-primary">{t('dre.grossRevenue', 'Receita Bruta Total (Faturado) (+)')}</span>
               </div>
               <div className="col-span-3 md:col-span-2 text-right font-headline font-extrabold text-primary text-lg">
                 {formatCurrency(receitaBruta)}
@@ -202,7 +202,7 @@ const DRE = () => {
           {/* Base Tributável */}
           <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
             <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
-              Base Tributável
+              {t('dre.taxableBase', 'Base Tributável')}
             </div>
             <div className="col-span-3 md:col-span-2 text-right text-sm text-primary font-semibold">
               {formatCurrency(baseTributavel)}
@@ -215,7 +215,7 @@ const DRE = () => {
           {/* Variable Costs */}
           <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
             <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
-              IVA ({ivaRate === 0 ? 'Isento' : `${ivaRate}%`}) (-)
+              {t('dre.iva', 'IVA')} ({ivaRate === 0 ? t('dre.exempt', 'Isento') : `${ivaRate}%`}) (-)
             </div>
             <div className="col-span-3 md:col-span-2 text-right text-sm text-tertiary-container font-semibold">
               ({formatCurrency(impostosSobreVendas)})
@@ -229,7 +229,7 @@ const DRE = () => {
           <div className="bg-surface-container-low/50">
             <div className="grid grid-cols-12 p-4 items-center">
               <div className="col-span-6 md:col-span-8 pl-4 border-l-4 border-secondary">
-                <span className="font-headline font-bold text-secondary uppercase text-xs tracking-wider">Receita Líquida (=)</span>
+                <span className="font-headline font-bold text-secondary uppercase text-xs tracking-wider">{t('dre.netRevenue', 'Receita Líquida (=)')}</span>
               </div>
               <div className="col-span-3 md:col-span-2 text-right font-headline font-bold text-secondary">
                 {formatCurrency(receitaLiquida)}
@@ -242,7 +242,7 @@ const DRE = () => {
 
           <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
             <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
-              Custos de Mercadoria/Serviços (CMV) (-)
+              {t('dre.cogs', 'Custos de Mercadoria/Serviços (CMV) (-)')}
             </div>
             <div className="col-span-3 md:col-span-2 text-right text-sm text-tertiary-container font-semibold">
               ({formatCurrency(cmv)})
@@ -256,7 +256,7 @@ const DRE = () => {
           <div className="bg-surface-container-low">
             <div className="grid grid-cols-12 p-5 items-center">
               <div className="col-span-6 md:col-span-8 pl-4 border-l-4 border-primary">
-                <span className="font-headline font-bold text-primary uppercase text-xs tracking-wider">Margem de Contribuição (=)</span>
+                <span className="font-headline font-bold text-primary uppercase text-xs tracking-wider">{t('dre.contributionMargin', 'Margem de Contribuição (=)')}</span>
               </div>
               <div className="col-span-3 md:col-span-2 text-right font-headline font-bold text-primary">
                 {formatCurrency(margemContribuicao)}
@@ -270,7 +270,7 @@ const DRE = () => {
           {/* Fixed Costs */}
           <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
             <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
-              Despesas Administrativas (-)
+              {t('dre.adminExpenses', 'Despesas Administrativas (-)')}
             </div>
             <div className="col-span-3 md:col-span-2 text-right text-sm text-tertiary-container font-semibold">
               ({formatCurrency(despesasAdmin)})
@@ -281,7 +281,7 @@ const DRE = () => {
           </div>
           <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
             <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
-              Folha de Pagamento & Encargos (-)
+              {t('dre.payroll', 'Folha de Pagamento & Encargos (-)')}
             </div>
             <div className="col-span-3 md:col-span-2 text-right text-sm text-tertiary-container font-semibold">
               ({formatCurrency(folhaPagamento)})
@@ -292,7 +292,7 @@ const DRE = () => {
           </div>
           <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
             <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
-              Marketing & Vendas (-)
+              {t('dre.marketing', 'Marketing & Vendas (-)')}
             </div>
             <div className="col-span-3 md:col-span-2 text-right text-sm text-tertiary-container font-semibold">
               ({formatCurrency(marketingVendas)})
@@ -303,7 +303,7 @@ const DRE = () => {
           </div>
           <div className="grid grid-cols-12 p-5 items-center dre-table-row transition-colors">
             <div className="col-span-6 md:col-span-8 pl-11 text-on-surface-variant text-sm font-medium">
-              Outros Impostos (Registados) (-)
+              {t('dre.otherTaxes', 'Outros Impostos (Registados) (-)')}
             </div>
             <div className="col-span-3 md:col-span-2 text-right text-sm text-tertiary-container font-semibold">
               ({formatCurrency(impostosRegistados)})
@@ -322,10 +322,10 @@ const DRE = () => {
                 </div>
                 <div>
                   <span className={`font-headline font-black text-xl tracking-tight ${ebitda >= 0 ? 'text-primary' : 'text-error'}`}>
-                    Resultado Líquido (=)
+                    {t('dre.netIncome', 'Resultado Líquido (=)')}
                   </span>
                   <p className="text-[10px] uppercase font-bold text-on-surface-variant tracking-tighter">
-                    {ebitda >= 0 ? 'Lucro do Exercício' : 'Prejuízo do Exercício'}
+                    {ebitda >= 0 ? t('dre.profit', 'Lucro do Exercício') : t('dre.loss', 'Prejuízo do Exercício')}
                   </p>
                 </div>
               </div>
@@ -349,7 +349,7 @@ const DRE = () => {
             <span className="material-symbols-outlined">check_circle</span>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Ponto de Equilíbrio</p>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">{t('dre.breakeven', 'Ponto de Equilíbrio')}</p>
             <p className="font-headline font-bold text-lg text-primary">{formatCurrency(pontoEquilibrio)}</p>
           </div>
         </div>
@@ -358,7 +358,7 @@ const DRE = () => {
             <span className="material-symbols-outlined">speed</span>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Margem de Segurança</p>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">{t('dre.marginOfSafety', 'Margem de Segurança')}</p>
             <p className="font-headline font-bold text-lg text-primary">{margemSeguranca.toFixed(1)}%</p>
           </div>
         </div>
@@ -367,7 +367,7 @@ const DRE = () => {
             <span className="material-symbols-outlined">info</span>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Alavancagem Op.</p>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">{t('dre.operatingLeverage', 'Alavancagem Op.')}</p>
             <p className="font-headline font-bold text-lg text-primary">{alavancagemOperacional.toFixed(2)}x</p>
           </div>
         </div>

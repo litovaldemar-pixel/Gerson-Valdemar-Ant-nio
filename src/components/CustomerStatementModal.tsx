@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Customer, Transaction } from '../types';
 import PrintHeader from './PrintHeader';
@@ -39,6 +39,15 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
   }, [transactions, customer, startDate, endDate]);
 
   const totalSpent = customerTransactions.reduce((acc, curr) => acc + curr.value, 0);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('print-modal-open');
+    } else {
+      document.body.classList.remove('print-modal-open');
+    }
+    return () => document.body.classList.remove('print-modal-open');
+  }, [isOpen]);
 
   if (!isOpen || !customer) return null;
 
@@ -225,32 +234,6 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
           </table>
         </div>
       </div>
-
-      {/* Print Styles */}
-      <style>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          .fixed {
-            position: absolute;
-          }
-          #statement-content, #statement-content * {
-            visibility: visible;
-          }
-          #statement-content {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            margin: 0;
-            padding: 20px;
-          }
-          @page {
-            margin: 0;
-          }
-        }
-      `}</style>
     </div>
   );
 };

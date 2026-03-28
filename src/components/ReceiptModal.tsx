@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Transaction } from '../types';
 import { QRCodeSVG } from 'qrcode.react';
@@ -13,6 +13,15 @@ interface ReceiptModalProps {
 const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
   const { t } = useTranslation();
   const { companyInfo, products, customers, suppliers } = useAppContext();
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('print-modal-open');
+    } else {
+      document.body.classList.remove('print-modal-open');
+    }
+    return () => document.body.classList.remove('print-modal-open');
+  }, [isOpen]);
 
   if (!isOpen || !transaction) return null;
 
@@ -188,29 +197,6 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
           </button>
         </div>
       </div>
-      
-      {/* Print Styles scoped to when modal is open */}
-      <style>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          #receipt-content, #receipt-content * {
-            visibility: visible;
-          }
-          #receipt-content {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            margin: 0;
-            padding: 20px;
-          }
-          @page {
-            margin: 0;
-          }
-        }
-      `}</style>
     </div>
   );
 };

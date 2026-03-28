@@ -5,8 +5,10 @@ import Header from './Header';
 import { useAppContext } from '../context/AppContext';
 import SubscriptionLock from './SubscriptionLock';
 import CompanySettingsModal from './CompanySettingsModal';
+import { useTranslation } from 'react-i18next';
 
 const Layout = () => {
+  const { t } = useTranslation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
   const { companyInfo, companies, loading, currentCompanyId } = useAppContext();
   const location = useLocation();
@@ -50,7 +52,7 @@ const Layout = () => {
 
       {/* Print Footer */}
       <div className="hidden print:block print-footer">
-        Gv Control & Business Solutions - transformamos dados em decisões inteligentes
+        {t('layout.printFooter')}
       </div>
 
       {showLock && <SubscriptionLock />}

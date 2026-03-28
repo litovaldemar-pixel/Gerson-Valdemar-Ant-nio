@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 
 const SubscriptionLock = () => {
+  const { t } = useTranslation();
   const { companyInfo, companies, currentCompanyId, setCurrentCompanyId, updateCompany } = useAppContext();
   const { logout, user } = useAuth();
   const [showSwitch, setShowSwitch] = useState(false);
@@ -47,7 +49,7 @@ const SubscriptionLock = () => {
         }
       });
     } catch (err) {
-      setError('Erro na ação de desenvolvedor.');
+      setError(t('subscription.developerActionError'));
     } finally {
       setVerifying(false);
     }
@@ -56,7 +58,7 @@ const SubscriptionLock = () => {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (transactionId.length < 5) {
-      setError('Por favor, insira um ID de transação válido.');
+      setError(t('subscription.invalidTransactionId'));
       return;
     }
 
@@ -84,7 +86,7 @@ const SubscriptionLock = () => {
         });
         setVerifying(false);
       } catch (err) {
-        setError('Erro ao processar pagamento. Tente novamente.');
+        setError(t('subscription.paymentError'));
         setVerifying(false);
       }
     }, 2000);
@@ -101,46 +103,46 @@ const SubscriptionLock = () => {
           <span className="material-symbols-outlined text-4xl">lock_clock</span>
         </div>
         <h2 className="text-3xl font-black font-headline text-on-surface mb-2 tracking-tight">
-          Acesso Bloqueado
+          {t('subscription.accessBlocked')}
         </h2>
         <p className="text-on-surface-variant mb-8 font-medium">
-          A subscrição da empresa <strong>{companyInfo?.name}</strong> expirou. Para continuar a usar o sistema APPK, efectue o pagamento mensal.
+          {t('subscription.expiredMessage', { companyName: companyInfo?.name })}
         </p>
 
         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 mb-8 text-left border border-outline-variant/30 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-primary">payments</span>
-              Pagamento de Serviços
+              {t('subscription.servicePayment')}
             </h3>
             <span className="text-xl font-black text-primary">5.000,00 MT</span>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl text-center">
-              <p className="text-[10px] font-bold uppercase text-primary tracking-widest mb-1">Entidade</p>
+              <p className="text-[10px] font-bold uppercase text-primary tracking-widest mb-1">{t('subscription.entity')}</p>
               <p className="text-2xl font-black text-primary font-mono tracking-widest">800900</p>
             </div>
             <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl text-center">
-              <p className="text-[10px] font-bold uppercase text-primary tracking-widest mb-1">Referência</p>
+              <p className="text-[10px] font-bold uppercase text-primary tracking-widest mb-1">{t('subscription.reference')}</p>
               <p className="text-2xl font-black text-primary font-mono tracking-widest">{paymentRef}</p>
             </div>
           </div>
           <p className="text-[10px] text-on-surface-variant text-center font-bold uppercase tracking-widest">
-            Válido para M-Pesa e E-mola
+            {t('subscription.validFor')}
           </p>
           
           <p className="text-[10px] text-on-surface-variant text-center italic">
-            O sistema desbloqueia automaticamente após a confirmação do ID da transação.
+            {t('subscription.autoUnlock')}
           </p>
         </div>
 
         <form onSubmit={handleVerify} className="space-y-4 mb-8">
           <div className="space-y-2 text-left">
-            <label className="text-xs font-bold text-on-surface-variant ml-1 uppercase tracking-widest">ID da Transação (Recebido por SMS)</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1 uppercase tracking-widest">{t('subscription.transactionIdLabel')}</label>
             <input 
               type="text"
-              placeholder="Ex: 8J3K9L2M..."
+              placeholder={t('subscription.transactionIdPlaceholder')}
               className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-outline-variant/30 rounded-xl focus:ring-2 focus:ring-primary outline-none font-mono tracking-wider uppercase"
               value={transactionId}
               onChange={(e) => setTransactionId(e.target.value.toUpperCase())}
@@ -158,12 +160,12 @@ const SubscriptionLock = () => {
             {verifying ? (
               <>
                 <div className="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
-                Verificando M-Pesa / E-mola...
+                {t('subscription.verifying')}
               </>
             ) : (
               <>
                 <span className="material-symbols-outlined">verified_user</span>
-                Confirmar Pagamento
+                {t('subscription.confirmPayment')}
               </>
             )}
           </button>
@@ -172,28 +174,28 @@ const SubscriptionLock = () => {
         <div className="space-y-3">
           {isDeveloper && (
             <div className="pt-4 border-t border-primary/20 space-y-2">
-              <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Painel do Desenvolvedor</p>
+              <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">{t('subscription.developerPanel')}</p>
               <div className="grid grid-cols-3 gap-2">
                 <button 
                   onClick={() => handleDeveloperAction('30days')}
                   disabled={verifying}
                   className="bg-primary/10 text-primary px-2 py-2 rounded-lg font-bold hover:bg-primary/20 transition-colors text-[10px] border border-primary/20"
                 >
-                  +30 Dias
+                  +30 {t('subscription.days')}
                 </button>
                 <button 
                   onClick={() => handleDeveloperAction('1year')}
                   disabled={verifying}
                   className="bg-primary/10 text-primary px-2 py-2 rounded-lg font-bold hover:bg-primary/20 transition-colors text-[10px] border border-primary/20"
                 >
-                  +1 Ano
+                  +1 {t('subscription.year')}
                 </button>
                 <button 
                   onClick={() => handleDeveloperAction('deactivate')}
                   disabled={verifying}
                   className="bg-primary text-on-primary px-2 py-2 rounded-lg font-bold hover:brightness-110 transition-colors text-[10px]"
                 >
-                  Desativar (Vitalício)
+                  {t('subscription.deactivate')}
                 </button>
               </div>
             </div>
@@ -203,7 +205,7 @@ const SubscriptionLock = () => {
             <div className="pt-4 border-t border-outline-variant/20">
               {showSwitch ? (
                 <div className="text-left">
-                  <label className="block text-sm font-bold text-on-surface-variant mb-2">Alternar Empresa</label>
+                  <label className="block text-sm font-bold text-on-surface-variant mb-2">{t('subscription.switchCompany')}</label>
                   <select
                     value={currentCompanyId || ''}
                     onChange={(e) => setCurrentCompanyId(e.target.value)}
@@ -220,7 +222,7 @@ const SubscriptionLock = () => {
                   className="w-full bg-surface-container-high text-on-surface px-6 py-3 rounded-xl font-bold hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2"
                 >
                   <span className="material-symbols-outlined">swap_horiz</span>
-                  Alternar Empresa
+                  {t('subscription.switchCompany')}
                 </button>
               )}
             </div>
@@ -236,7 +238,7 @@ const SubscriptionLock = () => {
                 className="flex-1 bg-surface-container-high text-on-surface px-4 py-3 rounded-xl font-bold hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 text-sm"
               >
                 <span className="material-symbols-outlined text-lg">home</span>
-                Menu Principal
+                {t('sidebar.mainMenu')}
               </button>
               <button 
                 onClick={async () => {
@@ -246,7 +248,7 @@ const SubscriptionLock = () => {
                 className="flex-1 bg-error/10 text-error px-4 py-3 rounded-xl font-bold hover:bg-error/20 transition-colors flex items-center justify-center gap-2 text-sm"
               >
                 <span className="material-symbols-outlined text-lg">close</span>
-                Sair do App
+                {t('sidebar.logout')}
               </button>
             </div>
             <button 
@@ -254,12 +256,12 @@ const SubscriptionLock = () => {
               className="w-full bg-[#25D366]/10 text-[#25D366] px-4 py-3 rounded-xl font-bold hover:bg-[#25D366]/20 transition-colors flex items-center justify-center gap-2 text-sm"
             >
               <span className="material-symbols-outlined text-lg">support_agent</span>
-              Suporte via WhatsApp
+              {t('subscription.whatsappSupport')}
             </button>
           </div>
           <div className="pt-4 text-center">
             <p className="text-[10px] text-on-surface-variant opacity-50">
-              Logado como: {user?.email || 'Desconhecido'}
+              {t('subscription.loggedInAs')}: {user?.email || t('subscription.unknown')}
             </p>
           </div>
         </div>

@@ -199,7 +199,7 @@ const Statement = () => {
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 print:hidden">
         <div>
           <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">{t('sidebar.statement')}</h2>
-          <p className="text-on-surface-variant font-medium mt-1">Balancete analítico estruturado por contas (PGC-NIRF).</p>
+          <p className="text-on-surface-variant font-medium mt-1">{t('statement.subtitle', 'Balancete analítico estruturado por contas (PGC-NIRF).')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex bg-surface-container-low rounded-lg p-1 border border-outline-variant/20">
@@ -227,7 +227,7 @@ const Statement = () => {
       <section className="bg-surface-container-low rounded-xl p-6 print:hidden">
         <div className="flex flex-wrap gap-6 items-end">
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider ml-1">Data Inicial</label>
+            <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider ml-1">{t('statement.startDate', 'Data Inicial')}</label>
             <input 
               type="date" 
               value={startDate}
@@ -236,7 +236,7 @@ const Statement = () => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider ml-1">Data Final</label>
+            <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider ml-1">{t('statement.endDate', 'Data Final')}</label>
             <input 
               type="date" 
               value={endDate}
@@ -251,32 +251,32 @@ const Statement = () => {
       <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden print:shadow-none print:bg-transparent">
         <PrintHeader />
         <div className="hidden print:block text-center mb-6">
-          <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">Balancete do Razão</h2>
-          <p className="text-sm text-slate-600 mt-1">Período: {startDate ? new Date(startDate).toLocaleDateString('pt-MZ') : 'Início'} a {endDate ? new Date(endDate).toLocaleDateString('pt-MZ') : 'Hoje'}</p>
+          <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">{t('statement.printTitle', 'Balancete do Razão')}</h2>
+          <p className="text-sm text-slate-600 mt-1">{t('statement.period', 'Período')}: {startDate ? new Date(startDate).toLocaleDateString('pt-MZ') : t('statement.start', 'Início')} {t('statement.to', 'a')} {endDate ? new Date(endDate).toLocaleDateString('pt-MZ') : t('statement.today', 'Hoje')}</p>
         </div>
 
         <div className="p-6 border-b border-outline-variant/10 flex justify-between items-center print:hidden">
-          <h3 className="font-headline font-bold text-lg text-primary">Contas Movimentadas</h3>
-          <span className="text-xs text-on-surface-variant">{balanceteData.length} contas com saldo</span>
+          <h3 className="font-headline font-bold text-lg text-primary">{t('statement.accountsMoved', 'Contas Movimentadas')}</h3>
+          <span className="text-xs text-on-surface-variant">{balanceteData.length} {t('statement.accountsWithBalance', 'contas com saldo')}</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low/50 print:bg-transparent print:border-b print:border-outline-variant/20">
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/20">Conta</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/20">Descrição</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Mov. Débito</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Mov. Crédito</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Saldo Débito</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">Saldo Crédito</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/20">{t('statement.account', 'Conta')}</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/20">{t('statement.description', 'Descrição')}</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">{t('statement.debitMov', 'Mov. Débito')}</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">{t('statement.creditMov', 'Mov. Crédito')}</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">{t('statement.debitBalance', 'Saldo Débito')}</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right border-b border-outline-variant/20">{t('statement.creditBalance', 'Saldo Crédito')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5 print:divide-outline-variant/20">
               {balanceteData.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-sm text-on-surface-variant">
-                    Nenhuma movimentação encontrada neste período.
+                    {t('statement.noMovements', 'Nenhuma movimentação encontrada neste período.')}
                   </td>
                 </tr>
               ) : (
@@ -330,7 +330,7 @@ const Statement = () => {
                       ))}
                       <tr className="bg-surface-container-lowest border-t border-outline-variant/10">
                         <td colSpan={2} className="px-6 py-2 text-sm font-bold text-right text-on-surface-variant">
-                          Soma Líquida
+                          {t('statement.netSum', 'Soma Líquida')}
                         </td>
                         <td className="px-6 py-2 text-sm font-bold text-right text-on-surface-variant">{catDebito > 0 ? formatCurrency(catDebito) : '0,00'}</td>
                         <td className="px-6 py-2 text-sm font-bold text-right text-on-surface-variant">{catCredito > 0 ? formatCurrency(catCredito) : '0,00'}</td>
@@ -339,7 +339,7 @@ const Statement = () => {
                       </tr>
                       <tr className="bg-surface-container-lowest border-b-2 border-outline-variant/20">
                         <td colSpan={2} className="px-6 py-2 text-sm font-bold text-right text-on-surface-variant">
-                          Soma Saldos
+                          {t('statement.balancesSum', 'Soma Saldos')}
                         </td>
                         <td colSpan={2} className="px-6 py-2"></td>
                         <td className="px-6 py-2 text-sm font-bold text-right text-secondary">{catSaldoDevedor > 0 ? formatCurrency(catSaldoDevedor) : '0,00'}</td>
@@ -354,7 +354,7 @@ const Statement = () => {
               <tfoot className="bg-surface-container-low/50 print:bg-transparent">
                 <tr>
                   <td colSpan={2} className="px-6 py-4 text-right font-black text-primary uppercase tracking-wider border-t-2 border-outline-variant/30">
-                    Soma Líquida
+                    {t('statement.netSum', 'Soma Líquida')}
                   </td>
                   <td className="px-6 py-4 text-right font-black text-primary border-t-2 border-outline-variant/30">
                     {formatCurrency(totalDebito)}
@@ -371,7 +371,7 @@ const Statement = () => {
                 </tr>
                 <tr>
                   <td colSpan={2} className="px-6 py-4 text-right font-black text-primary uppercase tracking-wider border-b-2 border-outline-variant/30">
-                    Soma Saldos
+                    {t('statement.balancesSum', 'Soma Saldos')}
                   </td>
                   <td colSpan={2} className="px-6 py-4 border-b-2 border-outline-variant/30"></td>
                   <td className="px-6 py-4 text-right font-black text-secondary border-b-2 border-outline-variant/30">

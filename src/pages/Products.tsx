@@ -125,7 +125,7 @@ const Products = () => {
       <section className="flex justify-between items-end print:hidden">
         <div>
           <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">{t('sidebar.products')}</h2>
-          <p className="text-on-surface-variant font-medium mt-1">Gerencie seu inventário e produtos.</p>
+          <p className="text-on-surface-variant font-medium mt-1">{t('products.subtitle')}</p>
         </div>
         <div className="flex gap-3">
           <button 
@@ -140,13 +140,13 @@ const Products = () => {
 
       {/* Quick Entry Form Section */}
       <section className="bg-surface-container-low rounded-xl p-6 print:hidden">
-        <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">Novo Produto</h3>
+        <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">{t('products.newProduct')}</h3>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">Nome do Produto</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">{t('products.nameLabel')}</label>
             <input
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
-              placeholder="Ex: Notebook Pro"
+              placeholder={t('products.namePlaceholder')}
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -154,10 +154,10 @@ const Products = () => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">SKU / Código</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">{t('products.skuLabel')}</label>
             <input
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
-              placeholder="Ex: NB-PRO-01"
+              placeholder={t('products.skuPlaceholder')}
               type="text"
               value={sku}
               onChange={(e) => setSku(e.target.value)}
@@ -165,17 +165,17 @@ const Products = () => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">Categoria</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">{t('products.categoryLabel')}</label>
             <input
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
-              placeholder="Ex: Eletrônicos"
+              placeholder={t('products.categoryPlaceholder')}
               type="text"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">Preço de Venda (MZN)</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">{t('products.salePriceLabel')}</label>
             <input
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               placeholder="0.00"
@@ -187,7 +187,7 @@ const Products = () => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">Custo (MZN)</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">{t('products.costLabel')}</label>
             <input
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               placeholder="0.00"
@@ -199,7 +199,7 @@ const Products = () => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">Quantidade em Stock</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">{t('products.stockQuantityLabel')}</label>
             <input
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               placeholder="0"
@@ -210,7 +210,7 @@ const Products = () => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">Stock Mínimo</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">{t('products.minStockLabel')}</label>
             <input
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               placeholder="0"
@@ -221,46 +221,46 @@ const Products = () => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">Unidade de Venda</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">{t('products.saleUnitLabel')}</label>
             <select
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
             >
-              <option value="un">Unidade (un)</option>
-              <option value="kg">Quilograma (kg)</option>
-              <option value="lt">Litro (lt)</option>
-              <option value="mt">Metro (mt)</option>
-              <option value="cx">Caixa (cx)</option>
-              <option value="pct">Pacote (pct)</option>
-              <option value="par">Par (par)</option>
-              <option value="saco">Saco (saco)</option>
-              <option value="fardo">Fardo (fardo)</option>
+              <option value="un">{t('products.unitUn')}</option>
+              <option value="kg">{t('products.unitKg')}</option>
+              <option value="lt">{t('products.unitLt')}</option>
+              <option value="mt">{t('products.unitMt')}</option>
+              <option value="cx">{t('products.unitCx')}</option>
+              <option value="pct">{t('products.unitPct')}</option>
+              <option value="par">{t('products.unitPar')}</option>
+              <option value="saco">{t('products.unitSaco')}</option>
+              <option value="fardo">{t('products.unitFardo')}</option>
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">Unidade de Compra</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">{t('products.purchaseUnitLabel')}</label>
             <select
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               value={purchaseUnit}
               onChange={(e) => setPurchaseUnit(e.target.value)}
             >
-              <option value="un">Unidade (un)</option>
-              <option value="kg">Quilograma (kg)</option>
-              <option value="lt">Litro (lt)</option>
-              <option value="mt">Metro (mt)</option>
-              <option value="cx">Caixa (cx)</option>
-              <option value="pct">Pacote (pct)</option>
-              <option value="par">Par (par)</option>
-              <option value="saco">Saco (saco)</option>
-              <option value="fardo">Fardo (fardo)</option>
+              <option value="un">{t('products.unitUn')}</option>
+              <option value="kg">{t('products.unitKg')}</option>
+              <option value="lt">{t('products.unitLt')}</option>
+              <option value="mt">{t('products.unitMt')}</option>
+              <option value="cx">{t('products.unitCx')}</option>
+              <option value="pct">{t('products.unitPct')}</option>
+              <option value="par">{t('products.unitPar')}</option>
+              <option value="saco">{t('products.unitSaco')}</option>
+              <option value="fardo">{t('products.unitFardo')}</option>
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">Fator de Conversão</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">{t('products.conversionFactorLabel')}</label>
             <input
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
-              placeholder="Ex: 25"
+              placeholder={t('products.conversionFactorPlaceholder')}
               type="number"
               step="0.01"
               value={conversionFactor}
@@ -268,18 +268,18 @@ const Products = () => {
             />
             {purchaseUnit !== unit && conversionFactor && parseFloat(conversionFactor) > 1 && (
               <p className="text-[10px] font-bold text-primary ml-1 animate-pulse">
-                Regra: 1 {purchaseUnit} = {conversionFactor} {unit}
+                {t('products.conversionRule', { purchaseUnit, conversionFactor, unit })}
               </p>
             )}
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-bold text-on-surface-variant ml-1">Fornecedor</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1">{t('products.supplierLabel')}</label>
             <select
               className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               value={supplierId}
               onChange={(e) => setSupplierId(e.target.value)}
             >
-              <option value="">Selecione um fornecedor</option>
+              <option value="">{t('products.selectSupplier')}</option>
               {suppliers.map(s => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
@@ -288,11 +288,11 @@ const Products = () => {
           <div className="flex gap-2 w-full md:col-span-2 lg:col-span-4">
             {editingId && (
               <button type="button" onClick={handleCancelEdit} className="w-full bg-surface-variant text-on-surface-variant py-3 rounded-lg font-bold text-sm hover:bg-outline-variant transition-colors">
-                Cancelar
+                {t('common.cancel')}
               </button>
             )}
             <button type="submit" className="w-full bg-primary text-on-primary py-3 rounded-lg font-bold text-sm hover:bg-primary-container transition-colors">
-              {editingId ? 'Atualizar' : 'Cadastrar'}
+              {editingId ? t('common.update') : t('common.register')}
             </button>
           </div>
         </form>
@@ -301,13 +301,13 @@ const Products = () => {
       {/* Products Table Section */}
       <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
         <div className="p-6 border-b border-outline-variant/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <h3 className="font-headline font-bold text-lg text-primary">Lista de Mercadorias</h3>
+          <h3 className="font-headline font-bold text-lg text-primary">{t('products.listTitle')}</h3>
           <div className="flex items-center gap-4 w-full md:w-auto">
             <div className="relative w-full md:w-64">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
               <input
                 type="text"
-                placeholder="Buscar por nome, SKU ou categoria..."
+                placeholder={t('products.searchPlaceholder')}
                 className="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -320,60 +320,60 @@ const Products = () => {
                 className="flex items-center gap-2 bg-surface-container-low hover:bg-surface-container px-3 py-2 rounded-lg text-sm font-bold text-on-surface-variant transition-colors"
               >
                 <span className="material-symbols-outlined text-sm">view_column</span>
-                <span className="hidden sm:inline">Colunas</span>
+                <span className="hidden sm:inline">{t('customers.columns')}</span>
               </button>
               
               {showColumnMenu && (
                 <div className="absolute right-0 top-full mt-2 w-48 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-lg z-10 py-2">
                   <div className="px-4 py-2 text-xs font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/10 mb-2">
-                    Mostrar Colunas
+                    {t('customers.showColumns')}
                   </div>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.product} onChange={() => toggleColumn('product')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Produto</span>
+                    <span className="text-sm text-on-surface">{t('products.productCol')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.supplier} onChange={() => toggleColumn('supplier')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Fornecedor</span>
+                    <span className="text-sm text-on-surface">{t('products.supplierCol')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.price} onChange={() => toggleColumn('price')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Preço Venda</span>
+                    <span className="text-sm text-on-surface">{t('products.salePriceCol')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.cost} onChange={() => toggleColumn('cost')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Custo</span>
+                    <span className="text-sm text-on-surface">{t('products.costCol')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.stock} onChange={() => toggleColumn('stock')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Stock</span>
+                    <span className="text-sm text-on-surface">{t('products.stockCol')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.totalCost} onChange={() => toggleColumn('totalCost')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Total (Custo)</span>
+                    <span className="text-sm text-on-surface">{t('products.totalCostCol')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.actions} onChange={() => toggleColumn('actions')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Ações</span>
+                    <span className="text-sm text-on-surface">{t('customers.actionsLabel')}</span>
                   </label>
                 </div>
               )}
             </div>
             
-            <span className="text-xs text-on-surface-variant whitespace-nowrap hidden sm:inline">Total: {filteredProducts.length} produtos</span>
+            <span className="text-xs text-on-surface-variant whitespace-nowrap hidden sm:inline">{t('products.totalCount', { count: filteredProducts.length })}</span>
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low/50">
-                {visibleColumns.product && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Produto</th>}
-                {visibleColumns.supplier && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Fornecedor</th>}
-                {visibleColumns.price && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Preço Venda</th>}
-                {visibleColumns.cost && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Custo</th>}
-                {visibleColumns.stock && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Stock</th>}
-                {visibleColumns.totalCost && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Total (Custo)</th>}
-                {visibleColumns.actions && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">Ações</th>}
+                {visibleColumns.product && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{t('products.productCol')}</th>}
+                {visibleColumns.supplier && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{t('products.supplierCol')}</th>}
+                {visibleColumns.price && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">{t('products.salePriceCol')}</th>}
+                {visibleColumns.cost && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">{t('products.costCol')}</th>}
+                {visibleColumns.stock && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">{t('products.stockCol')}</th>}
+                {visibleColumns.totalCost && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">{t('products.totalCostCol')}</th>}
+                {visibleColumns.actions && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">{t('customers.actionsLabel')}</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5">
@@ -386,7 +386,7 @@ const Products = () => {
                     <div className="text-xs font-normal text-on-surface-variant mt-1">{p.sku} | {p.category}</div>
                     {p.purchaseUnit && p.purchaseUnit !== p.unit && (
                       <div className="text-[10px] font-bold text-primary mt-1">
-                        1 {p.purchaseUnit} = {p.conversionFactor} {p.unit}
+                        {t('products.conversionRule', { purchaseUnit: p.purchaseUnit, conversionFactor: p.conversionFactor, unit: p.unit })}
                       </div>
                     )}
                   </td>}
@@ -407,10 +407,10 @@ const Products = () => {
                   </td>}
                   {visibleColumns.actions && <td className="px-6 py-4 print:hidden">
                     <div className="flex justify-center gap-2">
-                      <button onClick={() => handleEdit(p)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all">
+                      <button onClick={() => handleEdit(p)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all" title={t('common.edit')}>
                         <span className="material-symbols-outlined text-lg">edit</span>
                       </button>
-                      <button onClick={() => deleteProduct(p.id)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 transition-all">
+                      <button onClick={() => deleteProduct(p.id)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 transition-all" title={t('common.delete')}>
                         <span className="material-symbols-outlined text-lg">delete</span>
                       </button>
                     </div>
@@ -419,7 +419,7 @@ const Products = () => {
               )})}
               {products.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-sm text-on-surface-variant">Nenhum produto cadastrado.</td>
+                  <td colSpan={7} className="px-6 py-8 text-center text-sm text-on-surface-variant">{t('products.noProducts')}</td>
                 </tr>
               )}
             </tbody>

@@ -107,4 +107,36 @@
     border-top: 1px solid #e5e7eb;
     z-index: 9999;
   }
+
+  body.print-modal-open #root > div > main {
+    display: none !important;
+  }
+  
+  body.print-modal-open .print-footer {
+    display: none !important;
+  }
+
+  body.print-modal-open .fixed.inset-0 {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    background-color: white !important;
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    z-index: 99999 !important;
+  }
+
+  body.print-modal-open .fixed.inset-0 > div {
+    box-shadow: none !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
 }

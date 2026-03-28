@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -8,6 +9,7 @@ interface ChangePasswordModalProps {
 }
 
 const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const { updatePassword } = useAuth();
   const [email, setEmail] = useState('');
   const [oldPassword, setOldPassword] = useState('');
@@ -23,17 +25,17 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
     setSuccess('');
 
     if (!email || !oldPassword || !password || !confirmPassword) {
-      setError('Por favor, preencha todos os campos.');
+      setError(t('changePassword.fillAllFields'));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('As senhas não coincidem.');
+      setError(t('changePassword.passwordsDoNotMatch'));
       return;
     }
 
     if (password.length < 6) {
-      setError('A nova senha deve ter pelo menos 6 caracteres.');
+      setError(t('changePassword.passwordLength'));
       return;
     }
 
@@ -42,7 +44,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
     setLoading(false);
 
     if (result.success) {
-      setSuccess('Senha atualizada com sucesso!');
+      setSuccess(t('changePassword.success'));
       setEmail('');
       setOldPassword('');
       setPassword('');
@@ -52,7 +54,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
         setSuccess('');
       }, 2000);
     } else {
-      setError(result.error || 'Erro ao atualizar a senha.');
+      setError(result.error || t('changePassword.error'));
     }
   };
 
@@ -74,7 +76,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-surface rounded-2xl shadow-xl z-50 overflow-hidden"
           >
             <div className="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-lowest">
-              <h2 className="text-xl font-headline font-bold text-primary">Mudar Senha</h2>
+              <h2 className="text-xl font-headline font-bold text-primary">{t('header.changePassword')}</h2>
               <button
                 onClick={onClose}
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors text-on-surface-variant"
@@ -96,49 +98,49 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
               )}
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-on-surface-variant ml-1">Email</label>
+                <label className="text-sm font-bold text-on-surface-variant ml-1">{t('changePassword.email')}</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
-                  placeholder="Digite seu email"
+                  placeholder={t('changePassword.emailPlaceholder')}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-on-surface-variant ml-1">Senha Antiga</label>
+                <label className="text-sm font-bold text-on-surface-variant ml-1">{t('changePassword.oldPassword')}</label>
                 <input
                   type="password"
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
-                  placeholder="Digite a senha atual"
+                  placeholder={t('changePassword.oldPasswordPlaceholder')}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-on-surface-variant ml-1">Nova Senha</label>
+                <label className="text-sm font-bold text-on-surface-variant ml-1">{t('changePassword.newPassword')}</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
-                  placeholder="Digite a nova senha"
+                  placeholder={t('changePassword.newPasswordPlaceholder')}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-on-surface-variant ml-1">Confirmar Nova Senha</label>
+                <label className="text-sm font-bold text-on-surface-variant ml-1">{t('changePassword.confirmPassword')}</label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
-                  placeholder="Confirme a nova senha"
+                  placeholder={t('changePassword.confirmPasswordPlaceholder')}
                   required
                 />
               </div>
@@ -149,7 +151,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                   onClick={onClose}
                   className="flex-1 py-3 rounded-lg font-bold text-sm bg-surface-variant text-on-surface-variant hover:bg-outline-variant transition-colors"
                 >
-                  Cancelar
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -159,7 +161,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                   {loading ? (
                     <span className="material-symbols-outlined animate-spin">progress_activity</span>
                   ) : (
-                    'Salvar Senha'
+                    t('changePassword.savePassword')
                   )}
                 </button>
               </div>

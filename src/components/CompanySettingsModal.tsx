@@ -243,7 +243,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                         onClick={() => setFormData(prev => ({ ...prev, logoUrl: '' }))}
                         className="text-xs text-error font-bold mt-1 hover:underline"
                       >
-                        Remover logotipo
+                        {t('companySettings.removeLogo')}
                       </button>
                     )}
                   </div>
@@ -312,13 +312,13 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                     onChange={(e) => setFormData({ ...formData, ivaRate: Number(e.target.value) })}
                     className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                   >
-                    <option value={0}>Isento (0%)</option>
+                    <option value={0}>{t('companySettings.exempt')} (0%)</option>
                     <option value={3}>3%</option>
                     <option value={5}>5%</option>
                     <option value={16}>16%</option>
                   </select>
                   <p className="text-xs text-on-surface-variant mt-1">
-                    Esta taxa será usada como padrão nos relatórios (DRE, etc).
+                    {t('companySettings.ivaRateNote')}
                   </p>
                 </div>
                 <div className="md:col-span-2">
@@ -332,7 +332,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                     maxLength={10}
                   />
                   <p className="text-xs text-on-surface-variant mt-1">
-                    Adicione um PIN para proteger o acesso a esta empresa.
+                    {t('companySettings.pinNote')}
                   </p>
                 </div>
               </div>
@@ -349,7 +349,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                     }}
                     className="px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 rounded-lg transition-colors"
                   >
-                    Cancelar
+                    {t('common.cancel')}
                   </button>
                 )}
                 <button

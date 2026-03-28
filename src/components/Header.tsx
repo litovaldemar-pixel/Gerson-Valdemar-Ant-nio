@@ -82,7 +82,7 @@ const Header = ({ onMenuClick, hideMenuButton = false }: HeaderProps) => {
           <button 
             onClick={() => setIsSettingsOpen(true)}
             className="text-sm font-bold text-blue-900 dark:text-blue-100 font-headline hidden sm:block hover:underline focus:outline-none"
-            title="Configurar Empresa"
+            title={t('sidebar.settings')}
           >
             {companyInfo?.name || 'Financial Architect'}
           </button>
@@ -91,21 +91,21 @@ const Header = ({ onMenuClick, hideMenuButton = false }: HeaderProps) => {
               setCurrentCompanyId(null);
               navigate('/');
             }}
-            title="Menu Principal"
+            title={t('sidebar.mainMenu')}
             className="w-8 h-8 flex items-center justify-center rounded-full text-outline hover:text-primary hover:bg-primary-fixed/20 transition-colors active:scale-95 ml-2"
           >
             <span className="material-symbols-outlined text-xl">home</span>
           </button>
           <button 
             onClick={() => setIsPasswordModalOpen(true)}
-            title="Mudar Senha"
+            title={t('header.changePassword')}
             className="w-8 h-8 flex items-center justify-center rounded-full text-outline hover:text-primary hover:bg-primary-fixed/20 transition-colors active:scale-95 ml-1"
           >
             <span className="material-symbols-outlined text-xl">lock_reset</span>
           </button>
           <button 
             onClick={handleLogout}
-            title="Sair do Aplicativo"
+            title={t('sidebar.logout')}
             className="w-8 h-8 flex items-center justify-center rounded-full text-error hover:bg-error/10 transition-colors active:scale-95 ml-1"
           >
             <span className="material-symbols-outlined text-xl">close</span>

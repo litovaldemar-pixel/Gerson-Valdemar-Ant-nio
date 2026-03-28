@@ -176,7 +176,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           }
         >
           <span className="material-symbols-outlined">home</span>
-          <span>Menu Principal</span>
+          <span>{t('sidebar.mainMenu')}</span>
         </NavLink>
         <button
           onClick={() => {
@@ -187,7 +187,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           className="w-full flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10"
         >
           <span className="material-symbols-outlined">add_business</span>
-          <span>Adicionar Empresa</span>
+          <span>{t('sidebar.addCompany')}</span>
         </button>
       </nav>
       <div className="px-4 mt-auto flex flex-col gap-2">
@@ -196,7 +196,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           className="w-full py-3 bg-error/10 text-error hover:bg-error/20 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 duration-200 transition-colors"
         >
           <span className="material-symbols-outlined">close</span>
-          <span>Sair do Aplicativo</span>
+          <span>{t('sidebar.logout')}</span>
         </button>
         {user?.email && (
           <div className="text-center mt-2">
