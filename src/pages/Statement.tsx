@@ -150,7 +150,7 @@ const Statement = () => {
         } else if (isServicos) {
           debitAccount = '631';
         } else {
-          if (t.category === 'Produto' || t.supplierId) {
+          if (t.category === 'Produto' || t.supplierId || (t.items && t.items.length > 0)) {
             debitAccount = '211';
           } else if (t.category === 'Impostos' || t.category === 'Estado') {
             debitAccount = '441';

@@ -148,8 +148,28 @@ const Transactions = () => {
     const finalQty = qty * factor;
     const finalUnitPrice = parseFloat(itemUnitPrice) / factor;
 
-    if (type === 'receita' && product.stock < finalQty) {
-      alert(`Quantidade solicitada (${finalQty} ${product.unit || 'un'}) é maior que o stock disponível (${product.stock} ${product.unit || 'un'}).`);
+    let availableStock = product.stock;
+    if (editingId) {
+      const oldT = transactions.find(t => t.id === editingId);
+      if (oldT) {
+        let oldQty = 0;
+        if (oldT.productId === productId) {
+          oldQty = oldT.quantity || 0;
+        } else if (oldT.items) {
+          const oldItem = oldT.items.find((i: any) => i.productId === productId);
+          if (oldItem) oldQty = oldItem.quantity;
+        }
+        if (oldT.type === 'receita') availableStock += oldQty;
+        else if (oldT.type === 'despesa') availableStock -= oldQty;
+      }
+    }
+
+    const existingQtyInCart = cartItems
+      .filter(item => item.productId === productId)
+      .reduce((sum, item) => sum + item.quantity, 0);
+
+    if (type === 'receita' && availableStock < (finalQty + existingQtyInCart)) {
+      alert(`Quantidade solicitada (${finalQty + existingQtyInCart} ${product.unit || 'un'}) é maior que o stock disponível (${availableStock} ${product.unit || 'un'}).`);
       return;
     }
 
@@ -195,14 +215,60 @@ const Transactions = () => {
     if (type === 'receita' && cartItems.length === 0 && productId && quantity) {
       const product = products.find(p => p.id === productId);
       if (product) {
-        if (product.stock === 0) {
-          alert('Não é possível realizar a venda: Stock zero.');
+        let availableStock = product.stock;
+        if (editingId) {
+          const oldT = transactions.find(t => t.id === editingId);
+          if (oldT) {
+            let oldQty = 0;
+            if (oldT.productId === productId) {
+              oldQty = oldT.quantity || 0;
+            } else if (oldT.items) {
+              const oldItem = oldT.items.find((i: any) => i.productId === productId);
+              if (oldItem) oldQty = oldItem.quantity;
+            }
+            if (oldT.type === 'receita') availableStock += oldQty;
+            else if (oldT.type === 'despesa') availableStock -= oldQty;
+          }
+        }
+        
+        const qty = parseFloat(quantity);
+        if (qty > availableStock) {
+          alert(`Não é possível realizar a venda: Quantidade solicitada (${qty} ${product.unit || 'un'}) é maior que o stock disponível (${availableStock} ${product.unit || 'un'}).`);
           return;
         }
-        const qty = parseFloat(quantity);
-        if (qty > product.stock) {
-          alert(`Não é possível realizar a venda: Quantidade solicitada (${qty} ${product.unit || 'un'}) é maior que o stock disponível (${product.stock} ${product.unit || 'un'}).`);
-          return;
+      }
+    }
+
+    // Validate cart items stock for revenue
+    if (type === 'receita' && cartItems.length > 0) {
+      const productTotals: Record<string, number> = {};
+      for (const item of cartItems) {
+        productTotals[item.productId] = (productTotals[item.productId] || 0) + item.quantity;
+      }
+
+      for (const [pId, totalQty] of Object.entries(productTotals)) {
+        const product = products.find(p => p.id === pId);
+        if (product) {
+          let availableStock = product.stock;
+          if (editingId) {
+            const oldT = transactions.find(t => t.id === editingId);
+            if (oldT) {
+              let oldQty = 0;
+              if (oldT.productId === pId) {
+                oldQty = oldT.quantity || 0;
+              } else if (oldT.items) {
+                const oldItem = oldT.items.find((i: any) => i.productId === pId);
+                if (oldItem) oldQty = oldItem.quantity;
+              }
+              if (oldT.type === 'receita') availableStock += oldQty;
+              else if (oldT.type === 'despesa') availableStock -= oldQty;
+            }
+          }
+          
+          if (totalQty > availableStock) {
+            alert(`Não é possível realizar a venda: Quantidade total solicitada de ${product.name} (${totalQty} ${product.unit || 'un'}) é maior que o stock disponível (${availableStock} ${product.unit || 'un'}).`);
+            return;
+          }
         }
       }
     }

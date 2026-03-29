@@ -81,9 +81,9 @@ const Dashboard = () => {
   const prevDespesas = previousTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
 
   const calculatePercentage = (current: number, previous: number) => {
-    if (!companyInfo?.createdAt || dateFilter === 'todos') return 0;
+    if (dateFilter === 'todos') return 0;
     
-    const createdDate = new Date(companyInfo.createdAt).toISOString().split('T')[0];
+    const createdDate = companyInfo?.createdAt ? new Date(companyInfo.createdAt).toISOString().split('T')[0] : '1970-01-01';
     
     let currentPeriodStart = '';
     const now = new Date();

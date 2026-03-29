@@ -66,7 +66,7 @@ const DRE = () => {
     .reduce((acc, curr) => acc + curr.value, 0);
     
   const cmv = filteredTransactions
-    .filter(t => t.type === 'despesa' && (t.category === 'Produto' || t.category === 'Fornecedores' || t.category === 'CMV' || t.supplierId))
+    .filter(t => t.type === 'despesa' && (t.category === 'Produto' || t.category === 'Fornecedores' || t.category === 'CMV' || t.supplierId || (t.items && t.items.length > 0)))
     .reduce((acc, curr) => acc + curr.value, 0);
     
   const receitaLiquida = receitaBruta - impostosSobreVendas;
@@ -83,7 +83,7 @@ const DRE = () => {
   const despesasAdmin = filteredTransactions
     .filter(t => t.type === 'despesa' && 
       !(t.category === 'Impostos' || t.category === 'Estado') &&
-      !(t.category === 'Produto' || t.category === 'Fornecedores' || t.category === 'CMV' || t.supplierId) &&
+      !(t.category === 'Produto' || t.category === 'Fornecedores' || t.category === 'CMV' || t.supplierId || (t.items && t.items.length > 0)) &&
       !(t.category === 'Pessoal' || t.category === 'Salário' || t.category === 'Assistência Médica') &&
       !(t.category === 'Marketing')
     )

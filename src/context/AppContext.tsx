@@ -501,6 +501,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const newCompany = { 
         ...company, 
         userId: user.uid,
+        createdAt: new Date().toISOString(),
         subscription: {
           status: 'active',
           validUntil: validUntil.toISOString(),
