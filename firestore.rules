@@ -160,12 +160,12 @@ service cloud.firestore {
     }
 
     function isValidCompany(data) {
-      return hasRequiredFields(['userId', 'name', 'nuit', 'contact', 'location']) &&
+      return hasRequiredFields(['userId', 'name']) &&
              data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
              data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
-             data.nuit is string && data.nuit.size() > 0 && data.nuit.size() < 50 &&
-             data.contact is string && data.contact.size() > 0 && data.contact.size() < 100 &&
-             data.location is string && data.location.size() > 0 && data.location.size() < 200 &&
+             (!('nuit' in data) || data.nuit == null || data.nuit == '' || (data.nuit is string && data.nuit.size() < 50)) &&
+             (!('contact' in data) || data.contact == null || data.contact == '' || (data.contact is string && data.contact.size() < 100)) &&
+             (!('location' in data) || data.location == null || data.location == '' || (data.location is string && data.location.size() < 200)) &&
              (!('pin' in data) || data.pin == null || (data.pin is string && data.pin.size() <= 10)) &&
              (!('subscription' in data) || data.subscription == null || (
                data.subscription is map &&

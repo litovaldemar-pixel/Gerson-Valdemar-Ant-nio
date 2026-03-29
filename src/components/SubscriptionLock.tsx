@@ -58,38 +58,21 @@ const SubscriptionLock = () => {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (transactionId.length < 5) {
-      setError(t('subscription.invalidTransactionId'));
+      setError(t('subscription.invalidTransactionId', 'ID de transação inválido.'));
       return;
     }
 
     setVerifying(true);
     setError('');
 
-    // Simulate automatic verification with Firebase
-    setTimeout(async () => {
-      try {
-        if (!companyInfo) return;
-        
-        // In a real app, we would verify the transaction ID with an API here
-        // For now, we simulate a successful payment validation
-        
-        const nextMonth = new Date();
-        nextMonth.setMonth(nextMonth.getMonth() + 1);
-
-        await updateCompany(companyInfo.id, {
-          subscription: {
-            status: 'active',
-            validUntil: nextMonth.toISOString(),
-            plan: 'Mensal',
-            price: 5000
-          }
-        });
-        setVerifying(false);
-      } catch (err) {
-        setError(t('subscription.paymentError'));
-        setVerifying(false);
-      }
-    }, 2000);
+    // Open WhatsApp with the transaction details immediately to avoid popup blockers
+    const message = `Olá! Efectuei o pagamento da subscrição APPK.\n\nEmpresa: ${companyInfo?.name}\nID da Transação: ${transactionId}\n\nPor favor, verifique e desbloqueie a minha conta.`;
+    const whatsappUrl = `https://wa.me/258871788070?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    
+    alert(t('subscription.verificationSent', 'O seu comprovativo foi enviado! A sua conta será desbloqueada assim que o pagamento for confirmado.'));
+    setTransactionId('');
+    setVerifying(false);
   };
 
   return (
@@ -110,44 +93,81 @@ const SubscriptionLock = () => {
         </p>
 
         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 mb-8 text-left border border-outline-variant/30 space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-2">
             <h3 className="font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-primary">payments</span>
-              {t('subscription.servicePayment')}
+              {t('subscription.servicePayment', 'Pagamento de Serviços')}
             </h3>
             <span className="text-xl font-black text-primary">5.000,00 MT</span>
           </div>
+
+          <div className="flex gap-2 mb-4">
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('mpesa')}
+              className={`flex-1 py-2 rounded-lg font-bold text-sm border-2 transition-colors ${
+                paymentMethod === 'mpesa' 
+                  ? 'border-[#E3000F] bg-[#E3000F]/10 text-[#E3000F]' 
+                  : 'border-outline-variant/30 text-on-surface-variant hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              M-Pesa (*150#)
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('emola')}
+              className={`flex-1 py-2 rounded-lg font-bold text-sm border-2 transition-colors ${
+                paymentMethod === 'emola' 
+                  ? 'border-[#F47920] bg-[#F47920]/10 text-[#F47920]' 
+                  : 'border-outline-variant/30 text-on-surface-variant hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              E-mola (*898#)
+            </button>
+          </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl text-center">
-              <p className="text-[10px] font-bold uppercase text-primary tracking-widest mb-1">{t('subscription.entity')}</p>
-              <p className="text-2xl font-black text-primary font-mono tracking-widest">800900</p>
+            <div className={`p-4 rounded-xl text-center border ${paymentMethod === 'mpesa' ? 'bg-[#E3000F]/5 border-[#E3000F]/20' : 'bg-[#F47920]/5 border-[#F47920]/20'}`}>
+              <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${paymentMethod === 'mpesa' ? 'text-[#E3000F]' : 'text-[#F47920]'}`}>{t('subscription.entity', 'Entidade')}</p>
+              <p className={`text-2xl font-black font-mono tracking-widest ${paymentMethod === 'mpesa' ? 'text-[#E3000F]' : 'text-[#F47920]'}`}>800900</p>
             </div>
-            <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl text-center">
-              <p className="text-[10px] font-bold uppercase text-primary tracking-widest mb-1">{t('subscription.reference')}</p>
-              <p className="text-2xl font-black text-primary font-mono tracking-widest">{paymentRef}</p>
+            <div className={`p-4 rounded-xl text-center border ${paymentMethod === 'mpesa' ? 'bg-[#E3000F]/5 border-[#E3000F]/20' : 'bg-[#F47920]/5 border-[#F47920]/20'}`}>
+              <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${paymentMethod === 'mpesa' ? 'text-[#E3000F]' : 'text-[#F47920]'}`}>{t('subscription.reference', 'Referência')}</p>
+              <p className={`text-2xl font-black font-mono tracking-widest ${paymentMethod === 'mpesa' ? 'text-[#E3000F]' : 'text-[#F47920]'}`}>{paymentRef}</p>
             </div>
           </div>
-          <p className="text-[10px] text-on-surface-variant text-center font-bold uppercase tracking-widest">
-            {t('subscription.validFor')}
-          </p>
           
-          <p className="text-[10px] text-on-surface-variant text-center italic">
-            {t('subscription.autoUnlock')}
+          <div className="bg-surface-container-low p-3 rounded-lg text-sm text-on-surface-variant">
+            <p className="font-bold mb-1">Como pagar via {paymentMethod === 'mpesa' ? 'M-Pesa' : 'E-mola'}:</p>
+            <ol className="list-decimal list-inside space-y-1 text-xs">
+              <li>Digite <strong>{paymentMethod === 'mpesa' ? '*150#' : '*898#'}</strong> no seu telemóvel</li>
+              <li>Selecione <strong>Pagamentos</strong> e depois <strong>Pagamento de Serviços</strong></li>
+              <li>Insira a Entidade: <strong>800900</strong></li>
+              <li>Insira a Referência: <strong>{paymentRef}</strong></li>
+              <li>Insira o Valor: <strong>5000</strong></li>
+              <li>Confirme com o seu PIN</li>
+            </ol>
+          </div>
+
+          <p className="text-[10px] text-on-surface-variant text-center font-bold uppercase tracking-widest mt-4">
+            {t('subscription.validFor', 'Válido por 30 dias')}
           </p>
         </div>
 
         <form onSubmit={handleVerify} className="space-y-4 mb-8">
           <div className="space-y-2 text-left">
-            <label className="text-xs font-bold text-on-surface-variant ml-1 uppercase tracking-widest">{t('subscription.transactionIdLabel')}</label>
+            <label className="text-xs font-bold text-on-surface-variant ml-1 uppercase tracking-widest">{t('subscription.transactionIdLabel', 'ID da Transação')}</label>
             <input 
               type="text"
-              placeholder={t('subscription.transactionIdPlaceholder')}
+              placeholder={t('subscription.transactionIdPlaceholder', 'Ex: 9G45H...')}
               className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-outline-variant/30 rounded-xl focus:ring-2 focus:ring-primary outline-none font-mono tracking-wider uppercase"
               value={transactionId}
               onChange={(e) => setTransactionId(e.target.value.toUpperCase())}
               required
             />
+            <p className="text-xs text-on-surface-variant ml-1">
+              {t('subscription.transactionIdHint', 'Insira o código da transação recebido por SMS após o pagamento.')}
+            </p>
           </div>
 
           {error && <p className="text-error text-sm font-bold">{error}</p>}
@@ -160,12 +180,12 @@ const SubscriptionLock = () => {
             {verifying ? (
               <>
                 <div className="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
-                {t('subscription.verifying')}
+                {t('subscription.verifying', 'A processar...')}
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined">verified_user</span>
-                {t('subscription.confirmPayment')}
+                <span className="material-symbols-outlined">send</span>
+                {t('subscription.sendProof', 'Enviar Comprovativo')}
               </>
             )}
           </button>

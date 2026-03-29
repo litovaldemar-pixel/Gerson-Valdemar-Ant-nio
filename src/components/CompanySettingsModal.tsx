@@ -193,11 +193,11 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
           <div className="p-6 overflow-y-auto flex-1">
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isCreating && companyInfo?.subscription && (
-                <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 mb-4">
+                <div className={`p-4 rounded-xl border mb-4 ${companyInfo.subscription.status === 'active' && new Date(companyInfo.subscription.validUntil) > new Date() ? 'bg-success/5 border-success/30' : 'bg-error/5 border-error/30'}`}>
                   <div className="flex justify-between items-center mb-2">
                     <p className="text-xs font-bold text-primary uppercase tracking-widest">{t('companySettings.subscriptionStatus')}</p>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${companyInfo.subscription.status === 'active' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
-                      {companyInfo.subscription.status === 'active' ? t('companySettings.active') : t('companySettings.expired')}
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${companyInfo.subscription.status === 'active' && new Date(companyInfo.subscription.validUntil) > new Date() ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
+                      {companyInfo.subscription.status === 'active' && new Date(companyInfo.subscription.validUntil) > new Date() ? t('companySettings.active', 'Ativa') : t('companySettings.expired', 'Expirada')}
                     </span>
                   </div>
                   <div className="flex justify-between items-end">
@@ -205,9 +205,20 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                       <p className="text-[10px] text-on-surface-variant">{t('companySettings.validUntil')}:</p>
                       <p className="text-sm font-bold text-on-surface">{new Date(companyInfo.subscription.validUntil).toLocaleDateString('pt-MZ')}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end">
                       <p className="text-[10px] text-on-surface-variant">{t('companySettings.plan')}:</p>
-                      <p className="text-sm font-bold text-on-surface">{companyInfo.subscription.plan}</p>
+                      <p className="text-sm font-bold text-on-surface mb-2">{companyInfo.subscription.plan}</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const message = `Olá! Gostaria de renovar a subscrição da minha empresa.\n\nEmpresa: ${companyInfo.name}\nID: ${companyInfo.id}`;
+                          window.open(`https://wa.me/258871788070?text=${encodeURIComponent(message)}`, '_blank');
+                        }}
+                        className="text-[10px] font-bold bg-primary text-on-primary px-3 py-1.5 rounded-lg hover:brightness-110 transition-all flex items-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">autorenew</span>
+                        {t('companySettings.renew', 'Renovar')}
+                      </button>
                     </div>
                   </div>
                 </div>
