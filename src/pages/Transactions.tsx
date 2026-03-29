@@ -353,14 +353,14 @@ const Transactions = () => {
       <PrintHeader />
       <div className="hidden print:block text-center mb-6">
         <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">{t('sidebar.transactions')}</h2>
-        <p className="text-sm text-slate-600 mt-2">Período: {filterDateStart ? new Date(filterDateStart).toLocaleDateString('pt-MZ') : 'Início'} a {filterDateEnd ? new Date(filterDateEnd).toLocaleDateString('pt-MZ') : 'Hoje'}</p>
+        <p className="text-sm text-slate-600 mt-2">{t('statement.period', 'Período')}: {filterDateStart ? new Date(filterDateStart).toLocaleDateString('pt-MZ') : t('statement.start', 'Início')} {t('statement.to', 'a')} {filterDateEnd ? new Date(filterDateEnd).toLocaleDateString('pt-MZ') : t('statement.today', 'Hoje')}</p>
       </div>
 
       {/* Header Section */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 print:hidden">
         <div>
           <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">{t('sidebar.transactions')}</h2>
-          <p className="text-on-surface-variant font-medium mt-1">Gerencie suas movimentações financeiras com precisão.</p>
+          <p className="text-on-surface-variant font-medium mt-1">{t('transactions.subtitle', 'Gerencie suas movimentações financeiras com precisão.')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3 print:hidden">
           <div className="flex bg-surface-container-low rounded-lg p-1 border border-outline-variant/20">
@@ -389,7 +389,7 @@ const Transactions = () => {
             className={`px-5 py-2.5 ${showFilters ? 'bg-primary text-on-primary' : 'bg-surface-container-lowest text-primary border border-outline-variant/20'} rounded-lg font-bold text-sm flex items-center gap-2 hover:brightness-110 transition-colors`}
           >
             <span className="material-symbols-outlined text-lg">filter_list</span>
-            Filtros Avançados
+            {t('transactions.advancedFilters', 'Filtros Avançados')}
           </button>
           <button 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -405,7 +405,7 @@ const Transactions = () => {
       {showFilters && (
         <section className="bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-6 print:hidden animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Filtros Avançados</h3>
+            <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant">{t('transactions.advancedFilters')}</h3>
             <button 
               onClick={() => {
                 setFilterType('all');
@@ -415,30 +415,30 @@ const Transactions = () => {
               }}
               className="text-xs font-bold text-primary hover:underline"
             >
-              Limpar Filtros
+              {t('transactions.clearFilters')}
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="text-xs font-bold text-on-surface-variant ml-1">Tipo</label>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.type')}</label>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value as TransactionType | 'all')}
                 className="w-full mt-1 bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               >
-                <option value="all">Todos</option>
-                <option value="receita">Receitas</option>
-                <option value="despesa">Despesas</option>
+                <option value="all">{t('transactions.all')}</option>
+                <option value="receita">{t('transactions.revenue')}</option>
+                <option value="despesa">{t('transactions.expense')}</option>
               </select>
             </div>
             <div>
-              <label className="text-xs font-bold text-on-surface-variant ml-1">Categoria</label>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.category')}</label>
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
                 className="w-full mt-1 bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               >
-                <option value="all">Todas</option>
+                <option value="all">{t('transactions.allCategories')}</option>
                 <option value="Operacional">Operacional</option>
                 <option value="Administrativo">Administrativo</option>
                 <option value="Vendas">Vendas</option>
@@ -453,7 +453,7 @@ const Transactions = () => {
               </select>
             </div>
             <div>
-              <label className="text-xs font-bold text-on-surface-variant ml-1">Data Inicial</label>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.startDate')}</label>
               <input
                 type="date"
                 value={filterDateStart}
@@ -462,7 +462,7 @@ const Transactions = () => {
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-on-surface-variant ml-1">Data Final</label>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.endDate')}</label>
               <input
                 type="date"
                 value={filterDateEnd}
@@ -476,11 +476,11 @@ const Transactions = () => {
 
       {/* Quick Entry Form Section */}
       <section className="bg-surface-container-low rounded-xl p-6 print:hidden">
-        <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">Entrada Rápida</h3>
+        <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">{t('transactions.quickEntry')}</h3>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-6 items-end">
             <div className="space-y-2 lg:col-span-2">
-              <label className="text-xs font-bold text-on-surface-variant ml-1">Tipo</label>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.type')}</label>
               <select
                 className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim appearance-none"
                 value={type}
@@ -489,20 +489,20 @@ const Transactions = () => {
                   setCartItems([]);
                 }}
               >
-                <option value="receita">Receita (Venda)</option>
-                <option value="despesa">Despesa (Compra / Entrada de Stock)</option>
+                <option value="receita">{t('transactions.revenueSale')}</option>
+                <option value="despesa">{t('transactions.expensePurchase')}</option>
               </select>
             </div>
             
             {type === 'receita' ? (
               <div className="space-y-2 lg:col-span-2">
-                <label className="text-xs font-bold text-on-surface-variant ml-1">Cliente (Opcional)</label>
+                <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.customerOptional')}</label>
                 <select
                   className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
                   value={customerId}
                   onChange={(e) => setCustomerId(e.target.value)}
                 >
-                  <option value="">Consumidor Final</option>
+                  <option value="">{t('transactions.finalConsumer')}</option>
                   {customers.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
@@ -510,13 +510,13 @@ const Transactions = () => {
               </div>
             ) : (
               <div className="space-y-2 lg:col-span-2">
-                <label className="text-xs font-bold text-on-surface-variant ml-1">Fornecedor (Opcional)</label>
+                <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.supplierOptional')}</label>
                 <select
                   className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
                   value={supplierId}
                   onChange={(e) => setSupplierId(e.target.value)}
                 >
-                  <option value="">Fornecedor Diverso</option>
+                  <option value="">{t('transactions.diverseSupplier')}</option>
                   {suppliers.map(s => (
                     <option key={s.id} value={s.id}>{s.name}</option>
                   ))}
@@ -525,38 +525,38 @@ const Transactions = () => {
             )}
 
             <div className="space-y-2 lg:col-span-3">
-              <label className="text-xs font-bold text-on-surface-variant ml-1">Categoria</label>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.category')}</label>
               <select
                 className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
-                <option value="Operacional">Operacional</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Pessoal">Pessoal</option>
-                <option value="Salário">Salário</option>
-                <option value="Assistência Médica">Assistência Médica</option>
-                <option value="Infraestrutura">Infraestrutura</option>
-                <option value="Água">Água</option>
-                <option value="Energia">Energia</option>
-                <option value="Renda">Renda</option>
-                <option value="Combustível">Combustível</option>
-                <option value="Estado">Estado (Impostos)</option>
-                <option value="Serviços">Serviços</option>
-                <option value="SaaS">SaaS</option>
-                <option value="Produto">Produto</option>
-                <option value="Outras Despesas">Outras Despesas</option>
+                <option value="Operacional">{t('transactions.categories.operational')}</option>
+                <option value="Marketing">{t('transactions.categories.marketing')}</option>
+                <option value="Pessoal">{t('transactions.categories.personnel')}</option>
+                <option value="Salário">{t('transactions.categories.salary')}</option>
+                <option value="Assistência Médica">{t('transactions.categories.medicalAssistance')}</option>
+                <option value="Infraestrutura">{t('transactions.categories.infrastructure')}</option>
+                <option value="Água">{t('transactions.categories.water')}</option>
+                <option value="Energia">{t('transactions.categories.energy')}</option>
+                <option value="Renda">{t('transactions.categories.rent')}</option>
+                <option value="Combustível">{t('transactions.categories.fuel')}</option>
+                <option value="Estado">{t('transactions.categories.stateTaxes')}</option>
+                <option value="Serviços">{t('transactions.categories.services')}</option>
+                <option value="SaaS">{t('transactions.categories.saas')}</option>
+                <option value="Produto">{t('transactions.categories.product')}</option>
+                <option value="Outras Despesas">{t('transactions.categories.otherExpenses')}</option>
               </select>
             </div>
           </div>
 
           <div className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/20 space-y-4">
             <h4 className="text-sm font-bold text-primary">
-              {type === 'receita' ? 'Produtos a Vender (Opcional)' : 'Produtos para Entrada de Stock (Opcional)'}
+              {type === 'receita' ? t('transactions.productsToSell') : t('transactions.productsToStock')}
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
               <div className="space-y-2 md:col-span-3">
-                <label className="text-xs font-bold text-on-surface-variant ml-1">Produto</label>
+                <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.product')}</label>
                 <select
                   className="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
                   value={productId}
@@ -571,27 +571,27 @@ const Transactions = () => {
                     setUsePurchaseUnit(false);
                   }}
                 >
-                  <option value="">Selecione um produto</option>
+                  <option value="">{t('transactions.selectProduct')}</option>
                   {products.map(p => (
-                    <option key={p.id} value={p.id}>{p.name} (Stock: {p.stock} | {formatCurrency(type === 'receita' ? p.price : p.cost)})</option>
+                    <option key={p.id} value={p.id}>{p.name} ({t('transactions.stock')}: {p.stock} | {formatCurrency(type === 'receita' ? p.price : p.cost)})</option>
                   ))}
                 </select>
                 {selectedProduct?.purchaseUnit && selectedProduct.purchaseUnit !== selectedProduct.unit && (
                   <p className="text-[10px] font-bold text-on-surface-variant ml-1 mt-1">
-                    Regra: 1 {selectedProduct.purchaseUnit} = {selectedProduct.conversionFactor} {selectedProduct.unit}
+                    {t('transactions.rule')}: 1 {selectedProduct.purchaseUnit} = {selectedProduct.conversionFactor} {selectedProduct.unit}
                   </p>
                 )}
               </div>
               <div className="space-y-2 md:col-span-2">
                 <label className="text-xs font-bold text-on-surface-variant ml-1 flex justify-between items-center">
-                  <span>Qtd {selectedProduct && <span className="text-primary font-black">({usePurchaseUnit ? selectedProduct.purchaseUnit : selectedProduct.unit || 'un'})</span>}</span>
+                  <span>{t('transactions.qty')} {selectedProduct && <span className="text-primary font-black">({usePurchaseUnit ? selectedProduct.purchaseUnit : selectedProduct.unit || 'un'})</span>}</span>
                   {selectedProduct?.purchaseUnit && selectedProduct.purchaseUnit !== selectedProduct.unit && (
                     <button 
                       type="button"
                       onClick={() => setUsePurchaseUnit(!usePurchaseUnit)}
                       className={`text-[10px] px-1.5 py-0.5 rounded transition-all font-black ${usePurchaseUnit ? 'bg-primary text-on-primary shadow-sm' : 'bg-primary/10 text-primary hover:bg-primary/20'}`}
                     >
-                      {usePurchaseUnit ? 'Usando Compra' : 'Usar Compra'}
+                      {usePurchaseUnit ? t('transactions.usingPurchase') : t('transactions.usePurchase')}
                     </button>
                   )}
                 </label>
@@ -614,7 +614,7 @@ const Transactions = () => {
                 )}
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="text-xs font-bold text-on-surface-variant ml-1">Preço {usePurchaseUnit ? 'da Un. Compra' : 'Unit.'}</label>
+                <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.price')} {usePurchaseUnit ? t('transactions.ofPurchaseUnit') : t('transactions.unit')}</label>
                 <input
                   className="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
                   placeholder="0.00"
@@ -629,7 +629,7 @@ const Transactions = () => {
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="text-xs font-bold text-on-surface-variant ml-1">Total Item</label>
+                <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.itemTotal')}</label>
                 <input
                   className="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim font-bold text-secondary"
                   placeholder="0.00"
@@ -661,7 +661,7 @@ const Transactions = () => {
                   disabled={!productId || !quantity || !itemUnitPrice}
                   className="w-full bg-secondary-container text-on-secondary-container px-4 py-3 rounded-lg font-bold text-sm hover:bg-secondary transition-colors disabled:opacity-50"
                 >
-                  Adicionar Item
+                  {t('transactions.addItem')}
                 </button>
               </div>
             </div>
@@ -671,11 +671,11 @@ const Transactions = () => {
                 <table className="w-full text-sm text-left">
                   <thead className="text-xs text-on-surface-variant uppercase bg-surface-container-low">
                     <tr>
-                      <th className="px-4 py-2 rounded-tl-lg">Produto</th>
-                      <th className="px-4 py-2 text-center">Qtd</th>
-                      <th className="px-4 py-2 text-right">Preço Unit.</th>
-                      <th className="px-4 py-2 text-right">Subtotal</th>
-                      <th className="px-4 py-2 rounded-tr-lg text-center">Ação</th>
+                      <th className="px-4 py-2 rounded-tl-lg">{t('transactions.product')}</th>
+                      <th className="px-4 py-2 text-center">{t('transactions.qty')}</th>
+                      <th className="px-4 py-2 text-right">{t('transactions.unitPrice')}</th>
+                      <th className="px-4 py-2 text-right">{t('transactions.subtotal')}</th>
+                      <th className="px-4 py-2 rounded-tr-lg text-center">{t('transactions.action')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -695,7 +695,7 @@ const Transactions = () => {
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td colSpan={3} className="px-4 py-3 text-right font-bold">Total:</td>
+                      <td colSpan={3} className="px-4 py-3 text-right font-bold">{t('transactions.total')}:</td>
                       <td className="px-4 py-3 text-right font-black text-lg text-secondary">{formatCurrency(cartTotal)}</td>
                       <td></td>
                     </tr>
@@ -707,10 +707,10 @@ const Transactions = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
             <div className="space-y-2 lg:col-span-2">
-              <label className="text-xs font-bold text-on-surface-variant ml-1">Descrição</label>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.description')}</label>
               <input
                 className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
-                placeholder={type === 'receita' ? "Ex: Venda de Produtos" : "Ex: Compra de Mercadorias / Entrada de Stock"}
+                placeholder={type === 'receita' ? t('transactions.revenuePlaceholder') : t('transactions.expensePlaceholder')}
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -718,33 +718,33 @@ const Transactions = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-on-surface-variant ml-1">Método de Pagamento</label>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.paymentMethod')}</label>
               <select
                 className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
               >
-                <option value="Numerário">Numerário</option>
+                <option value="Numerário">{t('transactions.cash')}</option>
                 <option value="M-Pesa">M-Pesa</option>
                 <option value="E-mola">E-mola</option>
-                <option value="Transferência Bancária">Transferência Bancária</option>
-                <option value="Cartão">Cartão</option>
-                <option value="Cheque">Cheque</option>
+                <option value="Transferência Bancária">{t('transactions.bankTransfer')}</option>
+                <option value="Cartão">{t('transactions.card')}</option>
+                <option value="Cheque">{t('transactions.cheque')}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-on-surface-variant ml-1">Status de Pagamento</label>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.paymentStatus')}</label>
               <select
                 className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
                 value={paymentStatus}
                 onChange={(e) => setPaymentStatus(e.target.value as 'pago' | 'pendente')}
               >
-                <option value="pago">Pago</option>
-                <option value="pendente">Pendente</option>
+                <option value="pago">{t('transactions.paid')}</option>
+                <option value="pendente">{t('transactions.pending')}</option>
               </select>
             </div>
             <div className="space-y-2 lg:col-span-4">
-              <label className="text-xs font-bold text-on-surface-variant ml-1">Valor Total (MZN)</label>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.totalValueMZN')}</label>
               <input
                 className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim font-bold text-primary"
                 placeholder="0,00"
@@ -761,11 +761,11 @@ const Transactions = () => {
           <div className="flex gap-2 w-full justify-end pt-4 border-t border-outline-variant/10">
             {editingId && (
               <button type="button" onClick={handleCancelEdit} className="w-full md:w-auto bg-surface-variant text-on-surface-variant px-6 py-3 rounded-lg font-bold text-sm hover:bg-outline-variant transition-colors">
-                Cancelar
+                {t('transactions.cancel')}
               </button>
             )}
             <button type="submit" className="w-full md:w-auto bg-primary text-on-primary px-8 py-3 rounded-lg font-bold text-sm hover:bg-primary-container transition-colors">
-              {editingId ? 'Atualizar' : 'Confirmar Lançamento'}
+              {editingId ? t('transactions.update') : t('transactions.confirmEntry')}
             </button>
           </div>
         </form>
@@ -774,13 +774,13 @@ const Transactions = () => {
       {/* Transactions Table Section */}
       <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden print:shadow-none print:border print:border-outline-variant/20">
         <div className="p-6 border-b border-outline-variant/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <h3 className="font-headline font-bold text-lg text-primary">Histórico de Movimentações</h3>
+          <h3 className="font-headline font-bold text-lg text-primary">{t('transactions.transactionHistory')}</h3>
           <div className="flex items-center gap-4 w-full md:w-auto print:hidden">
             <div className="relative w-full md:w-64">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
               <input
                 type="text"
-                placeholder="Buscar transações..."
+                placeholder={t('transactions.searchTransactions')}
                 className="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
                 value={localSearchTerm}
                 onChange={(e) => setLocalSearchTerm(e.target.value)}
@@ -793,51 +793,51 @@ const Transactions = () => {
                 className="flex items-center gap-2 bg-surface-container-low hover:bg-surface-container px-3 py-2 rounded-lg text-sm font-bold text-on-surface-variant transition-colors"
               >
                 <span className="material-symbols-outlined text-sm">view_column</span>
-                <span className="hidden sm:inline">Colunas</span>
+                <span className="hidden sm:inline">{t('transactions.columns')}</span>
               </button>
               
               {showColumnMenu && (
                 <div className="absolute right-0 top-full mt-2 w-48 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-lg z-10 py-2">
                   <div className="px-4 py-2 text-xs font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/10 mb-2">
-                    Mostrar Colunas
+                    {t('transactions.showColumns')}
                   </div>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.receipt} onChange={() => toggleColumn('receipt')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Recibo</span>
+                    <span className="text-sm text-on-surface">{t('transactions.receipt')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.date} onChange={() => toggleColumn('date')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Data</span>
+                    <span className="text-sm text-on-surface">{t('transactions.date')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.description} onChange={() => toggleColumn('description')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Descrição</span>
+                    <span className="text-sm text-on-surface">{t('transactions.description')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.items} onChange={() => toggleColumn('items')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Itens/Produto</span>
+                    <span className="text-sm text-on-surface">{t('transactions.itemsProduct')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.quantity} onChange={() => toggleColumn('quantity')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Qtd</span>
+                    <span className="text-sm text-on-surface">{t('transactions.qty')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.type} onChange={() => toggleColumn('type')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Tipo</span>
+                    <span className="text-sm text-on-surface">{t('transactions.type')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.value} onChange={() => toggleColumn('value')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Valor Total</span>
+                    <span className="text-sm text-on-surface">{t('transactions.totalValue')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.actions} onChange={() => toggleColumn('actions')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Ações</span>
+                    <span className="text-sm text-on-surface">{t('transactions.actions')}</span>
                   </label>
                 </div>
               )}
             </div>
             
-            <span className="text-xs text-on-surface-variant whitespace-nowrap hidden sm:inline">Mostrando {filteredTransactions.length > 0 ? 1 : 0}-{filteredTransactions.length} de {filteredTransactions.length} lançamentos</span>
+            <span className="text-xs text-on-surface-variant whitespace-nowrap hidden sm:inline">{t('transactions.showing')} {filteredTransactions.length > 0 ? 1 : 0}-{filteredTransactions.length} {t('transactions.of')} {filteredTransactions.length} {t('transactions.entries')}</span>
             <div className="flex gap-1">
               <button className="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container"><span className="material-symbols-outlined text-sm">chevron_left</span></button>
               <button className="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container"><span className="material-symbols-outlined text-sm">chevron_right</span></button>
@@ -848,21 +848,21 @@ const Transactions = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low/50 print:bg-transparent print:border-b print:border-outline-variant/20">
-                {visibleColumns.receipt && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Recibo</th>}
-                {visibleColumns.date && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Data</th>}
-                {visibleColumns.description && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Descrição</th>}
-                {visibleColumns.items && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Itens/Produto</th>}
-                {visibleColumns.quantity && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Qtd</th>}
-                {visibleColumns.type && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Tipo</th>}
-                {visibleColumns.value && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Valor Total</th>}
-                {visibleColumns.actions && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">Ações</th>}
+                {visibleColumns.receipt && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{t('transactions.receipt')}</th>}
+                {visibleColumns.date && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{t('transactions.date')}</th>}
+                {visibleColumns.description && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{t('transactions.description')}</th>}
+                {visibleColumns.items && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{t('transactions.itemsProduct')}</th>}
+                {visibleColumns.quantity && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">{t('transactions.qty')}</th>}
+                {visibleColumns.type && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{t('transactions.type')}</th>}
+                {visibleColumns.value && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">{t('transactions.totalValue')}</th>}
+                {visibleColumns.actions && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">{t('transactions.actions')}</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5 print:divide-outline-variant/20">
               {displayedTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center text-on-surface-variant">
-                    Nenhum lançamento encontrado.
+                    {t('transactions.noTransactionsFound')}
                   </td>
                 </tr>
               ) : (
@@ -881,9 +881,9 @@ const Transactions = () => {
                   <td className="px-6 py-4 text-sm font-bold text-primary">
                     {t.description}
                     <div className="text-xs font-normal text-on-surface-variant mt-1">
-                      {t.category} 
-                      {customer && ` • Cliente: ${customer.name}`}
-                      {supplier && ` • Fornecedor: ${supplier.name}`}
+                      {t(`transactions.categories.${t.category.toLowerCase().replace(/ /g, '')}`, t.category)} 
+                      {customer && ` • ${t('transactions.customerOptional').replace(' (Opcional)', '')}: ${customer.name}`}
+                      {supplier && ` • ${t('transactions.supplierOptional').replace(' (Opcional)', '')}: ${supplier.name}`}
                     </div>
                     {(t.paymentMethod || t.paymentStatus) && (
                       <div className="text-xs font-normal text-on-surface-variant mt-1 flex gap-2 items-center">
@@ -897,7 +897,7 @@ const Transactions = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 text-sm text-on-surface-variant">
-                    {isMultiItem ? `${t.items!.length} itens` : (product ? product.name : '-')}
+                    {isMultiItem ? `${t.items!.length} ${t('transactions.itemsProduct').split('/')[0].toLowerCase()}` : (product ? product.name : '-')}
                   </td>
                   <td className="px-6 py-4 text-sm text-center font-mono">
                     {isMultiItem 
@@ -906,7 +906,7 @@ const Transactions = () => {
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full print:border print:border-outline-variant/20 print:bg-transparent print:text-on-surface ${t.type === 'receita' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}`}>
-                      {t.type}
+                      {t.type === 'receita' ? t('transactions.revenueSale').split(' ')[0] : t('transactions.expensePurchase').split(' ')[0]}
                     </span>
                   </td>
                   <td className={`px-6 py-4 text-right font-headline font-bold print:text-on-surface ${t.type === 'receita' ? 'text-secondary' : 'text-error'}`}>
@@ -914,13 +914,13 @@ const Transactions = () => {
                   </td>
                   <td className="px-6 py-4 print:hidden">
                     <div className="flex justify-center gap-2">
-                      <button onClick={() => setSelectedReceiptTransaction(t)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-secondary hover:bg-secondary-container/20 transition-all" title="Ver Recibo">
+                      <button onClick={() => setSelectedReceiptTransaction(t)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-secondary hover:bg-secondary-container/20 transition-all" title={t('transactions.viewReceipt')}>
                         <span className="material-symbols-outlined text-lg">receipt_long</span>
                       </button>
-                      <button onClick={() => handleEdit(t)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all" title="Editar">
+                      <button onClick={() => handleEdit(t)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all" title={t('transactions.edit')}>
                         <span className="material-symbols-outlined text-lg">edit</span>
                       </button>
-                      <button onClick={() => deleteTransaction(t.id)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 transition-all" title="Excluir">
+                      <button onClick={() => deleteTransaction(t.id)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 transition-all" title={t('transactions.delete')}>
                         <span className="material-symbols-outlined text-lg">delete</span>
                       </button>
                     </div>
@@ -938,7 +938,7 @@ const Transactions = () => {
               onClick={() => setShowAllTransactions(!showAllTransactions)}
               className="text-sm font-bold text-primary hover:underline flex items-center gap-2"
             >
-              {showAllTransactions ? 'Ver menos lançamentos' : 'Ver todos os lançamentos'}
+              {showAllTransactions ? t('transactions.viewLess') : t('transactions.viewAll')}
               <span className={`material-symbols-outlined text-sm transition-transform ${showAllTransactions ? 'rotate-180' : ''}`}>
                 expand_more
               </span>
@@ -951,25 +951,25 @@ const Transactions = () => {
       <footer className="mt-auto grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-primary text-on-primary rounded-xl p-6 relative overflow-hidden">
           <div className="relative z-10">
-            <p className="text-xs font-bold uppercase tracking-widest opacity-60">Saldo Previsto</p>
+            <p className="text-xs font-bold uppercase tracking-widest opacity-60">{t('transactions.expectedBalance')}</p>
             <h4 className="text-3xl font-headline font-extrabold mt-1">{formatCurrency(saldoPrevisto)}</h4>
           </div>
           <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-8xl opacity-10">account_balance</span>
         </div>
         <div className="bg-secondary-container text-on-secondary-container rounded-xl p-6 border border-secondary/10">
-          <p className="text-xs font-bold uppercase tracking-widest opacity-60">Receitas Mês</p>
+          <p className="text-xs font-bold uppercase tracking-widest opacity-60">{t('transactions.monthlyRevenue')}</p>
           <h4 className="text-3xl font-headline font-extrabold mt-1">{formatCurrency(totalReceitas)}</h4>
           <div className="mt-2 flex items-center gap-1 text-xs font-bold">
             <span className="material-symbols-outlined text-sm">trending_up</span>
-            12% em relação ao mês anterior
+            12% {t('transactions.comparedToLastMonth')}
           </div>
         </div>
         <div className="bg-error-container text-on-error-container rounded-xl p-6 border border-error/10">
-          <p className="text-xs font-bold uppercase tracking-widest opacity-60">Despesas Mês</p>
+          <p className="text-xs font-bold uppercase tracking-widest opacity-60">{t('transactions.monthlyExpenses')}</p>
           <h4 className="text-3xl font-headline font-extrabold mt-1">{formatCurrency(totalDespesas)}</h4>
           <div className="mt-2 flex items-center gap-1 text-xs font-bold">
             <span className="material-symbols-outlined text-sm">trending_down</span>
-            -4% em relação ao mês anterior
+            -4% {t('transactions.comparedToLastMonth')}
           </div>
         </div>
       </footer>

@@ -43,6 +43,114 @@
     "noCustomersFound": "No customers found in search.",
     "viewStatement": "View Statement"
   },
+  "transactions": {
+    "subtitle": "Manage your financial transactions with precision.",
+    "advancedFilters": "Advanced Filters",
+    "clearFilters": "Clear Filters",
+    "type": "Type",
+    "all": "All",
+    "revenue": "Revenue",
+    "expense": "Expense",
+    "category": "Category",
+    "allCategories": "All",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "quickEntry": "Quick Entry",
+    "revenueSale": "Revenue (Sale)",
+    "expensePurchase": "Expense (Purchase / Stock Entry)",
+    "customerOptional": "Customer (Optional)",
+    "supplierOptional": "Supplier (Optional)",
+    "selectCustomer": "Select a customer...",
+    "selectSupplier": "Select a supplier...",
+    "finalConsumer": "Final Consumer",
+    "diverseSupplier": "Diverse Supplier",
+    "description": "Description",
+    "descriptionPlaceholder": "Ex: Product sale",
+    "revenuePlaceholder": "Ex: Product sale",
+    "expensePlaceholder": "Ex: Purchase of goods / Stock entry",
+    "paymentMethod": "Payment Method",
+    "cash": "Cash",
+    "transfer": "Transfer",
+    "bankTransfer": "Bank Transfer",
+    "card": "Card",
+    "cheque": "Cheque",
+    "mobileMoney": "M-Pesa/E-Mola",
+    "paymentStatus": "Payment Status",
+    "paid": "Paid",
+    "pending": "Pending",
+    "productsToSell": "Products to Sell (Optional)",
+    "productsToStock": "Products for Stock Entry (Optional)",
+    "product": "Product",
+    "selectProduct": "Select a product...",
+    "stock": "Stock",
+    "rule": "Rule",
+    "qty": "Qty",
+    "usePurchase": "Use Purchase",
+    "usingPurchase": "Using Purchase",
+    "price": "Price",
+    "unit": "Unit",
+    "ofPurchaseUnit": "of Purchase Unit",
+    "itemTotal": "Item Total",
+    "addItem": "Add Item",
+    "unitPrice": "Unit Price",
+    "total": "Total",
+    "usePurchaseUnit": "Use purchase unit ({{unit}})",
+    "addToCart": "Add",
+    "cart": "Cart",
+    "cartEmpty": "No items added",
+    "subtotal": "Subtotal",
+    "action": "Action",
+    "totalValueMZN": "Total Value (MZN)",
+    "confirmEntry": "Confirm Entry",
+    "update": "Update",
+    "saveTransaction": "Save Transaction",
+    "updateTransaction": "Update Transaction",
+    "cancel": "Cancel",
+    "transactionHistory": "Transaction History",
+    "transactionList": "Transaction List",
+    "searchTransactions": "Search transactions...",
+    "searchPlaceholder": "Search by description, category, customer or supplier...",
+    "columns": "Columns",
+    "showColumns": "Show Columns",
+    "receipt": "Receipt",
+    "date": "Date",
+    "items": "Items",
+    "itemsProduct": "Items/Product",
+    "value": "Value",
+    "totalValue": "Total Value",
+    "actions": "Actions",
+    "showing": "Showing",
+    "of": "of",
+    "entries": "entries",
+    "noTransactions": "No transactions found.",
+    "noTransactionsFound": "No transactions found.",
+    "viewReceipt": "View Receipt",
+    "viewAll": "View all transactions",
+    "viewLess": "View less",
+    "expectedBalance": "Expected Balance",
+    "monthlyRevenue": "Monthly Revenue",
+    "monthlyExpenses": "Monthly Expenses",
+    "comparedToLastMonth": "compared to last month",
+    "totalRevenues": "Total Revenues",
+    "categories": {
+      "operational": "Operational",
+      "marketing": "Marketing",
+      "personnel": "Personnel",
+      "salary": "Salary",
+      "medicalAssistance": "Medical Assistance",
+      "infrastructure": "Infrastructure",
+      "water": "Water",
+      "energy": "Energy",
+      "rent": "Rent",
+      "fuel": "Fuel",
+      "stateTaxes": "State (Taxes)",
+      "services": "Services",
+      "saas": "SaaS",
+      "product": "Product",
+      "otherExpenses": "Other Expenses",
+      "vendas": "Sales"
+    }
+  },
   "changePassword": {
     "fillAllFields": "Please fill in all fields.",
     "passwordsDoNotMatch": "Passwords do not match.",
@@ -328,5 +436,128 @@
     "totalCostCol": "Total (Cost)",
     "totalCount": "Total: {{count}} products",
     "noProducts": "No products registered."
+  },
+  "statement": {
+    "subtitle": "Analytical trial balance structured by accounts (PGC-NIRF).",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "printTitle": "General Ledger Trial Balance",
+    "period": "Period",
+    "start": "Start",
+    "to": "to",
+    "today": "Today",
+    "accountsMoved": "Accounts Moved",
+    "accountsWithBalance": "accounts with balance",
+    "account": "Account",
+    "description": "Description",
+    "debitMov": "Debit Mov.",
+    "creditMov": "Credit Mov.",
+    "debitBalance": "Debit Balance",
+    "creditBalance": "Credit Balance",
+    "noMovements": "No movements found in this period.",
+    "netSum": "Net Sum",
+    "balancesSum": "Balances Sum",
+    "accounts": {
+      "111": {
+        "desc": "Cash",
+        "cat": "11 Cash"
+      },
+      "121": {
+        "desc": "Banks (Bank Transfer)",
+        "cat": "12 Banks"
+      },
+      "122": {
+        "desc": "M-Pesa",
+        "cat": "12 Banks"
+      },
+      "123": {
+        "desc": "E-mola",
+        "cat": "12 Banks"
+      },
+      "124": {
+        "desc": "Card/Cheque",
+        "cat": "12 Banks"
+      },
+      "211": {
+        "desc": "Merchandise Purchases",
+        "cat": "21 Purchases"
+      },
+      "261": {
+        "desc": "Raw materials",
+        "cat": "26 Raw materials, auxiliaries and materials"
+      },
+      "321": {
+        "desc": "Buildings and other constructions",
+        "cat": "32 Tangible assets"
+      },
+      "381": {
+        "desc": "Accumulated depreciation",
+        "cat": "38 Accumulated depreciation"
+      },
+      "411": {
+        "desc": "Customers c/c (Various)",
+        "cat": "41 Customers"
+      },
+      "421": {
+        "desc": "Suppliers c/c (Various)",
+        "cat": "42 Suppliers"
+      },
+      "441": {
+        "desc": "Income tax",
+        "cat": "44 State"
+      },
+      "451": {
+        "desc": "Other debtors",
+        "cat": "45 Other debtors"
+      },
+      "461": {
+        "desc": "Other creditors",
+        "cat": "46 Other creditors"
+      },
+      "481": {
+        "desc": "Provisions for legal proceedings",
+        "cat": "48 Provisions"
+      },
+      "491": {
+        "desc": "Income accruals",
+        "cat": "49 Accruals and deferrals"
+      },
+      "511": {
+        "desc": "Share capital",
+        "cat": "51 Capital"
+      },
+      "591": {
+        "desc": "Retained earnings",
+        "cat": "59 Retained earnings"
+      },
+      "621": {
+        "desc": "Staff remuneration",
+        "cat": "62 Personnel costs"
+      },
+      "631": {
+        "desc": "Subcontracts",
+        "cat": "63 Third-party supplies and services"
+      },
+      "681": {
+        "desc": "Taxes and fees",
+        "cat": "68 Other operating costs and losses"
+      },
+      "711": {
+        "desc": "Merchandise sales",
+        "cat": "71 Sales"
+      },
+      "721": {
+        "desc": "Provision of services",
+        "cat": "72 Provision of services"
+      },
+      "781": {
+        "desc": "Interest obtained",
+        "cat": "78 Financial income and gains"
+      },
+      "881": {
+        "desc": "Net income for the period",
+        "cat": "88 Net income for the period"
+      }
+    }
   }
 }

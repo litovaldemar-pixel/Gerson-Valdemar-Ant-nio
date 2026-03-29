@@ -43,6 +43,114 @@
     "noCustomersFound": "搜索中未找到客户。",
     "viewStatement": "查看对账单"
   },
+  "transactions": {
+    "subtitle": "精确管理您的财务交易。",
+    "advancedFilters": "高级筛选",
+    "clearFilters": "清除筛选",
+    "type": "类型",
+    "all": "全部",
+    "revenue": "收入",
+    "expense": "支出",
+    "category": "类别",
+    "allCategories": "全部",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "quickEntry": "快速录入",
+    "revenueSale": "收入（销售）",
+    "expensePurchase": "支出（采购/入库）",
+    "customerOptional": "客户（可选）",
+    "supplierOptional": "供应商（可选）",
+    "selectCustomer": "选择客户...",
+    "selectSupplier": "选择供应商...",
+    "finalConsumer": "最终消费者",
+    "diverseSupplier": "其他供应商",
+    "description": "描述",
+    "descriptionPlaceholder": "例如：产品销售",
+    "revenuePlaceholder": "例如：产品销售",
+    "expensePlaceholder": "例如：商品采购/入库",
+    "paymentMethod": "付款方式",
+    "cash": "现金",
+    "transfer": "转账",
+    "bankTransfer": "银行转账",
+    "card": "银行卡",
+    "cheque": "支票",
+    "mobileMoney": "M-Pesa/E-Mola",
+    "paymentStatus": "付款状态",
+    "paid": "已付",
+    "pending": "待处理",
+    "productsToSell": "待售产品（可选）",
+    "productsToStock": "入库产品（可选）",
+    "product": "产品",
+    "selectProduct": "选择产品...",
+    "stock": "库存",
+    "rule": "规则",
+    "qty": "数量",
+    "usePurchase": "使用采购",
+    "usingPurchase": "使用采购中",
+    "price": "价格",
+    "unit": "单位",
+    "ofPurchaseUnit": "采购单位",
+    "itemTotal": "项目总计",
+    "addItem": "添加项目",
+    "unitPrice": "单价",
+    "total": "总计",
+    "usePurchaseUnit": "使用采购单位 ({{unit}})",
+    "addToCart": "添加",
+    "cart": "购物车",
+    "cartEmpty": "未添加项目",
+    "subtotal": "小计",
+    "action": "操作",
+    "totalValueMZN": "总价值 (MZN)",
+    "confirmEntry": "确认录入",
+    "update": "更新",
+    "saveTransaction": "保存交易",
+    "updateTransaction": "更新交易",
+    "cancel": "取消",
+    "transactionHistory": "交易历史",
+    "transactionList": "交易列表",
+    "searchTransactions": "搜索交易...",
+    "searchPlaceholder": "按描述、类别、客户或供应商搜索...",
+    "columns": "列",
+    "showColumns": "显示列",
+    "receipt": "收据",
+    "date": "日期",
+    "items": "项目",
+    "itemsProduct": "项目/产品",
+    "value": "价值",
+    "totalValue": "总价值",
+    "actions": "操作",
+    "showing": "显示",
+    "of": "共",
+    "entries": "条记录",
+    "noTransactions": "未找到交易。",
+    "noTransactionsFound": "未找到交易。",
+    "viewReceipt": "查看收据",
+    "viewAll": "查看所有交易",
+    "viewLess": "收起",
+    "expectedBalance": "预期余额",
+    "monthlyRevenue": "月度收入",
+    "monthlyExpenses": "月度支出",
+    "comparedToLastMonth": "与上月相比",
+    "totalRevenues": "总收入",
+    "categories": {
+      "operational": "运营",
+      "marketing": "营销",
+      "personnel": "人员",
+      "salary": "薪水",
+      "medicalAssistance": "医疗援助",
+      "infrastructure": "基础设施",
+      "water": "水",
+      "energy": "能源",
+      "rent": "租金",
+      "fuel": "燃料",
+      "stateTaxes": "州（税）",
+      "services": "服务",
+      "saas": "SaaS",
+      "product": "产品",
+      "otherExpenses": "其他费用",
+      "vendas": "销售"
+    }
+  },
   "changePassword": {
     "fillAllFields": "请填写所有字段。",
     "passwordsDoNotMatch": "密码不匹配。",
@@ -324,5 +432,128 @@
     "totalCostCol": "总计 (成本)",
     "totalCount": "总计：{{count}} 个产品",
     "noProducts": "未注册产品。"
+  },
+  "statement": {
+    "subtitle": "按账户结构化的分析试算平衡表 (PGC-NIRF)。",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "printTitle": "总账试算平衡表",
+    "period": "期间",
+    "start": "开始",
+    "to": "至",
+    "today": "今天",
+    "accountsMoved": "已变动账户",
+    "accountsWithBalance": "有余额的账户",
+    "account": "账户",
+    "description": "描述",
+    "debitMov": "借方变动",
+    "creditMov": "贷方变动",
+    "debitBalance": "借方余额",
+    "creditBalance": "贷方余额",
+    "noMovements": "此期间未发现变动。",
+    "netSum": "净额汇总",
+    "balancesSum": "余额汇总",
+    "accounts": {
+      "111": {
+        "desc": "现金",
+        "cat": "11 现金"
+      },
+      "121": {
+        "desc": "银行 (银行转账)",
+        "cat": "12 银行"
+      },
+      "122": {
+        "desc": "M-Pesa",
+        "cat": "12 银行"
+      },
+      "123": {
+        "desc": "E-mola",
+        "cat": "12 银行"
+      },
+      "124": {
+        "desc": "卡/支票",
+        "cat": "12 银行"
+      },
+      "211": {
+        "desc": "商品采购",
+        "cat": "21 采购"
+      },
+      "261": {
+        "desc": "原材料",
+        "cat": "26 原材料、辅助材料和物料"
+      },
+      "321": {
+        "desc": "建筑物和其他建筑",
+        "cat": "32 有形资产"
+      },
+      "381": {
+        "desc": "累计折旧",
+        "cat": "38 累计折旧"
+      },
+      "411": {
+        "desc": "客户 c/c (杂项)",
+        "cat": "41 客户"
+      },
+      "421": {
+        "desc": "供应商 c/c (杂项)",
+        "cat": "42 供应商"
+      },
+      "441": {
+        "desc": "所得税",
+        "cat": "44 国家"
+      },
+      "451": {
+        "desc": "其他债务人",
+        "cat": "45 其他债务人"
+      },
+      "461": {
+        "desc": "其他债权人",
+        "cat": "46 其他债权人"
+      },
+      "481": {
+        "desc": "法律诉讼准备金",
+        "cat": "48 准备金"
+      },
+      "491": {
+        "desc": "收入应计",
+        "cat": "49 应计和递延"
+      },
+      "511": {
+        "desc": "股本",
+        "cat": "51 资本"
+      },
+      "591": {
+        "desc": "留存收益",
+        "cat": "59 留存收益"
+      },
+      "621": {
+        "desc": "员工薪酬",
+        "cat": "62 人事费用"
+      },
+      "631": {
+        "desc": "分包合同",
+        "cat": "63 第三方供应和服务"
+      },
+      "681": {
+        "desc": "税费",
+        "cat": "68 其他运营成本和损失"
+      },
+      "711": {
+        "desc": "商品销售",
+        "cat": "71 销售"
+      },
+      "721": {
+        "desc": "提供服务",
+        "cat": "72 提供服务"
+      },
+      "781": {
+        "desc": "获得的利息",
+        "cat": "78 财务收入和收益"
+      },
+      "881": {
+        "desc": "本期净收入",
+        "cat": "88 本期净收入"
+      }
+    }
   }
 }

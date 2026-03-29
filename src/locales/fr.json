@@ -43,6 +43,114 @@
     "noCustomersFound": "Aucun client trouvé dans la recherche.",
     "viewStatement": "Voir le relevé"
   },
+  "transactions": {
+    "subtitle": "Gérez vos transactions financières avec précision.",
+    "advancedFilters": "Filtres Avancés",
+    "clearFilters": "Effacer les Filtres",
+    "type": "Type",
+    "all": "Tous",
+    "revenue": "Revenu",
+    "expense": "Dépense",
+    "category": "Catégorie",
+    "allCategories": "Toutes",
+    "startDate": "Date de Début",
+    "endDate": "Date de Fin",
+    "quickEntry": "Saisie Rapide",
+    "revenueSale": "Revenu (Vente)",
+    "expensePurchase": "Dépense (Achat / Entrée de Stock)",
+    "customerOptional": "Client (Optionnel)",
+    "supplierOptional": "Fournisseur (Optionnel)",
+    "selectCustomer": "Sélectionnez un client...",
+    "selectSupplier": "Sélectionnez un fournisseur...",
+    "finalConsumer": "Consommateur Final",
+    "diverseSupplier": "Fournisseur Divers",
+    "description": "Description",
+    "descriptionPlaceholder": "Ex: Vente de produit",
+    "revenuePlaceholder": "Ex: Vente de produit",
+    "expensePlaceholder": "Ex: Achat de marchandises / Entrée de stock",
+    "paymentMethod": "Méthode de Paiement",
+    "cash": "Espèces",
+    "transfer": "Virement",
+    "bankTransfer": "Virement Bancaire",
+    "card": "Carte",
+    "cheque": "Chèque",
+    "mobileMoney": "M-Pesa/E-Mola",
+    "paymentStatus": "Statut du Paiement",
+    "paid": "Payé",
+    "pending": "En attente",
+    "productsToSell": "Produits à Vendre (Optionnel)",
+    "productsToStock": "Produits pour Entrée de Stock (Optionnel)",
+    "product": "Produit",
+    "selectProduct": "Sélectionnez un produit...",
+    "stock": "Stock",
+    "rule": "Règle",
+    "qty": "Qté",
+    "usePurchase": "Utiliser Achat",
+    "usingPurchase": "Utilisation Achat",
+    "price": "Prix",
+    "unit": "Unité",
+    "ofPurchaseUnit": "de l'Unité d'Achat",
+    "itemTotal": "Total de l'Article",
+    "addItem": "Ajouter l'Article",
+    "unitPrice": "Prix Unitaire",
+    "total": "Total",
+    "usePurchaseUnit": "Utiliser l'unité d'achat ({{unit}})",
+    "addToCart": "Ajouter",
+    "cart": "Panier",
+    "cartEmpty": "Aucun article ajouté",
+    "subtotal": "Sous-total",
+    "action": "Action",
+    "totalValueMZN": "Valeur Totale (MZN)",
+    "confirmEntry": "Confirmer la Saisie",
+    "update": "Mettre à jour",
+    "saveTransaction": "Enregistrer la Transaction",
+    "updateTransaction": "Mettre à jour la Transaction",
+    "cancel": "Annuler",
+    "transactionHistory": "Historique des Transactions",
+    "transactionList": "Liste des Transactions",
+    "searchTransactions": "Rechercher des transactions...",
+    "searchPlaceholder": "Rechercher par description, catégorie, client ou fournisseur...",
+    "columns": "Colonnes",
+    "showColumns": "Afficher les Colonnes",
+    "receipt": "Reçu",
+    "date": "Date",
+    "items": "Articles",
+    "itemsProduct": "Articles/Produit",
+    "value": "Valeur",
+    "totalValue": "Valeur Totale",
+    "actions": "Actions",
+    "showing": "Affichage de",
+    "of": "sur",
+    "entries": "entrées",
+    "noTransactions": "Aucune transaction trouvée.",
+    "noTransactionsFound": "Aucune transaction trouvée.",
+    "viewReceipt": "Voir le Reçu",
+    "viewAll": "Voir toutes les transactions",
+    "viewLess": "Voir moins",
+    "expectedBalance": "Solde Prévu",
+    "monthlyRevenue": "Revenus Mensuels",
+    "monthlyExpenses": "Dépenses Mensuelles",
+    "comparedToLastMonth": "par rapport au mois dernier",
+    "totalRevenues": "Revenus Totaux",
+    "categories": {
+      "operational": "Opérationnel",
+      "marketing": "Marketing",
+      "personnel": "Personnel",
+      "salary": "Salaire",
+      "medicalAssistance": "Assistance Médicale",
+      "infrastructure": "Infrastructure",
+      "water": "Eau",
+      "energy": "Énergie",
+      "rent": "Loyer",
+      "fuel": "Carburant",
+      "stateTaxes": "État (Taxes)",
+      "services": "Services",
+      "saas": "SaaS",
+      "product": "Produit",
+      "otherExpenses": "Autres Dépenses",
+      "vendas": "Ventes"
+    }
+  },
   "changePassword": {
     "fillAllFields": "Veuillez remplir tous les champs.",
     "passwordsDoNotMatch": "Les mots de passe ne correspondent pas.",
@@ -324,5 +432,128 @@
     "totalCostCol": "Total (Coût)",
     "totalCount": "Total: {{count}} produits",
     "noProducts": "Aucun produit enregistré."
+  },
+  "statement": {
+    "subtitle": "Balance générale analytique structurée par comptes (PGC-NIRF).",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "printTitle": "Balance Générale",
+    "period": "Période",
+    "start": "Début",
+    "to": "à",
+    "today": "Aujourd'hui",
+    "accountsMoved": "Comptes Mouvementés",
+    "accountsWithBalance": "comptes avec solde",
+    "account": "Compte",
+    "description": "Description",
+    "debitMov": "Mouv. Débit",
+    "creditMov": "Mouv. Crédit",
+    "debitBalance": "Solde Débiteur",
+    "creditBalance": "Solde Créditeur",
+    "noMovements": "Aucun mouvement trouvé pour cette période.",
+    "netSum": "Somme Nette",
+    "balancesSum": "Somme des Soldes",
+    "accounts": {
+      "111": {
+        "desc": "Caisse (Espèces)",
+        "cat": "11 Caisse"
+      },
+      "121": {
+        "desc": "Banques (Virement Bancaire)",
+        "cat": "12 Banques"
+      },
+      "122": {
+        "desc": "M-Pesa",
+        "cat": "12 Banques"
+      },
+      "123": {
+        "desc": "E-mola",
+        "cat": "12 Banques"
+      },
+      "124": {
+        "desc": "Carte/Chèque",
+        "cat": "12 Banques"
+      },
+      "211": {
+        "desc": "Achats de Marchandises",
+        "cat": "21 Achats"
+      },
+      "261": {
+        "desc": "Matières premières",
+        "cat": "26 Matières premières, auxiliaires et matériaux"
+      },
+      "321": {
+        "desc": "Bâtiments et autres constructions",
+        "cat": "32 Actifs corporels"
+      },
+      "381": {
+        "desc": "Amortissements cumulés",
+        "cat": "38 Amortissements cumulés"
+      },
+      "411": {
+        "desc": "Clients c/c (Divers)",
+        "cat": "41 Clients"
+      },
+      "421": {
+        "desc": "Fournisseurs c/c (Divers)",
+        "cat": "42 Fournisseurs"
+      },
+      "441": {
+        "desc": "Impôt sur le revenu",
+        "cat": "44 État"
+      },
+      "451": {
+        "desc": "Autres débiteurs",
+        "cat": "45 Autres débiteurs"
+      },
+      "461": {
+        "desc": "Autres créanciers",
+        "cat": "46 Autres créanciers"
+      },
+      "481": {
+        "desc": "Provisions pour litiges",
+        "cat": "48 Provisions"
+      },
+      "491": {
+        "desc": "Régularisations de revenus",
+        "cat": "49 Régularisations et reports"
+      },
+      "511": {
+        "desc": "Capital social",
+        "cat": "51 Capital"
+      },
+      "591": {
+        "desc": "Bénéfices non répartis",
+        "cat": "59 Bénéfices non répartis"
+      },
+      "621": {
+        "desc": "Rémunération du personnel",
+        "cat": "62 Frais de personnel"
+      },
+      "631": {
+        "desc": "Sous-traitance",
+        "cat": "63 Fournitures et services tiers"
+      },
+      "681": {
+        "desc": "Impôts et taxes",
+        "cat": "68 Autres charges et pertes d'exploitation"
+      },
+      "711": {
+        "desc": "Ventes de marchandises",
+        "cat": "71 Ventes"
+      },
+      "721": {
+        "desc": "Prestation de services",
+        "cat": "72 Prestation de services"
+      },
+      "781": {
+        "desc": "Intérêts obtenus",
+        "cat": "78 Revenus et gains financiers"
+      },
+      "881": {
+        "desc": "Résultat net de la période",
+        "cat": "88 Résultat net de la période"
+      }
+    }
   }
 }

@@ -15,7 +15,7 @@ interface AccountBalance {
 }
 
 const Statement = () => {
-  const { transactions, companyInfo } = useAppContext();
+  const { transactions, companyInfo, customers, suppliers } = useAppContext();
   const { t } = useTranslation();
   
   const [startDate, setStartDate] = useState(() => {
@@ -41,77 +41,156 @@ const Statement = () => {
 
   const balanceteData = useMemo(() => {
     const accountsMap: Record<string, AccountBalance> = {
-      '111': { conta: '111', descricao: 'Caixa Despesas', categoria: '11 Caixa', debito: 0, credito: 0, movimentos: [] },
-      '121': { conta: '121', descricao: 'Depósitos à Ordem', categoria: '12 Bancos', debito: 0, credito: 0, movimentos: [] },
-      '211': { conta: '211', descricao: 'Compras de Mercadorias', categoria: '21 Compras', debito: 0, credito: 0, movimentos: [] },
-      '261': { conta: '261', descricao: 'Matérias primas', categoria: '26 Matérias primas, auxiliares e materiais', debito: 0, credito: 0, movimentos: [] },
-      '321': { conta: '321', descricao: 'Edifícios e outras construções', categoria: '32 Activos tangíveis', debito: 0, credito: 0, movimentos: [] },
-      '381': { conta: '381', descricao: 'Amortizações acumuladas', categoria: '38 Amortizações acumuladas', debito: 0, credito: 0, movimentos: [] },
-      '411': { conta: '411', descricao: 'Clientes c/c', categoria: '41 Clientes', debito: 0, credito: 0, movimentos: [] },
-      '421': { conta: '421', descricao: 'Fornecedores c/c', categoria: '42 Fornecedores', debito: 0, credito: 0, movimentos: [] },
-      '441': { conta: '441', descricao: 'Imposto sobre o rendimento', categoria: '44 Estado', debito: 0, credito: 0, movimentos: [] },
-      '451': { conta: '451', descricao: 'Outros devedores', categoria: '45 Outros devedores', debito: 0, credito: 0, movimentos: [] },
-      '461': { conta: '461', descricao: 'Outros credores', categoria: '46 Outros credores', debito: 0, credito: 0, movimentos: [] },
-      '481': { conta: '481', descricao: 'Provisões para processos judiciais', categoria: '48 Provisões', debito: 0, credito: 0, movimentos: [] },
-      '491': { conta: '491', descricao: 'Acréscimos de rendimentos', categoria: '49 Acréscimos e diferimentos', debito: 0, credito: 0, movimentos: [] },
-      '511': { conta: '511', descricao: 'Capital social', categoria: '51 Capital', debito: 0, credito: 0, movimentos: [] },
-      '591': { conta: '591', descricao: 'Resultados transitados', categoria: '59 Resultados transitados', debito: 0, credito: 0, movimentos: [] },
-      '621': { conta: '621', descricao: 'Remunerações do pessoal', categoria: '62 Gastos com o pessoal', debito: 0, credito: 0, movimentos: [] },
-      '631': { conta: '631', descricao: 'Subcontratos', categoria: '63 Fornecimento e serviços de terceiros', debito: 0, credito: 0, movimentos: [] },
-      '681': { conta: '681', descricao: 'Impostos e taxas', categoria: '68 Outros gastos e perdas operacionais', debito: 0, credito: 0, movimentos: [] },
-      '711': { conta: '711', descricao: 'Vendas de mercadorias', categoria: '71 Vendas', debito: 0, credito: 0, movimentos: [] },
-      '721': { conta: '721', descricao: 'Prestação de serviços', categoria: '72 Prestação de serviços', debito: 0, credito: 0, movimentos: [] },
-      '781': { conta: '781', descricao: 'Juros obtidos', categoria: '78 Rendimentos e ganhos financeiros', debito: 0, credito: 0, movimentos: [] },
-      '881': { conta: '881', descricao: 'Resultado líquido do peródo', categoria: '88 Resultado líquido do peródo', debito: 0, credito: 0, movimentos: [] },
+      '111': { conta: '111', descricao: t('statement.accounts.111.desc', 'Caixa (Numerário)'), categoria: t('statement.accounts.111.cat', '11 Caixa'), debito: 0, credito: 0, movimentos: [] },
+      '121': { conta: '121', descricao: t('statement.accounts.121.desc', 'Bancos (Transferência Bancária)'), categoria: t('statement.accounts.121.cat', '12 Bancos'), debito: 0, credito: 0, movimentos: [] },
+      '122': { conta: '122', descricao: t('statement.accounts.122.desc', 'M-Pesa'), categoria: t('statement.accounts.122.cat', '12 Bancos'), debito: 0, credito: 0, movimentos: [] },
+      '123': { conta: '123', descricao: t('statement.accounts.123.desc', 'E-mola'), categoria: t('statement.accounts.123.cat', '12 Bancos'), debito: 0, credito: 0, movimentos: [] },
+      '124': { conta: '124', descricao: t('statement.accounts.124.desc', 'Cartão/Cheque'), categoria: t('statement.accounts.124.cat', '12 Bancos'), debito: 0, credito: 0, movimentos: [] },
+      '211': { conta: '211', descricao: t('statement.accounts.211.desc', 'Compras de Mercadorias'), categoria: t('statement.accounts.211.cat', '21 Compras'), debito: 0, credito: 0, movimentos: [] },
+      '261': { conta: '261', descricao: t('statement.accounts.261.desc', 'Matérias primas'), categoria: t('statement.accounts.261.cat', '26 Matérias primas, auxiliares e materiais'), debito: 0, credito: 0, movimentos: [] },
+      '321': { conta: '321', descricao: t('statement.accounts.321.desc', 'Edifícios e outras construções'), categoria: t('statement.accounts.321.cat', '32 Activos tangíveis'), debito: 0, credito: 0, movimentos: [] },
+      '381': { conta: '381', descricao: t('statement.accounts.381.desc', 'Amortizações acumuladas'), categoria: t('statement.accounts.381.cat', '38 Amortizações acumuladas'), debito: 0, credito: 0, movimentos: [] },
+      '411': { conta: '411', descricao: t('statement.accounts.411.desc', 'Clientes c/c (Diversos)'), categoria: t('statement.accounts.411.cat', '41 Clientes'), debito: 0, credito: 0, movimentos: [] },
+      '421': { conta: '421', descricao: t('statement.accounts.421.desc', 'Fornecedores c/c (Diversos)'), categoria: t('statement.accounts.421.cat', '42 Fornecedores'), debito: 0, credito: 0, movimentos: [] },
+      '441': { conta: '441', descricao: t('statement.accounts.441.desc', 'Imposto sobre o rendimento'), categoria: t('statement.accounts.441.cat', '44 Estado'), debito: 0, credito: 0, movimentos: [] },
+      '451': { conta: '451', descricao: t('statement.accounts.451.desc', 'Outros devedores'), categoria: t('statement.accounts.451.cat', '45 Outros devedores'), debito: 0, credito: 0, movimentos: [] },
+      '461': { conta: '461', descricao: t('statement.accounts.461.desc', 'Outros credores'), categoria: t('statement.accounts.461.cat', '46 Outros credores'), debito: 0, credito: 0, movimentos: [] },
+      '481': { conta: '481', descricao: t('statement.accounts.481.desc', 'Provisões para processos judiciais'), categoria: t('statement.accounts.481.cat', '48 Provisões'), debito: 0, credito: 0, movimentos: [] },
+      '491': { conta: '491', descricao: t('statement.accounts.491.desc', 'Acréscimos de rendimentos'), categoria: t('statement.accounts.491.cat', '49 Acréscimos e diferimentos'), debito: 0, credito: 0, movimentos: [] },
+      '511': { conta: '511', descricao: t('statement.accounts.511.desc', 'Capital social'), categoria: t('statement.accounts.511.cat', '51 Capital'), debito: 0, credito: 0, movimentos: [] },
+      '591': { conta: '591', descricao: t('statement.accounts.591.desc', 'Resultados transitados'), categoria: t('statement.accounts.591.cat', '59 Resultados transitados'), debito: 0, credito: 0, movimentos: [] },
+      '621': { conta: '621', descricao: t('statement.accounts.621.desc', 'Remunerações do pessoal'), categoria: t('statement.accounts.621.cat', '62 Gastos com o pessoal'), debito: 0, credito: 0, movimentos: [] },
+      '631': { conta: '631', descricao: t('statement.accounts.631.desc', 'Subcontratos'), categoria: t('statement.accounts.631.cat', '63 Fornecimento e serviços de terceiros'), debito: 0, credito: 0, movimentos: [] },
+      '681': { conta: '681', descricao: t('statement.accounts.681.desc', 'Impostos e taxas'), categoria: t('statement.accounts.681.cat', '68 Outros gastos e perdas operacionais'), debito: 0, credito: 0, movimentos: [] },
+      '711': { conta: '711', descricao: t('statement.accounts.711.desc', 'Vendas de mercadorias'), categoria: t('statement.accounts.711.cat', '71 Vendas'), debito: 0, credito: 0, movimentos: [] },
+      '721': { conta: '721', descricao: t('statement.accounts.721.desc', 'Prestação de serviços'), categoria: t('statement.accounts.721.cat', '72 Prestação de serviços'), debito: 0, credito: 0, movimentos: [] },
+      '781': { conta: '781', descricao: t('statement.accounts.781.desc', 'Juros obtidos'), categoria: t('statement.accounts.781.cat', '78 Rendimentos e ganhos financeiros'), debito: 0, credito: 0, movimentos: [] },
+      '881': { conta: '881', descricao: t('statement.accounts.881.desc', 'Resultado líquido do peródo'), categoria: t('statement.accounts.881.cat', '88 Resultado líquido do peródo'), debito: 0, credito: 0, movimentos: [] },
     };
+
+    // Add dynamic accounts for customers
+    customers.forEach((c, index) => {
+      const conta = `411.${index + 1}`;
+      accountsMap[conta] = {
+        conta,
+        descricao: c.name,
+        categoria: t('statement.accounts.411.cat', '41 Clientes'),
+        debito: 0,
+        credito: 0,
+        movimentos: []
+      };
+    });
+
+    // Add dynamic accounts for suppliers
+    suppliers.forEach((s, index) => {
+      const conta = `421.${index + 1}`;
+      accountsMap[conta] = {
+        conta,
+        descricao: s.name,
+        categoria: t('statement.accounts.421.cat', '42 Fornecedores'),
+        debito: 0,
+        credito: 0,
+        movimentos: []
+      };
+    });
 
     filteredTransactions.forEach(t => {
       const isServicos = companyInfo?.sector === 'servicos';
       const isComercio = companyInfo?.sector === 'comercio';
       const isMisto = companyInfo?.sector === 'misto';
 
+      let caixaOrBanco = '111'; // Default to Caixa
+      if (['Transferência Bancária', 'Bank Transfer', 'Virement Bancaire', '银行转账'].includes(t.paymentMethod || '')) caixaOrBanco = '121';
+      else if (t.paymentMethod === 'M-Pesa') caixaOrBanco = '122';
+      else if (t.paymentMethod === 'E-mola') caixaOrBanco = '123';
+      else if (['Cartão', 'Cheque', 'Card', 'Carte', '卡', 'Chèque', '支票'].includes(t.paymentMethod || '')) caixaOrBanco = '124';
+
       if (t.type === 'receita') {
-        // Debit Caixa/Bancos (11/12)
-        accountsMap['121'].debito += t.value;
-        accountsMap['121'].movimentos.push({ ...t, tipoMovimento: 'debito' });
-        
         // Credit Vendas/Serviços (71/72)
-        if (isComercio || (isMisto && t.productId)) {
-          accountsMap['711'].credito += t.value;
-          accountsMap['711'].movimentos.push({ ...t, tipoMovimento: 'credito' });
+        const hasProducts = t.productId || (t.items && t.items.length > 0);
+        const creditAccount = (isComercio || (isMisto && hasProducts)) ? '711' : '721';
+        accountsMap[creditAccount].credito += t.value;
+        accountsMap[creditAccount].movimentos.push({ ...t, tipoMovimento: 'credito' });
+
+        if (t.customerId) {
+          // Find customer account
+          const customerIndex = customers.findIndex(c => c.id === t.customerId);
+          const customerAccount = customerIndex >= 0 ? `411.${customerIndex + 1}` : '411';
+
+          // Debit Clientes (41)
+          accountsMap[customerAccount].debito += t.value;
+          accountsMap[customerAccount].movimentos.push({ ...t, tipoMovimento: 'debito' });
+
+          if (t.paymentStatus === 'pago') {
+            // Credit Clientes (41)
+            accountsMap[customerAccount].credito += t.value;
+            accountsMap[customerAccount].movimentos.push({ ...t, tipoMovimento: 'credito' });
+            // Debit Caixa/Bancos (11/12)
+            accountsMap[caixaOrBanco].debito += t.value;
+            accountsMap[caixaOrBanco].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          }
         } else {
-          accountsMap['721'].credito += t.value;
-          accountsMap['721'].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          if (t.paymentStatus === 'pago') {
+            // Debit Caixa/Bancos (11/12)
+            accountsMap[caixaOrBanco].debito += t.value;
+            accountsMap[caixaOrBanco].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          } else {
+            // If it's pending but no customer, we still need to debit something. Let's use 411 as generic.
+            accountsMap['411'].debito += t.value;
+            accountsMap['411'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          }
         }
       } else {
-        // Credit Caixa/Bancos (11/12)
-        accountsMap['121'].credito += t.value;
-        accountsMap['121'].movimentos.push({ ...t, tipoMovimento: 'credito' });
-        
-        // Debit specific expense account
+        // Despesa
+        let debitAccount = '681'; // Default
         const isSalary = t.category === 'Pessoal' || t.category === 'Salário' || t.category === 'Assistência Médica';
 
         if (isSalary) {
-          accountsMap['621'].debito += t.value;
-          accountsMap['621'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          debitAccount = '621';
         } else if (isServicos) {
-          // Para empresas de serviços, todas as outras despesas vão para 63
-          accountsMap['631'].debito += t.value;
-          accountsMap['631'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          debitAccount = '631';
         } else {
-          // Para empresas de comércio ou mistas
           if (t.category === 'Produto' || t.supplierId) {
-            accountsMap['211'].debito += t.value;
-            accountsMap['211'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+            debitAccount = '211';
           } else if (t.category === 'Impostos' || t.category === 'Estado') {
-            accountsMap['441'].debito += t.value;
-            accountsMap['441'].movimentos.push({ ...t, tipoMovimento: 'debito' });
-          } else if (t.category === 'Operacional' || t.category === 'Infraestrutura' || t.category === 'Marketing' || t.category === 'SaaS' || t.category === 'Água' || t.category === 'Energia' || t.category === 'Renda' || t.category === 'Combustível') {
-            accountsMap['631'].debito += t.value;
-            accountsMap['631'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+            debitAccount = '441';
+          } else if (['Operacional', 'Infraestrutura', 'Marketing', 'SaaS', 'Água', 'Energia', 'Renda', 'Combustível'].includes(t.category)) {
+            debitAccount = '631';
           } else {
-            accountsMap['681'].debito += t.value;
-            accountsMap['681'].movimentos.push({ ...t, tipoMovimento: 'debito' });
+            debitAccount = '681';
+          }
+        }
+
+        // Debit Expense Account
+        accountsMap[debitAccount].debito += t.value;
+        accountsMap[debitAccount].movimentos.push({ ...t, tipoMovimento: 'debito' });
+
+        if (t.supplierId) {
+          // Find supplier account
+          const supplierIndex = suppliers.findIndex(s => s.id === t.supplierId);
+          const supplierAccount = supplierIndex >= 0 ? `421.${supplierIndex + 1}` : '421';
+
+          // Credit Fornecedores (42)
+          accountsMap[supplierAccount].credito += t.value;
+          accountsMap[supplierAccount].movimentos.push({ ...t, tipoMovimento: 'credito' });
+
+          if (t.paymentStatus === 'pago') {
+            // Debit Fornecedores (42)
+            accountsMap[supplierAccount].debito += t.value;
+            accountsMap[supplierAccount].movimentos.push({ ...t, tipoMovimento: 'debito' });
+            // Credit Caixa/Bancos (11/12)
+            accountsMap[caixaOrBanco].credito += t.value;
+            accountsMap[caixaOrBanco].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          }
+        } else {
+          if (t.paymentStatus === 'pago') {
+            // Credit Caixa/Bancos (11/12)
+            accountsMap[caixaOrBanco].credito += t.value;
+            accountsMap[caixaOrBanco].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          } else {
+            // If it's pending but no supplier, we still need to credit something. Let's use 421 as generic.
+            accountsMap['421'].credito += t.value;
+            accountsMap['421'].movimentos.push({ ...t, tipoMovimento: 'credito' });
           }
         }
       }
@@ -128,7 +207,7 @@ const Statement = () => {
         };
       })
       .sort((a, b) => a.conta.localeCompare(b.conta));
-  }, [filteredTransactions]);
+  }, [filteredTransactions, companyInfo, customers, suppliers, t]);
 
   const groupedBalancete = useMemo(() => {
     const groups: Record<string, AccountBalance[]> = {};

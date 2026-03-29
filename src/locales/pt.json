@@ -43,6 +43,64 @@
     "noCustomersFound": "Nenhum cliente encontrado na busca.",
     "viewStatement": "Ver Balancete"
   },
+  "transactions": {
+    "subtitle": "Gerencie suas movimentações financeiras com precisão.",
+    "advancedFilters": "Filtros Avançados",
+    "clearFilters": "Limpar Filtros",
+    "type": "Tipo",
+    "all": "Todos",
+    "revenue": "Receitas",
+    "expense": "Despesas",
+    "category": "Categoria",
+    "allCategories": "Todas",
+    "startDate": "Data Inicial",
+    "endDate": "Data Final",
+    "quickEntry": "Entrada Rápida",
+    "revenueSale": "Receita (Venda)",
+    "expensePurchase": "Despesa (Compra / Entrada de Stock)",
+    "customerOptional": "Cliente (Opcional)",
+    "supplierOptional": "Fornecedor (Opcional)",
+    "selectCustomer": "Selecione um cliente...",
+    "selectSupplier": "Selecione um fornecedor...",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Ex: Venda de produtos",
+    "paymentMethod": "Método de Pagamento",
+    "cash": "Numerário",
+    "transfer": "Transferência",
+    "card": "Cartão",
+    "mobileMoney": "M-Pesa/E-Mola",
+    "paymentStatus": "Status do Pagamento",
+    "paid": "Pago",
+    "pending": "Pendente",
+    "product": "Produto",
+    "selectProduct": "Selecione um produto...",
+    "quantity": "Quantidade",
+    "unitPrice": "Preço Unitário",
+    "total": "Total",
+    "usePurchaseUnit": "Usar unidade de compra ({{unit}})",
+    "addToCart": "Adicionar",
+    "cart": "Carrinho",
+    "cartEmpty": "Nenhum item adicionado",
+    "subtotal": "Subtotal",
+    "saveTransaction": "Salvar Transação",
+    "updateTransaction": "Atualizar Transação",
+    "cancel": "Cancelar",
+    "transactionList": "Lista de Transações",
+    "searchPlaceholder": "Buscar por descrição, categoria, cliente ou fornecedor...",
+    "columns": "Colunas",
+    "showColumns": "Mostrar Colunas",
+    "receipt": "Recibo",
+    "date": "Data",
+    "items": "Itens",
+    "value": "Valor",
+    "actions": "Ações",
+    "noTransactions": "Nenhuma transação encontrada.",
+    "viewAll": "Ver todas as transações",
+    "viewLess": "Ver menos",
+    "expectedBalance": "Saldo Previsto",
+    "totalRevenues": "Total Receitas",
+    "totalExpenses": "Total Despesas"
+  },
   "changePassword": {
     "fillAllFields": "Por favor, preencha todos os campos.",
     "passwordsDoNotMatch": "As senhas não coincidem.",
@@ -328,5 +386,128 @@
     "totalCostCol": "Total (Custo)",
     "totalCount": "Total: {{count}} produtos",
     "noProducts": "Nenhum produto cadastrado."
+  },
+  "statement": {
+    "subtitle": "Balancete analítico estruturado por contas (PGC-NIRF).",
+    "startDate": "Data Inicial",
+    "endDate": "Data Final",
+    "printTitle": "Balancete do Razão",
+    "period": "Período",
+    "start": "Início",
+    "to": "a",
+    "today": "Hoje",
+    "accountsMoved": "Contas Movimentadas",
+    "accountsWithBalance": "contas com saldo",
+    "account": "Conta",
+    "description": "Descrição",
+    "debitMov": "Mov. Débito",
+    "creditMov": "Mov. Crédito",
+    "debitBalance": "Saldo Débito",
+    "creditBalance": "Saldo Crédito",
+    "noMovements": "Nenhuma movimentação encontrada neste período.",
+    "netSum": "Soma Líquida",
+    "balancesSum": "Soma Saldos",
+    "accounts": {
+      "111": {
+        "desc": "Caixa (Numerário)",
+        "cat": "11 Caixa"
+      },
+      "121": {
+        "desc": "Bancos (Transferência Bancária)",
+        "cat": "12 Bancos"
+      },
+      "122": {
+        "desc": "M-Pesa",
+        "cat": "12 Bancos"
+      },
+      "123": {
+        "desc": "E-mola",
+        "cat": "12 Bancos"
+      },
+      "124": {
+        "desc": "Cartão/Cheque",
+        "cat": "12 Bancos"
+      },
+      "211": {
+        "desc": "Compras de Mercadorias",
+        "cat": "21 Compras"
+      },
+      "261": {
+        "desc": "Matérias primas",
+        "cat": "26 Matérias primas, auxiliares e materiais"
+      },
+      "321": {
+        "desc": "Edifícios e outras construções",
+        "cat": "32 Activos tangíveis"
+      },
+      "381": {
+        "desc": "Amortizações acumuladas",
+        "cat": "38 Amortizações acumuladas"
+      },
+      "411": {
+        "desc": "Clientes c/c (Diversos)",
+        "cat": "41 Clientes"
+      },
+      "421": {
+        "desc": "Fornecedores c/c (Diversos)",
+        "cat": "42 Fornecedores"
+      },
+      "441": {
+        "desc": "Imposto sobre o rendimento",
+        "cat": "44 Estado"
+      },
+      "451": {
+        "desc": "Outros devedores",
+        "cat": "45 Outros devedores"
+      },
+      "461": {
+        "desc": "Outros credores",
+        "cat": "46 Outros credores"
+      },
+      "481": {
+        "desc": "Provisões para processos judiciais",
+        "cat": "48 Provisões"
+      },
+      "491": {
+        "desc": "Acréscimos de rendimentos",
+        "cat": "49 Acréscimos e diferimentos"
+      },
+      "511": {
+        "desc": "Capital social",
+        "cat": "51 Capital"
+      },
+      "591": {
+        "desc": "Resultados transitados",
+        "cat": "59 Resultados transitados"
+      },
+      "621": {
+        "desc": "Remunerações do pessoal",
+        "cat": "62 Gastos com o pessoal"
+      },
+      "631": {
+        "desc": "Subcontratos",
+        "cat": "63 Fornecimento e serviços de terceiros"
+      },
+      "681": {
+        "desc": "Impostos e taxas",
+        "cat": "68 Outros gastos e perdas operacionais"
+      },
+      "711": {
+        "desc": "Vendas de mercadorias",
+        "cat": "71 Vendas"
+      },
+      "721": {
+        "desc": "Prestação de serviços",
+        "cat": "72 Prestação de serviços"
+      },
+      "781": {
+        "desc": "Juros obtidos",
+        "cat": "78 Rendimentos e ganhos financeiros"
+      },
+      "881": {
+        "desc": "Resultado líquido do peródo",
+        "cat": "88 Resultado líquido do peródo"
+      }
+    }
   }
 }
