@@ -195,24 +195,24 @@ const CustomerStatementModal = ({ isOpen, onClose, customer }: CustomerStatement
                   </td>
                 </tr>
               ) : (
-                customerTransactions.map(t => {
-                  const isMultiItem = t.items && t.items.length > 0;
-                  const product = !isMultiItem && t.productId ? products.find(p => p.id === t.productId) : null;
+                customerTransactions.map(transaction => {
+                  const isMultiItem = transaction.items && transaction.items.length > 0;
+                  const product = !isMultiItem && transaction.productId ? products.find(p => p.id === transaction.productId) : null;
                   
                   return (
-                    <tr key={t.id} className="hover:bg-slate-50 print:hover:bg-transparent">
-                      <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">{formatDate(t.date)}</td>
+                    <tr key={transaction.id} className="hover:bg-slate-50 print:hover:bg-transparent">
+                      <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">{formatDate(transaction.date)}</td>
                       <td className="px-4 py-3 text-sm font-mono text-slate-500">
-                        {t.receiptNumber ? String(t.receiptNumber).padStart(3, '0') : '-'}
+                        {transaction.receiptNumber ? String(transaction.receiptNumber).padStart(3, '0') : '-'}
                       </td>
                       <td className="px-4 py-3 text-sm font-medium text-slate-800">
-                        {t.description}
+                        {transaction.description}
                       </td>
                       <td className="px-4 py-3 text-sm text-slate-600">
-                        {isMultiItem ? `${t.items!.length} ${t('customerStatement.itemsCount')}` : (product ? product.name : '-')}
+                        {isMultiItem ? `${transaction.items!.length} ${t('customerStatement.itemsCount')}` : (product ? product.name : '-')}
                       </td>
                       <td className="px-4 py-3 text-sm font-bold text-slate-800 text-right">
-                        {formatCurrency(t.value)}
+                        {formatCurrency(transaction.value)}
                       </td>
                     </tr>
                   );

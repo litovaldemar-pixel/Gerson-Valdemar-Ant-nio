@@ -29,6 +29,8 @@ export interface TransactionItem {
   unitPrice: number;
   subtotal: number;
   unit?: MeasurementUnit;
+  ivaRate?: number;
+  ivaAmount?: number;
 }
 
 export interface Transaction {
@@ -50,6 +52,8 @@ export interface Transaction {
   paymentStatus?: 'pago' | 'pendente';
   items?: TransactionItem[];
   receiptNumber?: number;
+  ivaRate?: number;
+  ivaAmount?: number;
 }
 
 export interface Customer {
@@ -85,3 +89,25 @@ export interface Product {
   conversionFactor?: number;
   supplierId?: string;
 }
+
+export const getCategoryTranslationKey = (category: string): string => {
+  const map: Record<string, string> = {
+    'Operacional': 'operational',
+    'Marketing': 'marketing',
+    'Pessoal': 'personnel',
+    'Salário': 'salary',
+    'Assistência Médica': 'medicalAssistance',
+    'Infraestrutura': 'infrastructure',
+    'Água': 'water',
+    'Energia': 'energy',
+    'Renda': 'rent',
+    'Combustível': 'fuel',
+    'Estado': 'stateTaxes',
+    'Serviços': 'services',
+    'SaaS': 'saas',
+    'Produto': 'product',
+    'Outras Despesas': 'otherExpenses',
+    'Vendas': 'vendas'
+  };
+  return map[category] || category.toLowerCase().replace(/ /g, '');
+};

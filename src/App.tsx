@@ -13,6 +13,7 @@ import DRE from './pages/DRE';
 import Statement from './pages/Statement';
 import Login from './pages/Login';
 import AdminPanel from './pages/AdminPanel';
+import Payroll from './pages/Payroll';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -31,6 +32,7 @@ const AppRoutes = () => {
         <Route path="clientes" element={<Customers />} />
         <Route path="fornecedores" element={<Suppliers />} />
         <Route path="mercadorias" element={<Products />} />
+        <Route path="salarios" element={<Payroll />} />
         <Route path="dre" element={<DRE />} />
         <Route path="balancete" element={<Statement />} />
         <Route path="admin" element={<AdminPanel />} />

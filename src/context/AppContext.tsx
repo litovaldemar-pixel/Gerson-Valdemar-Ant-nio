@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Transaction, Customer, Supplier, Product, CompanyInfo } from '../types';
 import { db, auth } from '../lib/firebase';
 import { useAuth } from './AuthContext';
@@ -108,6 +108,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [pinModalOpen, setPinModalOpen] = useState(false);
   const [pendingCompanyId, setPendingCompanyId] = useState<string | null>(null);
   const [pinError, setPinError] = useState<string>('');
+  const lastReceiptNumberRef = useRef<number>(0);
+
+  useEffect(() => {
+    const maxReceipt = allTransactions.reduce((max, t) => Math.max(max, t.receiptNumber || 0), 0);
+    if (maxReceipt > lastReceiptNumberRef.current) {
+      lastReceiptNumberRef.current = maxReceipt;
+    }
+  }, [allTransactions]);
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -240,8 +248,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
     if (!user) return;
     try {
-      const maxReceipt = allTransactions.reduce((max, t) => Math.max(max, t.receiptNumber || 0), 0);
-      const nextReceiptNumber = maxReceipt + 1;
+      // Use ref to ensure synchronous calls get different receipt numbers
+      const nextReceiptNumber = lastReceiptNumberRef.current + 1;
+      lastReceiptNumberRef.current = nextReceiptNumber;
 
       const newTransaction: Omit<Transaction, 'id'> = { 
         ...transaction, 

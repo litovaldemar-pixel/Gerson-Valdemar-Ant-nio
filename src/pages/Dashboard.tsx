@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
+import { getCategoryTranslationKey } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { motion } from 'motion/react';
 import PrintHeader from '../components/PrintHeader';
@@ -120,7 +121,7 @@ const Dashboard = () => {
 
   // Process data for the chart (Group by Date)
   const chartDataMap = filteredTransactions.reduce((acc, curr) => {
-    const date = new Date(curr.date).toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short' });
+    const date = new Date(curr.date).toLocaleDateString(t('common.locale', 'pt-MZ'), { day: '2-digit', month: 'short' });
     if (!acc[date]) {
       acc[date] = { name: date, Receitas: 0, Despesas: 0 };
     }
@@ -155,7 +156,8 @@ const Dashboard = () => {
   const despesasPorCategoria = filteredTransactions
     .filter(t => t.type === 'despesa')
     .reduce((acc, curr) => {
-      acc[curr.category] = (acc[curr.category] || 0) + curr.value;
+      const catName = t(`transactions.categories.${getCategoryTranslationKey(curr.category)}`, curr.category) as string;
+      acc[catName] = (acc[catName] || 0) + curr.value;
       return acc;
     }, {} as Record<string, number>);
   const despesasData = Object.entries(despesasPorCategoria).map(([name, value]) => ({ name, value }));
@@ -163,7 +165,8 @@ const Dashboard = () => {
   const receitasPorCategoria = filteredTransactions
     .filter(t => t.type === 'receita')
     .reduce((acc, curr) => {
-      acc[curr.category] = (acc[curr.category] || 0) + curr.value;
+      const catName = t(`transactions.categories.${getCategoryTranslationKey(curr.category)}`, curr.category) as string;
+      acc[catName] = (acc[catName] || 0) + curr.value;
       return acc;
     }, {} as Record<string, number>);
   const receitasData = Object.entries(receitasPorCategoria).map(([name, value]) => ({ name, value }));

@@ -95,7 +95,11 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
           {/* Receipt Info */}
           <div className="mb-4 text-[11px]">
             <h2 className="text-center font-bold text-xs mb-3 uppercase tracking-widest">
-              {transaction.type === 'receita' ? t('receipt.salesReceipt') : t('receipt.purchaseReceipt')}
+              {transaction.category === 'Pessoal' && transaction.description.startsWith('Salário') 
+                ? t('receipt.salaryReceipt') 
+                : transaction.type === 'receita' 
+                  ? t('receipt.salesReceipt') 
+                  : t('receipt.purchaseReceipt')}
             </h2>
             <div className="flex justify-between mb-0.5">
               <span className="text-slate-500">{t('receipt.date')}:</span>
@@ -175,7 +179,7 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
               <QRCodeSVG value={qrData} size={60} level="M" />
             </div>
             <p className="mb-0.5">{t('receipt.thankYou')}</p>
-            <p>Processado por computador</p>
+            <p>{t('receipt.processedByComputer')}</p>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { TransactionType, Transaction, TransactionItem } from '../types';
+import { TransactionType, Transaction, TransactionItem, getCategoryTranslationKey } from '../types';
 import ReceiptModal from '../components/ReceiptModal';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +23,7 @@ const Transactions = () => {
     items: true,
     quantity: true,
     type: true,
+    iva: true,
     value: true,
     actions: true
   });
@@ -49,6 +50,10 @@ const Transactions = () => {
   // Payment
   const [paymentMethod, setPaymentMethod] = useState('Numerário');
   const [paymentStatus, setPaymentStatus] = useState<'pago' | 'pendente'>('pago');
+  const [ivaRate, setIvaRate] = useState<number>(0);
+  const [ivaAmount, setIvaAmount] = useState<number>(0);
+  const [amountPaid, setAmountPaid] = useState<string>('');
+  const [change, setChange] = useState<number>(0);
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
@@ -60,6 +65,21 @@ const Transactions = () => {
 
   // Calculate total for cart
   const cartTotal = cartItems.reduce((acc, item) => acc + item.subtotal, 0);
+
+  // Calculate IVA
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      setIvaAmount(cartTotal * (ivaRate / 100));
+    } else {
+      const totalValue = parseFloat(value) || 0;
+      if (ivaRate > 0 && totalValue > 0) {
+        const base = totalValue / (1 + ivaRate / 100);
+        setIvaAmount(totalValue - base);
+      } else {
+        setIvaAmount(0);
+      }
+    }
+  }, [cartTotal, value, ivaRate, cartItems.length]);
 
   // Calculate item total for cart
   useEffect(() => {
@@ -109,6 +129,8 @@ const Transactions = () => {
     setSupplierId(t.supplierId || '');
     setPaymentMethod(t.paymentMethod || 'Numerário');
     setPaymentStatus(t.paymentStatus || 'pago');
+    setIvaRate(t.ivaRate || 0);
+    setIvaAmount(t.ivaAmount || 0);
     setCartItems(t.items || []);
     if (t.productId && t.quantity && t.unitPrice) {
       setItemTotal((t.quantity * t.unitPrice).toFixed(2));
@@ -131,10 +153,24 @@ const Transactions = () => {
     setSupplierId('');
     setPaymentMethod('Numerário');
     setPaymentStatus('pago');
+    setIvaRate(0);
+    setIvaAmount(0);
     setCartItems([]);
     setItemTotal('');
     setUsePurchaseUnit(false);
+    setAmountPaid('');
+    setChange(0);
   };
+
+  useEffect(() => {
+    const total = cartItems.length > 0 ? cartTotal + ivaAmount : (parseFloat(value) || 0) + ivaAmount;
+    const paid = parseFloat(amountPaid) || 0;
+    if (paid >= total) {
+      setChange(paid - total);
+    } else {
+      setChange(0);
+    }
+  }, [amountPaid, cartTotal, ivaAmount, value, cartItems.length]);
 
   const handleAddToCart = () => {
     if (!productId || !quantity || !itemUnitPrice) return;
@@ -273,7 +309,7 @@ const Transactions = () => {
       }
     }
 
-    const parsedValue = isMultiItem ? cartTotal : parseFloat(value);
+    const parsedValue = isMultiItem ? (cartTotal + ivaAmount) : parseFloat(value);
     if (isNaN(parsedValue) || parsedValue < 0) {
       alert('Valor da transação inválido.');
       return;
@@ -286,6 +322,8 @@ const Transactions = () => {
       category,
       paymentMethod,
       paymentStatus,
+      ivaRate,
+      ivaAmount,
     };
 
     if (isMultiItem) {
@@ -342,6 +380,8 @@ const Transactions = () => {
     setCartItems([]);
     setItemTotal('');
     setUsePurchaseUnit(false);
+    setAmountPaid('');
+    setChange(0);
   };
 
   const formatCurrency = (value: number) => {
@@ -505,17 +545,21 @@ const Transactions = () => {
                 className="w-full mt-1 bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
               >
                 <option value="all">{t('transactions.allCategories')}</option>
-                <option value="Operacional">Operacional</option>
-                <option value="Administrativo">Administrativo</option>
-                <option value="Vendas">Vendas</option>
-                <option value="Impostos">Impostos</option>
-                <option value="Salário">Salário</option>
-                <option value="Assistência Médica">Assistência Médica</option>
-                <option value="Água">Água</option>
-                <option value="Energia">Energia</option>
-                <option value="Renda">Renda</option>
-                <option value="Combustível">Combustível</option>
-                <option value="Outras Despesas">Outras Despesas</option>
+                <option value="Operacional">{t('transactions.categories.operational')}</option>
+                <option value="Marketing">{t('transactions.categories.marketing')}</option>
+                <option value="Pessoal">{t('transactions.categories.personnel')}</option>
+                <option value="Salário">{t('transactions.categories.salary')}</option>
+                <option value="Assistência Médica">{t('transactions.categories.medicalAssistance')}</option>
+                <option value="Infraestrutura">{t('transactions.categories.infrastructure')}</option>
+                <option value="Água">{t('transactions.categories.water')}</option>
+                <option value="Energia">{t('transactions.categories.energy')}</option>
+                <option value="Renda">{t('transactions.categories.rent')}</option>
+                <option value="Combustível">{t('transactions.categories.fuel')}</option>
+                <option value="Estado">{t('transactions.categories.stateTaxes')}</option>
+                <option value="Serviços">{t('transactions.categories.services')}</option>
+                <option value="SaaS">{t('transactions.categories.saas')}</option>
+                <option value="Produto">{t('transactions.categories.product')}</option>
+                <option value="Outras Despesas">{t('transactions.categories.otherExpenses')}</option>
               </select>
             </div>
             <div>
@@ -784,43 +828,105 @@ const Transactions = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.paymentMethod')}</label>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">
+                {type === 'receita' ? t('transactions.ivaLiquidado', 'IVA Liquidado (%)') : t('transactions.ivaDedutivel', 'IVA Dedutível (%)')}
+              </label>
               <select
                 className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
+                value={ivaRate}
+                onChange={(e) => setIvaRate(Number(e.target.value))}
               >
-                <option value="Numerário">{t('transactions.cash')}</option>
-                <option value="M-Pesa">M-Pesa</option>
-                <option value="E-mola">E-mola</option>
-                <option value="Transferência Bancária">{t('transactions.bankTransfer')}</option>
-                <option value="Cartão">{t('transactions.card')}</option>
-                <option value="Cheque">{t('transactions.cheque')}</option>
+                <option value={0}>0%</option>
+                <option value={16}>16%</option>
+                <option value={17}>17%</option>
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.paymentStatus')}</label>
-              <select
-                className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
-                value={paymentStatus}
-                onChange={(e) => setPaymentStatus(e.target.value as 'pago' | 'pendente')}
-              >
-                <option value="pago">{t('transactions.paid')}</option>
-                <option value="pendente">{t('transactions.pending')}</option>
-              </select>
-            </div>
-            <div className="space-y-2 lg:col-span-4">
-              <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.totalValueMZN')}</label>
+              <label className="text-xs font-bold text-on-surface-variant ml-1">
+                {t('transactions.ivaAmount', 'Valor do IVA (MZN)')}
+              </label>
               <input
-                className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim font-bold text-primary"
-                placeholder="0,00"
+                className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim bg-surface-variant/50"
                 type="number"
-                step="0.01"
-                value={cartItems.length > 0 ? cartTotal : value}
-                onChange={(e) => setValue(e.target.value)}
-                required={cartItems.length === 0}
-                disabled={cartItems.length > 0 || (quantity !== '' && itemUnitPrice !== '')}
+                value={ivaAmount.toFixed(2)}
+                readOnly
+                disabled
               />
+            </div>
+          </div>
+
+          <div className="mt-6 p-4 bg-surface-container-low rounded-xl border border-outline-variant/20">
+            <h3 className="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary">payments</span>
+              {t('transactions.paymentDetails', 'Detalhes de Pagamento')}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.paymentMethod')}</label>
+                <select
+                  className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                >
+                  <option value="Numerário">{t('transactions.cash')}</option>
+                  <option value="M-Pesa">M-Pesa</option>
+                  <option value="E-mola">E-mola</option>
+                  <option value="Transferência Bancária">{t('transactions.bankTransfer')}</option>
+                  <option value="Cartão">{t('transactions.card')}</option>
+                  <option value="Cheque">{t('transactions.cheque')}</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.paymentStatus')}</label>
+                <select
+                  className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                  value={paymentStatus}
+                  onChange={(e) => setPaymentStatus(e.target.value as 'pago' | 'pendente')}
+                >
+                  <option value="pago">{t('transactions.paid')}</option>
+                  <option value="pendente">{t('transactions.pending')}</option>
+                </select>
+              </div>
+              <div className="space-y-2 lg:col-span-2">
+                <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.totalValueMZN')}</label>
+                <input
+                  className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim font-bold text-primary"
+                  placeholder="0,00"
+                  type="number"
+                  step="0.01"
+                  value={cartItems.length > 0 ? (cartTotal + ivaAmount).toFixed(2) : value}
+                  onChange={(e) => setValue(e.target.value)}
+                  required={cartItems.length === 0}
+                  disabled={cartItems.length > 0 || (quantity !== '' && itemUnitPrice !== '')}
+                />
+              </div>
+
+              {paymentMethod === 'Numerário' && paymentStatus === 'pago' && type === 'receita' && (
+                <>
+                  <div className="space-y-2 lg:col-span-2">
+                    <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.amountPaid', 'Valor Pago (MZN)')}</label>
+                    <input
+                      className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                      placeholder="0,00"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={amountPaid}
+                      onChange={(e) => setAmountPaid(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2 lg:col-span-2">
+                    <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.change', 'Troco (MZN)')}</label>
+                    <input
+                      className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim font-bold text-secondary bg-surface-variant/50"
+                      type="number"
+                      value={change.toFixed(2)}
+                      readOnly
+                      disabled
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -892,6 +998,10 @@ const Transactions = () => {
                     <span className="text-sm text-on-surface">{t('transactions.type')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.iva} onChange={() => toggleColumn('iva')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">IVA</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.value} onChange={() => toggleColumn('value')} className="rounded border-outline-variant text-primary focus:ring-primary" />
                     <span className="text-sm text-on-surface">{t('transactions.totalValue')}</span>
                   </label>
@@ -920,6 +1030,7 @@ const Transactions = () => {
                 {visibleColumns.items && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{t('transactions.itemsProduct')}</th>}
                 {visibleColumns.quantity && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">{t('transactions.qty')}</th>}
                 {visibleColumns.type && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{t('transactions.type')}</th>}
+                {visibleColumns.iva && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">IVA</th>}
                 {visibleColumns.value && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">{t('transactions.totalValue')}</th>}
                 {visibleColumns.actions && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">{t('transactions.actions')}</th>}
               </tr>
@@ -932,65 +1043,87 @@ const Transactions = () => {
                   </td>
                 </tr>
               ) : (
-                displayedTransactions.map((t) => {
-                  const isMultiItem = t.items && t.items.length > 0;
-                  const product = !isMultiItem && t.productId ? products.find(p => p.id === t.productId) : null;
-                  const customer = t.customerId ? customers.find(c => c.id === t.customerId) : null;
-                  const supplier = t.supplierId ? suppliers.find(s => s.id === t.supplierId) : null;
+                displayedTransactions.map((transaction) => {
+                  const isMultiItem = transaction.items && transaction.items.length > 0;
+                  const product = !isMultiItem && transaction.productId ? products.find(p => p.id === transaction.productId) : null;
+                  const customer = transaction.customerId ? customers.find(c => c.id === transaction.customerId) : null;
+                  const supplier = transaction.supplierId ? suppliers.find(s => s.id === transaction.supplierId) : null;
                   
                   return (
-                  <tr key={t.id} className="hover:bg-surface-container-low/30 transition-colors group print:hover:bg-transparent">
-                  <td className="px-6 py-4 text-sm font-mono text-on-surface-variant">
-                    {t.receiptNumber ? String(t.receiptNumber).padStart(3, '0') : '-'}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium text-on-surface-variant">{formatDate(t.date)}</td>
-                  <td className="px-6 py-4 text-sm font-bold text-primary">
-                    {t.description}
-                    <div className="text-xs font-normal text-on-surface-variant mt-1">
-                      {t(`transactions.categories.${t.category.toLowerCase().replace(/ /g, '')}`, t.category)} 
-                      {customer && ` • ${t('transactions.customerOptional').replace(' (Opcional)', '')}: ${customer.name}`}
-                      {supplier && ` • ${t('transactions.supplierOptional').replace(' (Opcional)', '')}: ${supplier.name}`}
-                    </div>
-                    {(t.paymentMethod || t.paymentStatus) && (
-                      <div className="text-xs font-normal text-on-surface-variant mt-1 flex gap-2 items-center">
-                        {t.paymentMethod && <span className="bg-surface-container px-2 py-0.5 rounded-md">{t.paymentMethod}</span>}
-                        {t.paymentStatus && (
-                          <span className={`px-2 py-0.5 rounded-md font-bold ${t.paymentStatus === 'pago' ? 'bg-secondary-container/50 text-secondary' : 'bg-error-container/50 text-error'}`}>
-                            {t.paymentStatus.toUpperCase()}
-                          </span>
-                        )}
+                  <tr key={transaction.id} className="hover:bg-surface-container-low/30 transition-colors group print:hover:bg-transparent">
+                  {visibleColumns.receipt && (
+                    <td className="px-6 py-4 text-sm font-mono text-on-surface-variant">
+                      {transaction.receiptNumber ? String(transaction.receiptNumber).padStart(3, '0') : '-'}
+                    </td>
+                  )}
+                  {visibleColumns.date && (
+                    <td className="px-6 py-4 text-sm font-medium text-on-surface-variant">{formatDate(transaction.date)}</td>
+                  )}
+                  {visibleColumns.description && (
+                    <td className="px-6 py-4 text-sm font-bold text-primary">
+                      {transaction.description}
+                      <div className="text-xs font-normal text-on-surface-variant mt-1">
+                        {t(`transactions.categories.${getCategoryTranslationKey(transaction.category)}`, transaction.category)} 
+                        {customer && ` • ${t('transactions.customerOptional').replace(' (Opcional)', '')}: ${customer.name}`}
+                        {supplier && ` • ${t('transactions.supplierOptional').replace(' (Opcional)', '')}: ${supplier.name}`}
                       </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-on-surface-variant">
-                    {isMultiItem ? `${t.items!.length} ${t('transactions.itemsProduct').split('/')[0].toLowerCase()}` : (product ? product.name : '-')}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-center font-mono">
-                    {isMultiItem 
-                      ? t.items!.reduce((acc, i) => acc + i.quantity, 0) 
-                      : (t.quantity ? `${t.quantity} ${t.unit || 'un'}` : '-')}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full print:border print:border-outline-variant/20 print:bg-transparent print:text-on-surface ${t.type === 'receita' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}`}>
-                      {t.type === 'receita' ? t('transactions.revenueSale').split(' ')[0] : t('transactions.expensePurchase').split(' ')[0]}
-                    </span>
-                  </td>
-                  <td className={`px-6 py-4 text-right font-headline font-bold print:text-on-surface ${t.type === 'receita' ? 'text-secondary' : 'text-error'}`}>
-                    {t.type === 'receita' ? '+' : '-'} {formatCurrency(t.value)}
-                  </td>
-                  <td className="px-6 py-4 print:hidden">
-                    <div className="flex justify-center gap-2">
-                      <button onClick={() => setSelectedReceiptTransaction(t)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-secondary hover:bg-secondary-container/20 transition-all" title={t('transactions.viewReceipt')}>
-                        <span className="material-symbols-outlined text-lg">receipt_long</span>
-                      </button>
-                      <button onClick={() => handleEdit(t)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all" title={t('transactions.edit')}>
-                        <span className="material-symbols-outlined text-lg">edit</span>
-                      </button>
-                      <button onClick={() => deleteTransaction(t.id)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 transition-all" title={t('transactions.delete')}>
-                        <span className="material-symbols-outlined text-lg">delete</span>
-                      </button>
-                    </div>
-                  </td>
+                      {(transaction.paymentMethod || transaction.paymentStatus) && (
+                        <div className="text-xs font-normal text-on-surface-variant mt-1 flex gap-2 items-center">
+                          {transaction.paymentMethod && <span className="bg-surface-container px-2 py-0.5 rounded-md">{transaction.paymentMethod}</span>}
+                          {transaction.paymentStatus && (
+                            <span className={`px-2 py-0.5 rounded-md font-bold ${transaction.paymentStatus === 'pago' ? 'bg-secondary-container/50 text-secondary' : 'bg-error-container/50 text-error'}`}>
+                              {transaction.paymentStatus.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  )}
+                  {visibleColumns.items && (
+                    <td className="px-6 py-4 text-sm text-on-surface-variant">
+                      {isMultiItem ? `${transaction.items!.length} ${t('transactions.itemsProduct').split('/')[0].toLowerCase()}` : (product ? product.name : '-')}
+                    </td>
+                  )}
+                  {visibleColumns.quantity && (
+                    <td className="px-6 py-4 text-sm text-center font-mono">
+                      {isMultiItem 
+                        ? transaction.items!.reduce((acc, i) => acc + i.quantity, 0) 
+                        : (transaction.quantity ? `${transaction.quantity} ${transaction.unit || 'un'}` : '-')}
+                    </td>
+                  )}
+                  {visibleColumns.type && (
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full print:border print:border-outline-variant/20 print:bg-transparent print:text-on-surface ${transaction.type === 'receita' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}`}>
+                        {transaction.type === 'receita' ? t('transactions.revenueSale').split(' ')[0] : t('transactions.expensePurchase').split(' ')[0]}
+                      </span>
+                    </td>
+                  )}
+                  {visibleColumns.iva && (
+                    <td className="px-6 py-4 text-sm text-right font-mono text-on-surface-variant">
+                      {transaction.ivaAmount ? formatCurrency(transaction.ivaAmount) : '-'}
+                      {transaction.ivaRate ? <span className="text-[10px] ml-1 opacity-70">({transaction.ivaRate}%)</span> : null}
+                    </td>
+                  )}
+                  {visibleColumns.value && (
+                    <td className={`px-6 py-4 text-right font-headline font-bold print:text-on-surface ${transaction.type === 'receita' ? 'text-secondary' : 'text-error'}`}>
+                      {transaction.type === 'receita' ? '+' : '-'} {formatCurrency(transaction.value)}
+                    </td>
+                  )}
+                  {visibleColumns.actions && (
+                    <td className="px-6 py-4 print:hidden">
+                      <div className="flex justify-center gap-2">
+                        <button onClick={() => setSelectedReceiptTransaction(transaction)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-secondary hover:bg-secondary-container/20 transition-all" title={t('transactions.viewReceipt')}>
+                          <span className="material-symbols-outlined text-lg">receipt_long</span>
+                        </button>
+                        <button onClick={() => handleEdit(transaction)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all" title={t('transactions.edit')}>
+                          <span className="material-symbols-outlined text-lg">edit</span>
+                        </button>
+                        <button onClick={() => deleteTransaction(transaction.id)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/20 transition-all" title={t('transactions.delete')}>
+                          <span className="material-symbols-outlined text-lg">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               );
                 })
