@@ -3,6 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 const SubscriptionLock = () => {
   const { t } = useTranslation();
@@ -70,7 +71,7 @@ const SubscriptionLock = () => {
     const whatsappUrl = `https://wa.me/258871788070?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
     
-    alert(t('subscription.verificationSent', 'O seu comprovativo foi enviado! A sua conta será desbloqueada assim que o pagamento for confirmado.'));
+    toast.success(t('subscription.verificationSent', 'O seu comprovativo foi enviado! A sua conta será desbloqueada assim que o pagamento for confirmado.'));
     setTransactionId('');
     setVerifying(false);
   };

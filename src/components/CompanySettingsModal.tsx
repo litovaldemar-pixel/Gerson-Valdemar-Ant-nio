@@ -4,6 +4,7 @@ import { CompanyInfo } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { motion, useDragControls } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 interface CompanySettingsModalProps {
   isOpen: boolean;
@@ -74,7 +75,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 1024 * 1024) { // 1MB limit
-        alert('O logotipo deve ter no máximo 1MB.');
+        toast.error(t('companySettings.logoSizeError'));
         return;
       }
       const reader = new FileReader();

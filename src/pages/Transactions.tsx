@@ -4,6 +4,7 @@ import { TransactionType, Transaction, TransactionItem, getCategoryTranslationKe
 import ReceiptModal from '../components/ReceiptModal';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 const Transactions = () => {
   const { transactions, addTransaction, deleteTransaction, updateTransaction, products, customers, suppliers, globalSearchTerm } = useAppContext();
@@ -97,9 +98,11 @@ const Transactions = () => {
   // Calculate total for single item if not using cart
   useEffect(() => {
     if (cartItems.length === 0 && itemTotal) {
-      setValue(itemTotal);
+      const baseValue = parseFloat(itemTotal) || 0;
+      const totalValue = baseValue * (1 + ivaRate / 100);
+      setValue(totalValue.toFixed(2));
     }
-  }, [itemTotal, cartItems.length]);
+  }, [itemTotal, cartItems.length, ivaRate]);
 
   useEffect(() => {
     if (cartItems.length > 0) {
@@ -163,7 +166,7 @@ const Transactions = () => {
   };
 
   useEffect(() => {
-    const total = cartItems.length > 0 ? cartTotal + ivaAmount : (parseFloat(value) || 0) + ivaAmount;
+    const total = cartItems.length > 0 ? cartTotal + ivaAmount : (parseFloat(value) || 0);
     const paid = parseFloat(amountPaid) || 0;
     if (paid >= total) {
       setChange(paid - total);
@@ -205,7 +208,7 @@ const Transactions = () => {
       .reduce((sum, item) => sum + item.quantity, 0);
 
     if (type === 'receita' && availableStock < (finalQty + existingQtyInCart)) {
-      alert(`Quantidade solicitada (${finalQty + existingQtyInCart} ${product.unit || 'un'}) é maior que o stock disponível (${availableStock} ${product.unit || 'un'}).`);
+      toast.error(t('transactions.errors.stockExceeded', { qty: finalQty + existingQtyInCart, stock: availableStock, unit: product.unit || 'un' }));
       return;
     }
 
@@ -267,9 +270,10 @@ const Transactions = () => {
           }
         }
         
-        const qty = parseFloat(quantity);
+        const factor = usePurchaseUnit ? (product?.conversionFactor || 1) : 1;
+        const qty = parseFloat(quantity) * factor;
         if (qty > availableStock) {
-          alert(`Não é possível realizar a venda: Quantidade solicitada (${qty} ${product.unit || 'un'}) é maior que o stock disponível (${availableStock} ${product.unit || 'un'}).`);
+          toast.error(t('transactions.errors.stockExceeded', { qty, stock: availableStock, unit: product.unit || 'un' }));
           return;
         }
       }
@@ -302,7 +306,7 @@ const Transactions = () => {
           }
           
           if (totalQty > availableStock) {
-            alert(`Não é possível realizar a venda: Quantidade total solicitada de ${product.name} (${totalQty} ${product.unit || 'un'}) é maior que o stock disponível (${availableStock} ${product.unit || 'un'}).`);
+            toast.error(t('transactions.errors.stockExceededTotal', { name: product.name, qty: totalQty, stock: availableStock, unit: product.unit || 'un' }));
             return;
           }
         }
@@ -311,7 +315,7 @@ const Transactions = () => {
 
     const parsedValue = isMultiItem ? (cartTotal + ivaAmount) : parseFloat(value);
     if (isNaN(parsedValue) || parsedValue < 0) {
-      alert('Valor da transação inválido.');
+      toast.error(t('transactions.errors.invalidValue'));
       return;
     }
 

@@ -53,7 +53,7 @@ const Header = ({ onMenuClick, hideMenuButton = false }: HeaderProps) => {
       <div className="flex items-center gap-4 lg:gap-6">
         <div className="flex items-center gap-2">
           <select 
-            value={i18n.language} 
+            value={i18n.resolvedLanguage || i18n.language?.split('-')[0] || 'pt'} 
             onChange={(e) => changeLanguage(e.target.value)}
             className="bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm py-1 px-2 focus:ring-2 focus:ring-primary-fixed-dim outline-none cursor-pointer"
             title={t('header.language')}

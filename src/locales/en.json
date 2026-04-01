@@ -1,4 +1,12 @@
 {
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close"
+  },
   "dashboard": {
     "title": "Overview",
     "subtitle": "Track your business performance",
@@ -138,6 +146,11 @@
     "monthlyExpenses": "Monthly Expenses",
     "comparedToLastMonth": "compared to last month",
     "totalRevenues": "Total Revenues",
+    "errors": {
+      "stockExceeded": "Requested quantity ({{qty}} {{unit}}) is greater than available stock ({{stock}} {{unit}}).",
+      "stockExceededTotal": "Total requested quantity of {{name}} ({{qty}} {{unit}}) is greater than available stock ({{stock}} {{unit}}).",
+      "invalidValue": "Invalid transaction value."
+    },
     "categories": {
       "operational": "Operational",
       "marketing": "Marketing",
@@ -156,6 +169,76 @@
       "otherExpenses": "Other Expenses",
       "vendas": "Sales"
     }
+  },
+  "admin": {
+    "success": {
+      "createUser": "User created/added successfully!",
+      "deleteUser": "User removed successfully.",
+      "deleteCompany": "Company deleted successfully.",
+      "action": "Action performed successfully."
+    },
+    "errors": {
+      "createUser": "Error creating user: {{message}}",
+      "deleteUser": "Error removing user.",
+      "deleteCompany": "Error deleting company.",
+      "action": "Error processing action on company.",
+      "fetchData": "Error loading data. Check your permissions."
+    },
+    "confirm": {
+      "removeUserTitle": "Remove User",
+      "removeUserMessage": "Are you sure you want to remove access for user {{email}}? They will no longer be able to access the system.",
+      "deleteCompanyTitle": "Delete Company",
+      "deleteCompanyMessage": "Are you sure you want to DELETE this company? This action cannot be undone."
+    },
+    "accessDenied": "Access Denied",
+    "accessDeniedMessage": "You do not have permission to access the admin panel.",
+    "subtitle": "Manage system companies and users.",
+    "searchCompany": "Search company...",
+    "searchUser": "Search user...",
+    "columns": "Columns",
+    "showColumns": "Show Columns",
+    "company": "Company",
+    "contact": "Contact",
+    "status": "Status",
+    "validity": "Validity",
+    "plan": "Plan",
+    "actions": "Actions",
+    "refresh": "Refresh",
+    "companies": "Companies",
+    "users": "Users",
+    "totalCompanies": "Total Companies",
+    "activeCompanies": "Active Companies",
+    "blockedCompanies": "Blocked Companies",
+    "active": "Active",
+    "blocked": "Blocked",
+    "blockCompany": "Block Company",
+    "unblockCompany": "Unblock (+30 Days)",
+    "add30DaysTitle": "Add 30 Days",
+    "add1YearTitle": "Extend 1 Year",
+    "lifetimeTitle": "Lifetime Access",
+    "deleteCompany": "Delete Company",
+    "systemUsers": "System Users",
+    "addUser": "Add User",
+    "cancel": "Cancel",
+    "newUser": "New User",
+    "email": "Email",
+    "initialPassword": "Initial Password",
+    "creating": "Creating...",
+    "saveUser": "Save User",
+    "creationDate": "Creation Date",
+    "removeAccess": "Remove Access",
+    "noUsersFound": "No users found.",
+    "noCompanies": "No companies found.",
+    "noUsers": "No users found.",
+    "block": "Block",
+    "unblock": "Unblock",
+    "add30Days": "+30 Days",
+    "add1Year": "+1 Year",
+    "lifetime": "Lifetime",
+    "delete": "Delete",
+    "remove": "Remove",
+    "role": "Role",
+    "createdAt": "Created At"
   },
   "changePassword": {
     "fillAllFields": "Please fill in all fields.",
@@ -188,6 +271,7 @@
     "transactionIdPlaceholder": "Ex: 8J3K9L2M...",
     "verifying": "Verifying M-Pesa / E-mola...",
     "confirmPayment": "Confirm Payment",
+    "verificationSent": "Your proof of payment has been sent! Your account will be unlocked as soon as the payment is confirmed.",
     "developerPanel": "Developer Panel",
     "days": "Days",
     "year": "Year",

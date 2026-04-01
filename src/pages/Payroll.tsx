@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 import { Transaction } from '../types';
+import { toast } from 'sonner';
 
 interface EmployeePayroll {
   id: string;
@@ -111,7 +112,7 @@ export default function Payroll() {
     });
 
     setEmployees([]);
-    alert(t('payroll.successMessage'));
+    toast.success(t('payroll.successMessage'));
   };
 
   const formatCurrency = (value: number) => {

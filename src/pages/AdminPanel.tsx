@@ -8,6 +8,8 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import ConfirmModal from '../components/ConfirmModal';
 
 interface AppUser {
   id: string;
@@ -45,6 +47,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
   const [newUserPassword, setNewUserPassword] = useState('');
   const [isCreatingUser, setIsCreatingUser] = useState(false);
 
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
   const toggleColumn = (col: keyof typeof visibleColumns) => {
     setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }));
   };
@@ -67,7 +81,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
       setUsers(usersData);
     } catch (err: any) {
       console.error('Error fetching data:', err);
-      setError('Erro ao carregar dados. Verifique suas permissões.');
+      setError(t('admin.errors.fetchData'));
     } finally {
       setLoading(false);
     }
@@ -117,26 +131,31 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
       setNewUserPassword('');
       setShowNewUserForm(false);
       fetchData();
-      alert('Usuário criado/adicionado com sucesso!');
+      toast.success(t('admin.success.createUser'));
     } catch (err: any) {
       console.error('Error creating user:', err);
-      alert('Erro ao criar usuário: ' + err.message);
+      toast.error(t('admin.errors.createUser', { message: err.message }));
     } finally {
       setIsCreatingUser(false);
     }
   };
 
   const handleDeleteUser = async (userId: string, email: string) => {
-    const confirmDelete = window.confirm(`Tem certeza que deseja remover o acesso do usuário ${email}? Ele não poderá mais acessar o sistema.`);
-    if (!confirmDelete) return;
-    
-    try {
-      await deleteDoc(doc(db, 'users', userId));
-      fetchData();
-    } catch (err) {
-      console.error('Error deleting user:', err);
-      alert('Erro ao remover usuário.');
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: t('admin.confirm.removeUserTitle'),
+      message: t('admin.confirm.removeUserMessage', { email }),
+      onConfirm: async () => {
+        try {
+          await deleteDoc(doc(db, 'users', userId));
+          fetchData();
+          toast.success(t('admin.success.deleteUser'));
+        } catch (err) {
+          console.error('Error deleting user:', err);
+          toast.error(t('admin.errors.deleteUser'));
+        }
+      }
+    });
   };
 
   const handleAction = async (companyId: string, action: 'block' | 'unblock' | '30days' | '1year' | 'lifetime' | 'delete') => {
@@ -144,11 +163,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
       const companyRef = doc(db, 'companies', companyId);
 
       if (action === 'delete') {
-        const confirmDelete = window.confirm('Tem certeza que deseja APAGAR esta empresa? Esta ação não pode ser desfeita.');
-        if (!confirmDelete) return;
-        
-        await deleteDoc(companyRef);
-        fetchData();
+        setConfirmModal({
+          isOpen: true,
+          title: t('admin.confirm.deleteCompanyTitle'),
+          message: t('admin.confirm.deleteCompanyMessage'),
+          onConfirm: async () => {
+            try {
+              await deleteDoc(companyRef);
+              fetchData();
+              toast.success(t('admin.success.deleteCompany'));
+            } catch (err) {
+              console.error('Error deleting company:', err);
+              toast.error(t('admin.errors.deleteCompany'));
+            }
+          }
+        });
         return;
       }
 
@@ -181,9 +210,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
       });
 
       fetchData();
+      toast.success(t('admin.success.action'));
     } catch (err) {
       console.error('Error updating company:', err);
-      alert('Erro ao processar a ação na empresa.');
+      toast.error(t('admin.errors.action'));
     }
   };
 
@@ -216,8 +246,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
     return (
       <div className="p-8 flex flex-col justify-center items-center h-full text-center">
         <span className="material-symbols-outlined text-6xl text-error mb-4">gpp_bad</span>
-        <h2 className="text-2xl font-bold text-on-surface mb-2">Acesso Negado</h2>
-        <p className="text-on-surface-variant">Você não tem permissão para acessar o painel de administrador.</p>
+        <h2 className="text-2xl font-bold text-on-surface mb-2">{t('admin.accessDenied')}</h2>
+        <p className="text-on-surface-variant">{t('admin.accessDeniedMessage')}</p>
       </div>
     );
   }
@@ -234,14 +264,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
             <span className="material-symbols-outlined text-4xl">admin_panel_settings</span>
             {t('sidebar.admin')}
           </h2>
-          <p className="text-on-surface-variant font-medium mt-1">Gerencie empresas e usuários do sistema.</p>
+          <p className="text-on-surface-variant font-medium mt-1">{t('admin.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="relative flex-1 md:w-64">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
             <input
               type="text"
-              placeholder={activeTab === 'companies' ? "Pesquisar empresa..." : "Pesquisar usuário..."}
+              placeholder={activeTab === 'companies' ? t('admin.searchCompany') : t('admin.searchUser')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-sm focus:ring-2 focus:ring-primary-fixed-dim"
@@ -255,37 +285,37 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                 className="px-4 py-2 bg-surface-container-low text-on-surface-variant rounded-lg font-bold flex items-center gap-2 hover:bg-surface-container transition-colors"
               >
                 <span className="material-symbols-outlined">view_column</span>
-                <span className="hidden sm:inline">Colunas</span>
+                <span className="hidden sm:inline">{t('admin.columns')}</span>
               </button>
               
               {showColumnMenu && (
                 <div className="absolute right-0 top-full mt-2 w-48 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-lg z-10 py-2">
                   <div className="px-4 py-2 text-xs font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/10 mb-2">
-                    Mostrar Colunas
+                    {t('admin.showColumns')}
                   </div>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.empresa} onChange={() => toggleColumn('empresa')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Empresa</span>
+                    <span className="text-sm text-on-surface">{t('admin.company')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.contato} onChange={() => toggleColumn('contato')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Contato</span>
+                    <span className="text-sm text-on-surface">{t('admin.contact')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.status} onChange={() => toggleColumn('status')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Status</span>
+                    <span className="text-sm text-on-surface">{t('admin.status')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.validade} onChange={() => toggleColumn('validade')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Validade</span>
+                    <span className="text-sm text-on-surface">{t('admin.validity')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.plano} onChange={() => toggleColumn('plano')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Plano</span>
+                    <span className="text-sm text-on-surface">{t('admin.plan')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.acoes} onChange={() => toggleColumn('acoes')} className="rounded border-outline-variant text-primary focus:ring-primary" />
-                    <span className="text-sm text-on-surface">Ações</span>
+                    <span className="text-sm text-on-surface">{t('admin.actions')}</span>
                   </label>
                 </div>
               )}
@@ -297,7 +327,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
             className="px-4 py-2 bg-surface-container-highest text-on-surface rounded-lg font-bold flex items-center gap-2 hover:bg-surface-variant transition-colors"
           >
             <span className="material-symbols-outlined">refresh</span>
-            Atualizar
+            {t('admin.refresh')}
           </button>
         </div>
       </div>
@@ -312,7 +342,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
               : 'border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'
           }`}
         >
-          Empresas
+          {t('admin.companies')}
         </button>
         <button
           onClick={() => setActiveTab('users')}
@@ -322,7 +352,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
               : 'border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'
           }`}
         >
-          Usuários
+          {t('admin.users')}
         </button>
       </div>
 
@@ -342,7 +372,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                 <span className="material-symbols-outlined">business</span>
               </div>
               <div>
-                <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">Total de Empresas</p>
+                <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">{t('admin.totalCompanies')}</p>
                 <p className="text-2xl font-black text-on-surface">{companies.length}</p>
               </div>
             </div>
@@ -351,7 +381,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                 <span className="material-symbols-outlined">check_circle</span>
               </div>
               <div>
-                <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">Empresas Ativas</p>
+                <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">{t('admin.activeCompanies')}</p>
                 <p className="text-2xl font-black text-on-surface">
                   {companies.filter(c => c.subscription?.status === 'active' && new Date(c.subscription.validUntil) > new Date()).length}
                 </p>
@@ -362,7 +392,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                 <span className="material-symbols-outlined">block</span>
               </div>
               <div>
-                <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">Empresas Bloqueadas</p>
+                <p className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">{t('admin.blockedCompanies')}</p>
                 <p className="text-2xl font-black text-on-surface">
                   {companies.filter(c => c.subscription?.status !== 'active' || new Date(c.subscription.validUntil) <= new Date()).length}
                 </p>
@@ -375,12 +405,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-surface-container-low text-on-surface-variant text-sm uppercase tracking-wider">
-                    {visibleColumns.empresa && <th className="p-4 font-bold">Empresa</th>}
-                    {visibleColumns.contato && <th className="p-4 font-bold">Contato</th>}
-                    {visibleColumns.status && <th className="p-4 font-bold">Status</th>}
-                    {visibleColumns.validade && <th className="p-4 font-bold">Validade</th>}
-                    {visibleColumns.plano && <th className="p-4 font-bold">Plano</th>}
-                    {visibleColumns.acoes && <th className="p-4 font-bold text-right">Ações</th>}
+                    {visibleColumns.empresa && <th className="p-4 font-bold">{t('admin.company')}</th>}
+                    {visibleColumns.contato && <th className="p-4 font-bold">{t('admin.contact')}</th>}
+                    {visibleColumns.status && <th className="p-4 font-bold">{t('admin.status')}</th>}
+                    {visibleColumns.validade && <th className="p-4 font-bold">{t('admin.validity')}</th>}
+                    {visibleColumns.plano && <th className="p-4 font-bold">{t('admin.plan')}</th>}
+                    {visibleColumns.acoes && <th className="p-4 font-bold text-right">{t('admin.actions')}</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/10">
@@ -399,7 +429,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                         </td>}
                         {visibleColumns.status && <td className="p-4">
                           <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${isActive ? 'bg-primary/10 text-primary' : 'bg-error/10 text-error'}`}>
-                            {isActive ? 'Ativa' : 'Bloqueada'}
+                            {isActive ? t('admin.active') : t('admin.blocked')}
                           </span>
                         </td>}
                         {visibleColumns.validade && <td className="p-4 text-sm text-on-surface-variant">
@@ -414,7 +444,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                               <button 
                                 onClick={() => handleAction(company.id, 'block')}
                                 className="p-2 bg-error/10 text-error hover:bg-error/20 rounded-lg transition-colors"
-                                title="Bloquear Empresa"
+                                title={t('admin.blockCompany')}
                               >
                                 <span className="material-symbols-outlined text-sm">block</span>
                               </button>
@@ -422,7 +452,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                               <button 
                                 onClick={() => handleAction(company.id, 'unblock')}
                                 className="p-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg transition-colors"
-                                title="Desbloquear (+30 Dias)"
+                                title={t('admin.unblockCompany')}
                               >
                                 <span className="material-symbols-outlined text-sm">lock_open</span>
                               </button>
@@ -430,14 +460,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                             <button 
                               onClick={() => handleAction(company.id, '1year')}
                               className="p-2 bg-secondary/10 text-secondary hover:bg-secondary/20 rounded-lg transition-colors text-xs font-bold"
-                              title="Estender 1 Ano"
+                              title={t('admin.add1YearTitle')}
                             >
                               +1A
                             </button>
                             <button 
                               onClick={() => handleAction(company.id, 'lifetime')}
                               className="p-2 bg-tertiary-container text-on-tertiary-container hover:brightness-110 rounded-lg transition-colors text-xs font-bold"
-                              title="Acesso Vitalício"
+                              title={t('admin.lifetimeTitle')}
                             >
                               VIT
                             </button>
@@ -445,7 +475,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                             <button 
                               onClick={() => handleAction(company.id, 'delete')}
                               className="p-2 bg-error text-on-error hover:brightness-110 rounded-lg transition-colors"
-                              title="Apagar Empresa"
+                              title={t('admin.deleteCompany')}
                             >
                               <span className="material-symbols-outlined text-sm">delete</span>
                             </button>
@@ -457,7 +487,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                   {filteredCompanies.length === 0 && (
                     <tr>
                       <td colSpan={6} className="p-8 text-center text-on-surface-variant">
-                        Nenhuma empresa encontrada.
+                        {t('admin.noCompanies')}
                       </td>
                     </tr>
                   )}
@@ -469,13 +499,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
       ) : (
         <>
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold text-on-surface">Usuários do Sistema</h3>
+            <h3 className="text-xl font-bold text-on-surface">{t('admin.systemUsers')}</h3>
             <button 
               onClick={() => setShowNewUserForm(!showNewUserForm)}
               className="px-4 py-2 bg-primary text-on-primary rounded-lg font-bold flex items-center gap-2 hover:bg-primary-container transition-colors"
             >
               <span className="material-symbols-outlined">{showNewUserForm ? 'close' : 'person_add'}</span>
-              {showNewUserForm ? 'Cancelar' : 'Adicionar Usuário'}
+              {showNewUserForm ? t('admin.cancel') : t('admin.addUser')}
             </button>
           </div>
 
@@ -486,10 +516,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
               onSubmit={handleCreateUser}
               className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-sm mb-6"
             >
-              <h4 className="text-lg font-bold text-primary mb-4">Novo Usuário</h4>
+              <h4 className="text-lg font-bold text-primary mb-4">{t('admin.newUser')}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-bold text-on-surface-variant mb-1">E-mail</label>
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">{t('admin.email')}</label>
                   <input
                     type="email"
                     value={newUserEmail}
@@ -500,13 +530,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-on-surface-variant mb-1">Senha Inicial</label>
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">{t('admin.initialPassword')}</label>
                   <input
                     type="password"
                     value={newUserPassword}
                     onChange={(e) => setNewUserPassword(e.target.value)}
                     className="w-full p-3 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary-fixed-dim"
-                    placeholder="Senha segura"
+                    placeholder="******"
                     required
                     minLength={6}
                   />
@@ -521,12 +551,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                   {isCreatingUser ? (
                     <>
                       <div className="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></div>
-                      Criando...
+                      {t('admin.creating')}
                     </>
                   ) : (
                     <>
                       <span className="material-symbols-outlined">save</span>
-                      Salvar Usuário
+                      {t('admin.saveUser')}
                     </>
                   )}
                 </button>
@@ -539,9 +569,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-surface-container-low text-on-surface-variant text-sm uppercase tracking-wider">
-                    <th className="p-4 font-bold">E-mail</th>
-                    <th className="p-4 font-bold">Data de Criação</th>
-                    <th className="p-4 font-bold text-right">Ações</th>
+                    <th className="p-4 font-bold">{t('admin.email')}</th>
+                    <th className="p-4 font-bold">{t('admin.creationDate')}</th>
+                    <th className="p-4 font-bold text-right">{t('admin.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/10">
@@ -556,7 +586,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                           <button 
                             onClick={() => handleDeleteUser(u.id, u.email)}
                             className="p-2 bg-error/10 text-error hover:bg-error/20 rounded-lg transition-colors"
-                            title="Remover Acesso"
+                            title={t('admin.removeAccess')}
                           >
                             <span className="material-symbols-outlined text-sm">delete</span>
                           </button>
@@ -567,7 +597,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                   {filteredUsers.length === 0 && (
                     <tr>
                       <td colSpan={3} className="p-8 text-center text-on-surface-variant">
-                        Nenhum usuário encontrado.
+                        {t('admin.noUsersFound')}
                       </td>
                     </tr>
                   )}
@@ -577,6 +607,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
           </div>
         </>
       )}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </motion.div>
   );
 };

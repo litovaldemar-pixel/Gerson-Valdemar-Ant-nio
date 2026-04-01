@@ -1,4 +1,12 @@
 {
+  "common": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Apagar",
+    "edit": "Editar",
+    "close": "Fechar"
+  },
   "dashboard": {
     "title": "Visão Geral",
     "subtitle": "Acompanhe o desempenho do seu negócio",
@@ -106,6 +114,11 @@
     "expectedBalance": "Saldo Previsto",
     "totalRevenues": "Total Receitas",
     "totalExpenses": "Total Despesas",
+    "errors": {
+      "stockExceeded": "Quantidade solicitada ({{qty}} {{unit}}) é maior que o stock disponível ({{stock}} {{unit}}).",
+      "stockExceededTotal": "Quantidade total solicitada de {{name}} ({{qty}} {{unit}}) é maior que o stock disponível ({{stock}} {{unit}}).",
+      "invalidValue": "Valor da transação inválido."
+    },
     "categories": {
       "operational": "Operacional",
       "marketing": "Marketing",
@@ -124,6 +137,76 @@
       "otherExpenses": "Outras Despesas",
       "vendas": "Vendas"
     }
+  },
+  "admin": {
+    "success": {
+      "createUser": "Usuário criado/adicionado com sucesso!",
+      "deleteUser": "Usuário removido com sucesso.",
+      "deleteCompany": "Empresa apagada com sucesso.",
+      "action": "Ação realizada com sucesso."
+    },
+    "errors": {
+      "createUser": "Erro ao criar usuário: {{message}}",
+      "deleteUser": "Erro ao remover usuário.",
+      "deleteCompany": "Erro ao apagar empresa.",
+      "action": "Erro ao processar a ação na empresa.",
+      "fetchData": "Erro ao carregar dados. Verifique suas permissões."
+    },
+    "confirm": {
+      "removeUserTitle": "Remover Usuário",
+      "removeUserMessage": "Tem certeza que deseja remover o acesso do usuário {{email}}? Ele não poderá mais acessar o sistema.",
+      "deleteCompanyTitle": "Apagar Empresa",
+      "deleteCompanyMessage": "Tem certeza que deseja APAGAR esta empresa? Esta ação não pode ser desfeita."
+    },
+    "accessDenied": "Acesso Negado",
+    "accessDeniedMessage": "Você não tem permissão para acessar o painel de administrador.",
+    "subtitle": "Gerencie empresas e usuários do sistema.",
+    "searchCompany": "Pesquisar empresa...",
+    "searchUser": "Pesquisar usuário...",
+    "columns": "Colunas",
+    "showColumns": "Mostrar Colunas",
+    "company": "Empresa",
+    "contact": "Contato",
+    "status": "Status",
+    "validity": "Validade",
+    "plan": "Plano",
+    "actions": "Ações",
+    "refresh": "Atualizar",
+    "companies": "Empresas",
+    "users": "Usuários",
+    "totalCompanies": "Total de Empresas",
+    "activeCompanies": "Empresas Ativas",
+    "blockedCompanies": "Empresas Bloqueadas",
+    "active": "Ativa",
+    "blocked": "Bloqueada",
+    "blockCompany": "Bloquear Empresa",
+    "unblockCompany": "Desbloquear (+30 Dias)",
+    "add30DaysTitle": "Adicionar 30 Dias",
+    "add1YearTitle": "Estender 1 Ano",
+    "lifetimeTitle": "Acesso Vitalício",
+    "deleteCompany": "Apagar Empresa",
+    "systemUsers": "Usuários do Sistema",
+    "addUser": "Adicionar Usuário",
+    "cancel": "Cancelar",
+    "newUser": "Novo Usuário",
+    "email": "E-mail",
+    "initialPassword": "Senha Inicial",
+    "creating": "Criando...",
+    "saveUser": "Salvar Usuário",
+    "creationDate": "Data de Criação",
+    "removeAccess": "Remover Acesso",
+    "noUsersFound": "Nenhum usuário encontrado.",
+    "noCompanies": "Nenhuma empresa encontrada.",
+    "noUsers": "Nenhum usuário encontrado.",
+    "block": "Bloquear",
+    "unblock": "Desbloquear",
+    "add30Days": "+30 Dias",
+    "add1Year": "+1 Ano",
+    "lifetime": "Vitalício",
+    "delete": "Apagar",
+    "remove": "Remover",
+    "role": "Função",
+    "createdAt": "Criado em"
   },
   "changePassword": {
     "fillAllFields": "Por favor, preencha todos os campos.",
@@ -156,6 +239,7 @@
     "transactionIdPlaceholder": "Ex: 8J3K9L2M...",
     "verifying": "Verificando M-Pesa / E-mola...",
     "confirmPayment": "Confirmar Pagamento",
+    "verificationSent": "O seu comprovativo foi enviado! A sua conta será desbloqueada assim que o pagamento for confirmado.",
     "developerPanel": "Painel do Desenvolvedor",
     "days": "Dias",
     "year": "Ano",
