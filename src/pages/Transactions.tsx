@@ -389,15 +389,15 @@ const Transactions = () => {
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-MZ', {
+    return new Intl.NumberFormat(t('common.locale', 'pt-MZ'), {
       style: 'currency',
-      currency: 'MZN',
+      currency: t('common.currency', 'MZN'),
     }).format(value);
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('pt-MZ', {
+    return new Intl.DateTimeFormat(t('common.locale', 'pt-MZ'), {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
@@ -463,7 +463,7 @@ const Transactions = () => {
       <PrintHeader />
       <div className="hidden print:block text-center mb-6">
         <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">{t('sidebar.transactions')}</h2>
-        <p className="text-sm text-slate-600 mt-2">{t('statement.period', 'Período')}: {filterDateStart ? new Date(filterDateStart).toLocaleDateString('pt-MZ') : t('statement.start', 'Início')} {t('statement.to', 'a')} {filterDateEnd ? new Date(filterDateEnd).toLocaleDateString('pt-MZ') : t('statement.today', 'Hoje')}</p>
+        <p className="text-sm text-slate-600 mt-2">{t('statement.period', 'Período')}: {filterDateStart ? new Date(filterDateStart).toLocaleDateString(t('common.locale', 'pt-MZ')) : t('statement.start', 'Início')} {t('statement.to', 'a')} {filterDateEnd ? new Date(filterDateEnd).toLocaleDateString(t('common.locale', 'pt-MZ')) : t('statement.today', 'Hoje')}</p>
       </div>
 
       {/* Header Section */}

@@ -106,9 +106,9 @@ const DRE = () => {
   const alavancagemOperacional = ebitda > 0 ? margemContribuicao / ebitda : 0;
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-MZ', {
+    return new Intl.NumberFormat(t('common.locale', 'pt-MZ'), {
       style: 'currency',
-      currency: 'MZN',
+      currency: t('common.currency', 'MZN'),
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value);
@@ -176,7 +176,7 @@ const DRE = () => {
       <div className="bg-surface-container-lowest rounded-xl shadow-[0_12px_32px_-4px_rgba(0,30,64,0.08)] overflow-hidden print:shadow-none">
         <div className="grid grid-cols-12 bg-primary text-on-primary p-4 text-[10px] font-bold uppercase tracking-[0.2em]">
           <div className="col-span-6 md:col-span-8">{t('dre.accountDescription', 'Descrição da Conta')}</div>
-          <div className="col-span-3 md:col-span-2 text-right">{t('dre.value', 'Valor')} (MZN)</div>
+          <div className="col-span-3 md:col-span-2 text-right">{t('dre.value', 'Valor')} ({t('common.currency', 'MZN')})</div>
           <div className="col-span-3 md:col-span-2 text-right">% {t('dre.grossRev', 'Rec. Bruta')}</div>
         </div>
 

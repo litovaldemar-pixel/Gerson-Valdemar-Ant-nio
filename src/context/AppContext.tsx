@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Transaction, Customer, Supplier, Product, CompanyInfo } from '../types';
 import { db, auth } from '../lib/firebase';
 import { useAuth } from './AuthContext';
@@ -581,8 +582,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         <div className="fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col">
             <div className="px-6 py-4 border-b border-outline-variant/10">
-              <h2 className="text-xl font-bold font-headline text-primary">Acesso Restrito</h2>
-              <p className="text-sm text-on-surface-variant mt-1">Digite o PIN da empresa para acessar</p>
+              <h2 className="text-xl font-bold font-headline text-primary">{t('pinModal.title', 'Acesso Restrito')}</h2>
+              <p className="text-sm text-on-surface-variant mt-1">{t('pinModal.enterPin', 'Digite o PIN da empresa para acessar')}</p>
             </div>
             <div className="p-6">
               <input
@@ -610,7 +611,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 onClick={handlePinCancel}
                 className="px-4 py-2 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
               >
-                Cancelar
+                {t('common.cancel')}
               </button>
             </div>
           </div>

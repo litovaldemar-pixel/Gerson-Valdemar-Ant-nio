@@ -1,13 +1,12 @@
 {
-  "common": {
-    "confirm": "Confirmer",
-    "cancel": "Annuler",
-    "save": "Enregistrer",
-    "delete": "Supprimer",
-    "edit": "Modifier",
-    "close": "Fermer"
-  },
   "dashboard": {
+    "filters": {
+      "hoje": "Aujourd'hui",
+      "semana": "Semaine",
+      "mes": "Mois",
+      "ano": "Année",
+      "todos": "Tous"
+    },
     "title": "Aperçu",
     "subtitle": "Suivez les performances de votre entreprise",
     "print": "Imprimer le rapport",
@@ -337,7 +336,11 @@
     "week": "Semaine",
     "month": "Mois",
     "year": "Année",
-    "all": "Tous"
+    "all": "Tous",
+    "period": "Période",
+    "locale": "fr-FR",
+    "currency": "EUR",
+    "na": "N/D"
   },
   "home": {
     "addCompany": "Ajouter une entreprise",

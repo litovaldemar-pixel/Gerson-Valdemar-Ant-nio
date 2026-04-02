@@ -349,8 +349,8 @@ const Suppliers = () => {
                         <p className="text-[10px] font-bold uppercase text-on-surface-variant">{t('suppliers.recentPurchases')}:</p>
                         {recentPurchases.map(rp => (
                           <div key={rp.id} className="text-[10px] flex justify-between gap-2 text-on-surface-variant border-l-2 border-primary/20 pl-2">
-                            <span>{new Date(rp.date).toLocaleDateString('pt-MZ')}</span>
-                            <span className="font-bold">{new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(rp.value)}</span>
+                            <span>{new Date(rp.date).toLocaleDateString(t('common.locale', 'pt-MZ'))}</span>
+                            <span className="font-bold">{new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(rp.value)}</span>
                           </div>
                         ))}
                       </div>
@@ -366,10 +366,10 @@ const Suppliers = () => {
                     </div>
                   </td>}
                   {visibleColumns.stockValue && <td className="px-6 py-4 text-sm font-mono text-right text-error">
-                    {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(totalCostValue)}
+                    {new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(totalCostValue)}
                   </td>}
                   {visibleColumns.saleValue && <td className="px-6 py-4 text-sm font-mono text-right text-primary">
-                    {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(totalSaleValue)}
+                    {new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(totalSaleValue)}
                   </td>}
                   {visibleColumns.actions && <td className="px-6 py-4 print:hidden">
                     <div className="flex justify-center gap-2">

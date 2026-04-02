@@ -1,13 +1,12 @@
 {
-  "common": {
-    "confirm": "Confirmar",
-    "cancel": "Cancelar",
-    "save": "Salvar",
-    "delete": "Apagar",
-    "edit": "Editar",
-    "close": "Fechar"
-  },
   "dashboard": {
+    "filters": {
+      "hoje": "Hoje",
+      "semana": "Semana",
+      "mes": "Mês",
+      "ano": "Ano",
+      "todos": "Todos"
+    },
     "title": "Visão Geral",
     "subtitle": "Acompanhe o desempenho do seu negócio",
     "print": "Imprimir Relatório",
@@ -114,6 +113,9 @@
     "expectedBalance": "Saldo Previsto",
     "totalRevenues": "Total Receitas",
     "totalExpenses": "Total Despesas",
+    "monthlyRevenue": "Receita Mensal",
+    "monthlyExpenses": "Despesa Mensal",
+    "comparedToLastMonth": "em relação ao mês passado",
     "errors": {
       "stockExceeded": "Quantidade solicitada ({{qty}} {{unit}}) é maior que o stock disponível ({{stock}} {{unit}}).",
       "stockExceededTotal": "Quantidade total solicitada de {{name}} ({{qty}} {{unit}}) é maior que o stock disponível ({{stock}} {{unit}}).",
@@ -316,7 +318,11 @@
     "week": "Semana",
     "month": "Mês",
     "year": "Ano",
-    "all": "Todos"
+    "all": "Todos",
+    "period": "Período",
+    "locale": "pt-MZ",
+    "currency": "MZN",
+    "na": "N/A"
   },
   "home": {
     "addCompany": "Adicionar Empresa",

@@ -433,10 +433,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                           </span>
                         </td>}
                         {visibleColumns.validade && <td className="p-4 text-sm text-on-surface-variant">
-                          {company.subscription?.validUntil ? new Date(company.subscription.validUntil).toLocaleDateString('pt-MZ') : 'N/A'}
+                          {company.subscription?.validUntil ? new Date(company.subscription.validUntil).toLocaleDateString(t('common.locale', 'pt-MZ')) : t('common.na', 'N/A')}
                         </td>}
                         {visibleColumns.plano && <td className="p-4 text-sm text-on-surface-variant">
-                          {company.subscription?.plan || 'N/A'}
+                          {company.subscription?.plan || t('common.na', 'N/A')}
                         </td>}
                         {visibleColumns.acoes && <td className="p-4 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -579,7 +579,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
                     <tr key={u.id} className="hover:bg-surface-container-lowest/50 transition-colors">
                       <td className="p-4 font-bold text-on-surface">{u.email}</td>
                       <td className="p-4 text-sm text-on-surface-variant">
-                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString('pt-MZ') : 'N/A'}
+                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString(t('common.locale', 'pt-MZ')) : t('common.na', 'N/A')}
                       </td>
                       <td className="p-4 text-right">
                         {u.email !== 'litovaldemar@gmail.com' && (

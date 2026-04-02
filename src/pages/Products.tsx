@@ -392,10 +392,10 @@ const Products = () => {
                   </td>}
                   {visibleColumns.supplier && <td className="px-6 py-4 text-sm text-on-surface-variant">{supplier ? supplier.name : '-'}</td>}
                   {visibleColumns.price && <td className="px-6 py-4 text-sm font-mono text-right text-primary">
-                    {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(p.price)}
+                    {new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(p.price)}
                   </td>}
                   {visibleColumns.cost && <td className="px-6 py-4 text-sm font-mono text-right text-error">
-                    {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(p.cost)}
+                    {new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(p.cost)}
                   </td>}
                   {visibleColumns.stock && <td className="px-6 py-4 text-center">
                     <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${p.stock <= p.minStock ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container'}`}>
@@ -403,7 +403,7 @@ const Products = () => {
                     </span>
                   </td>}
                   {visibleColumns.totalCost && <td className="px-6 py-4 text-sm font-mono text-right text-error">
-                    {new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(p.cost * p.stock)}
+                    {new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(p.cost * p.stock)}
                   </td>}
                   {visibleColumns.actions && <td className="px-6 py-4 print:hidden">
                     <div className="flex justify-center gap-2">

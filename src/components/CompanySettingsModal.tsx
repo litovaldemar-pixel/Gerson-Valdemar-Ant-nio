@@ -204,7 +204,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                   <div className="flex justify-between items-end">
                     <div>
                       <p className="text-[10px] text-on-surface-variant">{t('companySettings.validUntil')}:</p>
-                      <p className="text-sm font-bold text-on-surface">{new Date(companyInfo.subscription.validUntil).toLocaleDateString('pt-MZ')}</p>
+                      <p className="text-sm font-bold text-on-surface">{new Date(companyInfo.subscription.validUntil).toLocaleDateString(t('common.locale', 'pt-MZ'))}</p>
                     </div>
                     <div className="text-right flex flex-col items-end">
                       <p className="text-[10px] text-on-surface-variant">{t('companySettings.plan')}:</p>

@@ -1,13 +1,12 @@
 {
-  "common": {
-    "confirm": "确认",
-    "cancel": "取消",
-    "save": "保存",
-    "delete": "删除",
-    "edit": "编辑",
-    "close": "关闭"
-  },
   "dashboard": {
+    "filters": {
+      "hoje": "今天",
+      "semana": "本周",
+      "mes": "本月",
+      "ano": "今年",
+      "todos": "全部"
+    },
     "title": "概览",
     "subtitle": "跟踪您的业务绩效",
     "print": "打印报告",
@@ -337,7 +336,11 @@
     "week": "本周",
     "month": "本月",
     "year": "本年",
-    "all": "全部"
+    "all": "全部",
+    "period": "期间",
+    "locale": "zh-CN",
+    "currency": "CNY",
+    "na": "不适用"
   },
   "home": {
     "addCompany": "添加公司",

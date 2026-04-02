@@ -113,9 +113,9 @@ const Dashboard = () => {
   const indiceDespesas = totalReceitas > 0 ? ((totalDespesas / totalReceitas) * 100).toFixed(1) : '0.0';
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-MZ', {
+    return new Intl.NumberFormat(t('common.locale', 'pt-MZ'), {
       style: 'currency',
-      currency: 'MZN',
+      currency: t('common.currency', 'MZN'),
     }).format(value);
   };
 

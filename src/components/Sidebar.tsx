@@ -214,7 +214,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         </button>
         {user?.email && (
           <div className="text-center mt-2">
-            <p className="text-[10px] text-on-surface-variant opacity-60">Logado como: {user.email}</p>
+            <p className="text-[10px] text-on-surface-variant opacity-60">{t('sidebar.loggedInAs', 'Logado como:')} {user.email}</p>
           </div>
         )}
       </div>

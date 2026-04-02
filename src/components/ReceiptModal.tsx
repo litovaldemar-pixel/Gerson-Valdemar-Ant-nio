@@ -36,7 +36,7 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('pt-MZ', {
+    return new Intl.DateTimeFormat(t('common.locale', 'pt-MZ'), {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -46,7 +46,7 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-MZ', {
+    return new Intl.NumberFormat(t('common.locale', 'pt-MZ'), {
       style: 'currency',
       currency: 'MZN',
     }).format(value);

@@ -235,9 +235,9 @@ const Statement = () => {
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-MZ', {
+    return new Intl.NumberFormat(t('common.locale', 'pt-MZ'), {
       style: 'currency',
-      currency: 'MZN',
+      currency: t('common.currency', 'MZN'),
     }).format(value);
   };
 
@@ -331,7 +331,7 @@ const Statement = () => {
         <PrintHeader />
         <div className="hidden print:block text-center mb-6">
           <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">{t('statement.printTitle', 'Balancete do Razão')}</h2>
-          <p className="text-sm text-slate-600 mt-1">{t('statement.period', 'Período')}: {startDate ? new Date(startDate).toLocaleDateString('pt-MZ') : t('statement.start', 'Início')} {t('statement.to', 'a')} {endDate ? new Date(endDate).toLocaleDateString('pt-MZ') : t('statement.today', 'Hoje')}</p>
+          <p className="text-sm text-slate-600 mt-1">{t('statement.period', 'Período')}: {startDate ? new Date(startDate).toLocaleDateString(t('common.locale', 'pt-MZ')) : t('statement.start', 'Início')} {t('statement.to', 'a')} {endDate ? new Date(endDate).toLocaleDateString(t('common.locale', 'pt-MZ')) : t('statement.today', 'Hoje')}</p>
         </div>
 
         <div className="p-6 border-b border-outline-variant/10 flex justify-between items-center print:hidden">
@@ -397,7 +397,7 @@ const Statement = () => {
                           </tr>
                           {showMovements[acc.conta] && acc.movimentos.map((mov, idx) => (
                             <tr key={`${acc.conta}-mov-${idx}`} className="text-xs bg-surface-container-lowest/50 border-b border-outline-variant/5">
-                              <td className="px-6 py-2 text-right text-on-surface-variant/70 font-mono">{new Date(mov.date).toLocaleDateString('pt-MZ')}</td>
+                              <td className="px-6 py-2 text-right text-on-surface-variant/70 font-mono">{new Date(mov.date).toLocaleDateString(t('common.locale', 'pt-MZ'))}</td>
                               <td className="px-6 py-2 pl-16 text-on-surface-variant/80">{mov.description}</td>
                               <td className="px-6 py-2 text-right text-on-surface-variant/80">{mov.tipoMovimento === 'debito' ? formatCurrency(mov.value) : '0,00'}</td>
                               <td className="px-6 py-2 text-right text-on-surface-variant/80">{mov.tipoMovimento === 'credito' ? formatCurrency(mov.value) : '0,00'}</td>

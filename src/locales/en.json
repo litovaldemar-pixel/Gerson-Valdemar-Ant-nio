@@ -1,13 +1,12 @@
 {
-  "common": {
-    "confirm": "Confirm",
-    "cancel": "Cancel",
-    "save": "Save",
-    "delete": "Delete",
-    "edit": "Edit",
-    "close": "Close"
-  },
   "dashboard": {
+    "filters": {
+      "hoje": "Today",
+      "semana": "Week",
+      "mes": "Month",
+      "ano": "Year",
+      "todos": "All"
+    },
     "title": "Overview",
     "subtitle": "Track your business performance",
     "print": "Print Report",
@@ -348,7 +347,11 @@
     "week": "Week",
     "month": "Month",
     "year": "Year",
-    "all": "All"
+    "all": "All",
+    "period": "Period",
+    "locale": "en-US",
+    "currency": "USD",
+    "na": "N/A"
   },
   "home": {
     "addCompany": "Add Company",
