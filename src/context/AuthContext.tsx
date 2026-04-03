@@ -52,8 +52,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           // Add to users collection if it's the specific user
           if (email === 'controlbusinesssolution@gmail.com') {
-            const { getFirestore, doc, setDoc } = await import('firebase/firestore');
-            const db = getFirestore();
+            const { doc, setDoc } = await import('firebase/firestore');
+            const { db } = await import('../lib/firebase');
             await setDoc(doc(db, 'users', userCredential.user.uid), {
               email: email,
               role: 'user',

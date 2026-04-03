@@ -3,12 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 import { Transaction } from '../types';
 import { toast } from 'sonner';
+import { exportToCSV } from '../lib/exportUtils';
+
+import PrintHeader from '../components/PrintHeader';
 
 interface EmployeePayroll {
   id: string;
   name: string;
   grossSalary: number;
   irpsRate: number;
+  absences: number; // Faltas em valor monetário
+  advances: number; // Adiantamentos (Vales)
 }
 
 export default function Payroll() {
@@ -22,6 +27,8 @@ export default function Payroll() {
   const [employeeName, setEmployeeName] = useState('');
   const [grossSalary, setGrossSalary] = useState<number | ''>('');
   const [irpsRate, setIrpsRate] = useState<number>(10);
+  const [absences, setAbsences] = useState<number | ''>('');
+  const [advances, setAdvances] = useState<number | ''>('');
 
   const handleAddEmployee = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,13 +38,17 @@ export default function Payroll() {
       id: Date.now().toString() + Math.random().toString(36).substring(7),
       name: employeeName,
       grossSalary: Number(grossSalary),
-      irpsRate: Number(irpsRate)
+      irpsRate: Number(irpsRate),
+      absences: Number(absences) || 0,
+      advances: Number(advances) || 0
     };
 
     setEmployees([...employees, newEmployee]);
     setEmployeeName('');
     setGrossSalary('');
     setIrpsRate(10);
+    setAbsences('');
+    setAdvances('');
   };
 
   const removeEmployee = (id: string) => {
@@ -50,9 +61,9 @@ export default function Payroll() {
     const inssEmployer = gross * 0.04;
     const totalInss = inssEmployee + inssEmployer;
     const irps = gross > 20000 ? gross * (emp.irpsRate / 100) : 0;
-    const netSalary = gross - inssEmployee - irps;
+    const netSalary = gross - inssEmployee - irps - emp.absences - emp.advances;
     
-    return { gross, inssEmployee, inssEmployer, totalInss, irps, netSalary };
+    return { gross, inssEmployee, inssEmployer, totalInss, irps, netSalary, absences: emp.absences, advances: emp.advances };
   };
 
   const totals = employees.reduce((acc, emp) => {
@@ -63,9 +74,11 @@ export default function Payroll() {
       inssEmployer: acc.inssEmployer + calc.inssEmployer,
       totalInss: acc.totalInss + calc.totalInss,
       irps: acc.irps + calc.irps,
+      absences: acc.absences + calc.absences,
+      advances: acc.advances + calc.advances,
       netSalary: acc.netSalary + calc.netSalary
     };
-  }, { gross: 0, inssEmployee: 0, inssEmployer: 0, totalInss: 0, irps: 0, netSalary: 0 });
+  }, { gross: 0, inssEmployee: 0, inssEmployer: 0, totalInss: 0, irps: 0, absences: 0, advances: 0, netSalary: 0 });
 
   const handleProcessPayroll = () => {
     if (employees.length === 0) return;
@@ -122,9 +135,27 @@ export default function Payroll() {
     }).format(value);
   };
 
+  const handleExport = () => {
+    const exportData = employees.map(emp => {
+      const calc = calculateEmployeePayroll(emp);
+      return {
+        Nome: emp.name,
+        'Salário Bruto': calc.gross,
+        'INSS (3%)': calc.inssEmployee,
+        'INSS Empresa (4%)': calc.inssEmployer,
+        'IRPS': calc.irps,
+        'Faltas': calc.absences,
+        'Adiantamentos': calc.advances,
+        'Salário Líquido': calc.netSalary
+      };
+    });
+    exportToCSV(exportData, `folha_pagamento_${date}.csv`);
+  };
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-8">
+      <PrintHeader />
+      <div className="mb-8 print:hidden">
         <h1 className="text-2xl font-black text-slate-900 dark:text-white font-headline tracking-tight">
           {t('payroll.title')}
         </h1>
@@ -133,9 +164,13 @@ export default function Payroll() {
         </p>
       </div>
 
+      <div className="hidden print:block text-center mb-6">
+        <h2 className="text-xl font-bold text-slate-800 uppercase tracking-wider">{t('payroll.title')}</h2>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Form */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 lg:col-span-1 h-fit">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 lg:col-span-1 h-fit print:hidden">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t('payroll.addEmployee')}</h2>
           <form onSubmit={handleAddEmployee} className="space-y-4">
             <div>
@@ -187,6 +222,37 @@ export default function Payroll() {
               </div>
             )}
 
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Faltas (Valor)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={absences}
+                  onChange={(e) => setAbsences(e.target.value ? Number(e.target.value) : '')}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Adiantamentos
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={advances}
+                  onChange={(e) => setAdvances(e.target.value ? Number(e.target.value) : '')}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
             <button
               type="submit"
               disabled={!employeeName || !grossSalary}
@@ -230,8 +296,9 @@ export default function Payroll() {
                       <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('payroll.gross')}</th>
                       <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('payroll.inss')}</th>
                       <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('payroll.irps')}</th>
+                      <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Faltas/Adiant.</th>
                       <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('payroll.net')}</th>
-                      <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Ações</th>
+                      <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center print:hidden">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -243,8 +310,9 @@ export default function Payroll() {
                           <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400 text-right">{formatCurrency(calc.gross)}</td>
                           <td className="py-3 px-4 text-sm text-error text-right">-{formatCurrency(calc.inssEmployee)}</td>
                           <td className="py-3 px-4 text-sm text-error text-right">-{formatCurrency(calc.irps)}</td>
+                          <td className="py-3 px-4 text-sm text-error text-right">-{formatCurrency(calc.absences + calc.advances)}</td>
                           <td className="py-3 px-4 text-sm font-bold text-primary text-right">{formatCurrency(calc.netSalary)}</td>
-                          <td className="py-3 px-4 text-center">
+                          <td className="py-3 px-4 text-center print:hidden">
                             <button
                               onClick={() => removeEmployee(emp.id)}
                               className="text-slate-400 hover:text-error transition-colors p-1"
@@ -281,6 +349,10 @@ export default function Payroll() {
                     <span className="text-slate-600 dark:text-slate-400">{t('payroll.totalIrps')}</span>
                     <span className="font-medium text-error">-{formatCurrency(totals.irps)}</span>
                   </div>
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-700">
+                    <span className="text-slate-600 dark:text-slate-400">Total Faltas/Adiantamentos</span>
+                    <span className="font-medium text-error">-{formatCurrency(totals.absences + totals.advances)}</span>
+                  </div>
                   <div className="flex justify-between items-center pt-2">
                     <span className="text-lg font-bold text-slate-900 dark:text-white">{t('payroll.totalNet')}</span>
                     <span className="text-xl font-black text-primary">{formatCurrency(totals.netSalary)}</span>
@@ -304,7 +376,21 @@ export default function Payroll() {
                 </div>
               </div>
 
-              <div className="mt-6 flex justify-end">
+              <div className="mt-6 flex justify-end gap-3 print:hidden">
+                <button
+                  onClick={handleExport}
+                  className="py-3 px-6 bg-surface-container-highest text-on-surface font-bold rounded-xl hover:bg-surface-variant transition-colors flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined">download</span>
+                  Exportar CSV
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="py-3 px-6 bg-surface-container-highest text-on-surface font-bold rounded-xl hover:bg-surface-variant transition-colors flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined">print</span>
+                  Imprimir Recibos
+                </button>
                 <button
                   onClick={handleProcessPayroll}
                   className="py-3 px-8 bg-primary text-on-primary font-bold rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-2"

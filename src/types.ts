@@ -54,6 +54,7 @@ export interface Transaction {
   receiptNumber?: number;
   ivaRate?: number;
   ivaAmount?: number;
+  discount?: number;
 }
 
 export interface Customer {

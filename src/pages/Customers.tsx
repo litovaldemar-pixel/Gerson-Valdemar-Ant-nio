@@ -4,6 +4,7 @@ import CustomerStatementModal from '../components/CustomerStatementModal';
 import { Customer } from '../types';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
+import { exportToCSV } from '../lib/exportUtils';
 
 const Customers = () => {
   const { customers, addCustomer, deleteCustomer, updateCustomer, globalSearchTerm } = useAppContext();
@@ -85,6 +86,17 @@ const Customers = () => {
     setStatus('Ativo');
   };
 
+  const handleExport = () => {
+    const exportData = filteredCustomers.map(c => ({
+      ID: c.id,
+      Nome: c.name,
+      Email: c.email,
+      Documento: c.document,
+      Status: c.status
+    }));
+    exportToCSV(exportData, 'clientes.csv');
+  };
+
   return (
     <div className="p-4 md:p-6 lg:p-8 flex-1 space-y-8">
       <PrintHeader />
@@ -105,6 +117,13 @@ const Customers = () => {
           >
             <span className="material-symbols-outlined text-lg">print</span>
             {t('dashboard.print')}
+          </button>
+          <button 
+            onClick={handleExport}
+            className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">download</span>
+            Exportar CSV
           </button>
         </div>
       </section>

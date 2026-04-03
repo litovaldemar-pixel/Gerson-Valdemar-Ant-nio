@@ -86,6 +86,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
   const [companies, setCompanies] = useState<CompanyInfo[]>([]);
   const [currentCompanyId, setCurrentCompanyId] = useState<string | null>(() => {

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
+import { exportToCSV } from '../lib/exportUtils';
 
 const Suppliers = () => {
   const { suppliers, addSupplier, deleteSupplier, updateSupplier, products, transactions, globalSearchTerm } = useAppContext();
@@ -140,6 +141,17 @@ const Suppliers = () => {
     setCategory('Infraestrutura');
   };
 
+  const handleExport = () => {
+    const exportData = filteredSuppliers.map(s => ({
+      ID: s.id,
+      Nome: s.name,
+      Email: s.email,
+      Documento: s.document,
+      Categoria: s.category
+    }));
+    exportToCSV(exportData, 'fornecedores.csv');
+  };
+
   return (
     <div className="p-4 md:p-6 lg:p-8 flex-1 space-y-8">
       <PrintHeader />
@@ -160,6 +172,13 @@ const Suppliers = () => {
           >
             <span className="material-symbols-outlined text-lg">print</span>
             {t('dashboard.print')}
+          </button>
+          <button 
+            onClick={handleExport}
+            className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">download</span>
+            Exportar CSV
           </button>
         </div>
       </section>

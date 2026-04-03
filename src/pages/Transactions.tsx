@@ -5,6 +5,7 @@ import ReceiptModal from '../components/ReceiptModal';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { exportToCSV } from '../lib/exportUtils';
 
 const Transactions = () => {
   const { transactions, addTransaction, deleteTransaction, updateTransaction, products, customers, suppliers, globalSearchTerm } = useAppContext();
@@ -53,6 +54,7 @@ const Transactions = () => {
   const [paymentStatus, setPaymentStatus] = useState<'pago' | 'pendente'>('pago');
   const [ivaRate, setIvaRate] = useState<number>(0);
   const [ivaAmount, setIvaAmount] = useState<number>(0);
+  const [discount, setDiscount] = useState<string>('');
   const [amountPaid, setAmountPaid] = useState<string>('');
   const [change, setChange] = useState<number>(0);
 
@@ -134,6 +136,7 @@ const Transactions = () => {
     setPaymentStatus(t.paymentStatus || 'pago');
     setIvaRate(t.ivaRate || 0);
     setIvaAmount(t.ivaAmount || 0);
+    setDiscount(t.discount?.toString() || '');
     setCartItems(t.items || []);
     if (t.productId && t.quantity && t.unitPrice) {
       setItemTotal((t.quantity * t.unitPrice).toFixed(2));
@@ -158,6 +161,7 @@ const Transactions = () => {
     setPaymentStatus('pago');
     setIvaRate(0);
     setIvaAmount(0);
+    setDiscount('');
     setCartItems([]);
     setItemTotal('');
     setUsePurchaseUnit(false);
@@ -166,14 +170,15 @@ const Transactions = () => {
   };
 
   useEffect(() => {
-    const total = cartItems.length > 0 ? cartTotal + ivaAmount : (parseFloat(value) || 0);
+    const parsedDiscount = parseFloat(discount) || 0;
+    const total = cartItems.length > 0 ? (cartTotal + ivaAmount - parsedDiscount) : (parseFloat(value) || 0);
     const paid = parseFloat(amountPaid) || 0;
     if (paid >= total) {
       setChange(paid - total);
     } else {
       setChange(0);
     }
-  }, [amountPaid, cartTotal, ivaAmount, value, cartItems.length]);
+  }, [amountPaid, cartTotal, ivaAmount, value, discount, cartItems.length]);
 
   const handleAddToCart = () => {
     if (!productId || !quantity || !itemUnitPrice) return;
@@ -313,7 +318,8 @@ const Transactions = () => {
       }
     }
 
-    const parsedValue = isMultiItem ? (cartTotal + ivaAmount) : parseFloat(value);
+    const parsedDiscount = parseFloat(discount) || 0;
+    const parsedValue = isMultiItem ? (cartTotal + ivaAmount - parsedDiscount) : parseFloat(value);
     if (isNaN(parsedValue) || parsedValue < 0) {
       toast.error(t('transactions.errors.invalidValue'));
       return;
@@ -328,6 +334,7 @@ const Transactions = () => {
       paymentStatus,
       ivaRate,
       ivaAmount,
+      discount: parsedDiscount,
     };
 
     if (isMultiItem) {
@@ -381,6 +388,9 @@ const Transactions = () => {
     setSupplierId('');
     setPaymentMethod('Numerário');
     setPaymentStatus('pago');
+    setIvaRate(0);
+    setIvaAmount(0);
+    setDiscount('');
     setCartItems([]);
     setItemTotal('');
     setUsePurchaseUnit(false);
@@ -404,7 +414,14 @@ const Transactions = () => {
     }).format(date);
   };
 
+  const [searchParams, setSearchParams] = useState(new URLSearchParams(window.location.search));
+  
   const filteredTransactions = transactions.filter(t => {
+    const urlFilter = searchParams.get('filter');
+    
+    if (urlFilter === 'receber' && (t.type !== 'receita' || t.paymentStatus !== 'pendente')) return false;
+    if (urlFilter === 'pagar' && (t.type !== 'despesa' || t.paymentStatus !== 'pendente')) return false;
+
     if (filterType !== 'all' && t.type !== filterType) return false;
     if (filterCategory !== 'all' && t.category !== filterCategory) return false;
     if (filterDateStart && new Date(t.date) < new Date(filterDateStart)) return false;
@@ -430,6 +447,22 @@ const Transactions = () => {
   const totalReceitas = filteredTransactions.filter(t => t.type === 'receita').reduce((acc, curr) => acc + curr.value, 0);
   const totalDespesas = filteredTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
   const saldoPrevisto = totalReceitas - totalDespesas;
+
+  const handleExport = () => {
+    const exportData = filteredTransactions.map(t => ({
+      ID: t.id,
+      Data: new Date(t.date).toLocaleDateString(t('common.locale', 'pt-MZ')),
+      Descricao: t.description,
+      Categoria: t.category,
+      Tipo: t.type,
+      Valor: t.value,
+      Cliente: customers.find(c => c.id === t.customerId)?.name || '',
+      Fornecedor: suppliers.find(s => s.id === t.supplierId)?.name || '',
+      MetodoPagamento: t.paymentMethod || '',
+      Status: t.paymentStatus || ''
+    }));
+    exportToCSV(exportData, 'transacoes.csv');
+  };
 
   const setQuickFilter = (filter: 'hoje' | 'semana' | 'mes' | 'ano' | 'todos') => {
     const now = new Date();
@@ -470,7 +503,21 @@ const Transactions = () => {
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 print:hidden">
         <div>
           <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">{t('sidebar.transactions')}</h2>
-          <p className="text-on-surface-variant font-medium mt-1">{t('transactions.subtitle', 'Gerencie suas movimentações financeiras com precisão.')}</p>
+          <div className="flex items-center gap-3 mt-1">
+            <p className="text-on-surface-variant font-medium">{t('transactions.subtitle', 'Gerencie suas movimentações financeiras com precisão.')}</p>
+            {searchParams.get('filter') && (
+              <button 
+                onClick={() => {
+                  window.history.replaceState({}, '', '/transacoes');
+                  setSearchParams(new URLSearchParams());
+                }}
+                className="text-xs font-bold bg-error-container text-on-error-container px-2 py-1 rounded-full flex items-center gap-1 hover:bg-error hover:text-on-error transition-colors"
+              >
+                Limpar Filtro
+                <span className="material-symbols-outlined text-[14px]">close</span>
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3 print:hidden">
           <div className="flex bg-surface-container-low rounded-lg p-1 border border-outline-variant/20">
@@ -493,6 +540,13 @@ const Transactions = () => {
           >
             <span className="material-symbols-outlined text-lg">print</span>
             {t('dashboard.print')}
+          </button>
+          <button 
+            onClick={handleExport}
+            className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">download</span>
+            Exportar CSV
           </button>
           <button 
             onClick={() => setShowFilters(!showFilters)}
@@ -813,6 +867,24 @@ const Transactions = () => {
                       <td className="px-4 py-3 text-right font-black text-lg text-secondary">{formatCurrency(cartTotal)}</td>
                       <td></td>
                     </tr>
+                    <tr>
+                      <td colSpan={3} className="px-4 py-3 text-right font-bold">Desconto:</td>
+                      <td className="px-4 py-3 text-right">
+                        <input
+                          type="number"
+                          value={discount}
+                          onChange={(e) => setDiscount(e.target.value)}
+                          className="w-24 text-right bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-2 py-1 focus:ring-2 focus:ring-primary outline-none"
+                          placeholder="0.00"
+                        />
+                      </td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td colSpan={3} className="px-4 py-3 text-right font-bold">Total Final:</td>
+                      <td className="px-4 py-3 text-right font-black text-xl text-primary">{formatCurrency(cartTotal + ivaAmount - (parseFloat(discount) || 0))}</td>
+                      <td></td>
+                    </tr>
                   </tfoot>
                 </table>
               </div>
@@ -898,12 +970,26 @@ const Transactions = () => {
                   placeholder="0,00"
                   type="number"
                   step="0.01"
-                  value={cartItems.length > 0 ? (cartTotal + ivaAmount).toFixed(2) : value}
+                  value={cartItems.length > 0 ? (cartTotal + ivaAmount - (parseFloat(discount) || 0)).toFixed(2) : value}
                   onChange={(e) => setValue(e.target.value)}
                   required={cartItems.length === 0}
                   disabled={cartItems.length > 0 || (quantity !== '' && itemUnitPrice !== '')}
                 />
               </div>
+              {cartItems.length === 0 && (
+                <div className="space-y-2 lg:col-span-2">
+                  <label className="text-xs font-bold text-on-surface-variant ml-1">Desconto</label>
+                  <input
+                    className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                    placeholder="0,00"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={discount}
+                    onChange={(e) => setDiscount(e.target.value)}
+                  />
+                </div>
+              )}
 
               {paymentMethod === 'Numerário' && paymentStatus === 'pago' && type === 'receita' && (
                 <>
@@ -1035,6 +1121,7 @@ const Transactions = () => {
                 {visibleColumns.quantity && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">{t('transactions.qty')}</th>}
                 {visibleColumns.type && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{t('transactions.type')}</th>}
                 {visibleColumns.iva && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">IVA</th>}
+                {visibleColumns.value && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">Desconto</th>}
                 {visibleColumns.value && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">{t('transactions.totalValue')}</th>}
                 {visibleColumns.actions && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">{t('transactions.actions')}</th>}
               </tr>
@@ -1106,6 +1193,11 @@ const Transactions = () => {
                     <td className="px-6 py-4 text-sm text-right font-mono text-on-surface-variant">
                       {transaction.ivaAmount ? formatCurrency(transaction.ivaAmount) : '-'}
                       {transaction.ivaRate ? <span className="text-[10px] ml-1 opacity-70">({transaction.ivaRate}%)</span> : null}
+                    </td>
+                  )}
+                  {visibleColumns.value && (
+                    <td className="px-6 py-4 text-sm text-right font-mono text-on-surface-variant">
+                      {transaction.discount ? formatCurrency(transaction.discount) : '-'}
                     </td>
                   )}
                   {visibleColumns.value && (

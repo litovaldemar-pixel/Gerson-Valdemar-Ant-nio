@@ -5,11 +5,13 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { motion } from 'motion/react';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const { transactions, customers, suppliers, products, companyInfo, globalSearchTerm } = useAppContext();
   const [dateFilter, setDateFilter] = useState<'hoje' | 'semana' | 'mes' | 'ano' | 'todos'>('mes');
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const filterByDate = (dateString: string) => {
     if (dateFilter === 'todos') return true;
@@ -152,6 +154,14 @@ const Dashboard = () => {
 
   const lowStockProducts = filteredProducts.filter(p => p.stock <= p.minStock);
 
+  const contasAReceber = filteredTransactions
+    .filter(t => t.type === 'receita' && t.paymentStatus === 'pendente')
+    .reduce((acc, curr) => acc + curr.value, 0);
+
+  const contasAPagar = filteredTransactions
+    .filter(t => t.type === 'despesa' && t.paymentStatus === 'pendente')
+    .reduce((acc, curr) => acc + curr.value, 0);
+
   // Donut Chart Data
   const despesasPorCategoria = filteredTransactions
     .filter(t => t.type === 'despesa')
@@ -235,12 +245,18 @@ const Dashboard = () => {
 
       {/* Low Stock Alert */}
       {lowStockProducts.length > 0 && (
-        <section className="bg-error-container text-on-error-container rounded-xl p-4 flex items-center gap-4 shadow-sm">
-          <span className="material-symbols-outlined text-3xl">warning</span>
-          <div>
-            <h4 className="font-bold">{t('dashboard.lowStockAlert')}</h4>
-            <p className="text-sm">{t('dashboard.lowStockMessage', { count: lowStockProducts.length })}</p>
+        <section 
+          className="bg-error-container text-on-error-container rounded-xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:bg-error-container/90 transition-colors"
+          onClick={() => window.location.href = '/produtos?filter=low_stock'}
+        >
+          <div className="flex items-center gap-4">
+            <span className="material-symbols-outlined text-3xl">warning</span>
+            <div>
+              <h4 className="font-bold">{t('dashboard.lowStockAlert')}</h4>
+              <p className="text-sm">{t('dashboard.lowStockMessage', { count: lowStockProducts.length })}</p>
+            </div>
           </div>
+          <span className="material-symbols-outlined">chevron_right</span>
         </section>
       )}
 
@@ -303,6 +319,40 @@ const Dashboard = () => {
               {despesaPercent > 0 ? 'trending_up' : despesaPercent < 0 ? 'trending_down' : 'trending_flat'}
             </span>
             {despesaPercent === 0 ? t('dashboard.noComparison') : `${despesaPercent > 0 ? '+' : ''}${despesaPercent.toFixed(1)}% ${t('dashboard.vsPrevious')}`}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Contas a Pagar / Receber */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.4 }}
+          className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 shadow-sm flex items-center justify-between cursor-pointer hover:bg-surface-container-low transition-colors"
+          onClick={() => navigate('/transacoes?filter=receber')}
+        >
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Contas a Receber</p>
+            <h4 className="text-2xl font-headline font-extrabold mt-1 text-secondary">{formatCurrency(contasAReceber)}</h4>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+            <span className="material-symbols-outlined">call_received</span>
+          </div>
+        </motion.div>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.5 }}
+          className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 shadow-sm flex items-center justify-between cursor-pointer hover:bg-surface-container-low transition-colors"
+          onClick={() => navigate('/transacoes?filter=pagar')}
+        >
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Contas a Pagar</p>
+            <h4 className="text-2xl font-headline font-extrabold mt-1 text-error">{formatCurrency(contasAPagar)}</h4>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-error-container text-on-error-container flex items-center justify-center">
+            <span className="material-symbols-outlined">call_made</span>
           </div>
         </motion.div>
       </section>
@@ -415,7 +465,7 @@ const Dashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.7 }}
-          className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6"
+          className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-6"
         >
           <div className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10 flex flex-col justify-center items-center text-center">
             <div className="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center text-on-primary-fixed mb-3">
@@ -437,6 +487,20 @@ const Dashboard = () => {
             </div>
             <h4 className="text-3xl font-extrabold font-headline text-primary">{filteredProducts.length}</h4>
             <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">{t('dashboard.products')}</p>
+          </div>
+          <div 
+            className={`bg-surface-container-lowest rounded-xl p-6 shadow-sm border ${lowStockProducts.length > 0 ? 'border-error/50 bg-error/5 cursor-pointer hover:bg-error/10 transition-colors' : 'border-outline-variant/10'} flex flex-col justify-center items-center text-center`}
+            onClick={() => {
+              if (lowStockProducts.length > 0) {
+                navigate('/produtos?filter=low_stock');
+              }
+            }}
+          >
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 ${lowStockProducts.length > 0 ? 'bg-error text-on-error' : 'bg-surface-variant text-on-surface-variant'}`}>
+              <span className="material-symbols-outlined text-2xl">warning</span>
+            </div>
+            <h4 className={`text-3xl font-extrabold font-headline ${lowStockProducts.length > 0 ? 'text-error' : 'text-primary'}`}>{lowStockProducts.length}</h4>
+            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Stock Baixo</p>
           </div>
         </motion.div>
       </section>

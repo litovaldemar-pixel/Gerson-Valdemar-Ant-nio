@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
+import { exportToCSV } from '../lib/exportUtils';
+import KardexModal from '../components/KardexModal';
 
 const Products = () => {
   const { products, addProduct, deleteProduct, updateProduct, globalSearchTerm } = useAppContext();
@@ -36,6 +38,9 @@ const Products = () => {
   };
 
   const { suppliers } = useAppContext();
+
+  const [selectedProductForKardex, setSelectedProductForKardex] = useState<any>(null);
+  const [isKardexOpen, setIsKardexOpen] = useState(false);
 
   const handleEdit = (p: any) => {
     setEditingId(p.id);
@@ -106,13 +111,37 @@ const Products = () => {
     setSupplierId('');
   };
 
+  const [searchParams, setSearchParams] = useState(new URLSearchParams(window.location.search));
+  
   const filteredProducts = products.filter(p => {
+    const isLowStockFilter = searchParams.get('filter') === 'low_stock';
+    
+    if (isLowStockFilter && p.stock > p.minStock) {
+      return false;
+    }
+
     const term = (searchTerm || globalSearchTerm).toLowerCase();
     if (!term) return true;
     return p.name.toLowerCase().includes(term) ||
       p.sku.toLowerCase().includes(term) ||
       p.category.toLowerCase().includes(term);
   });
+
+  const handleExport = () => {
+    const exportData = filteredProducts.map(p => ({
+      ID: p.id,
+      Nome: p.name,
+      SKU: p.sku,
+      Categoria: p.category,
+      PrecoVenda: p.price,
+      Custo: p.cost,
+      StockAtual: p.stock,
+      StockMinimo: p.minStock,
+      Unidade: p.unit || 'un',
+      Fornecedor: suppliers.find(s => s.id === p.supplierId)?.name || ''
+    }));
+    exportToCSV(exportData, 'mercadorias.csv');
+  };
 
   return (
     <div className="p-4 md:p-6 lg:p-8 flex-1 space-y-8">
@@ -125,7 +154,21 @@ const Products = () => {
       <section className="flex justify-between items-end print:hidden">
         <div>
           <h2 className="text-4xl font-extrabold font-headline tracking-tight text-primary">{t('sidebar.products')}</h2>
-          <p className="text-on-surface-variant font-medium mt-1">{t('products.subtitle')}</p>
+          <div className="flex items-center gap-3 mt-1">
+            <p className="text-on-surface-variant font-medium">{t('products.subtitle')}</p>
+            {searchParams.get('filter') === 'low_stock' && (
+              <button 
+                onClick={() => {
+                  window.history.replaceState({}, '', '/produtos');
+                  setSearchParams(new URLSearchParams());
+                }}
+                className="text-xs font-bold bg-error-container text-on-error-container px-2 py-1 rounded-full flex items-center gap-1 hover:bg-error hover:text-on-error transition-colors"
+              >
+                Filtro: Stock Baixo
+                <span className="material-symbols-outlined text-[14px]">close</span>
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex gap-3">
           <button 
@@ -134,6 +177,13 @@ const Products = () => {
           >
             <span className="material-symbols-outlined text-lg">print</span>
             {t('dashboard.print')}
+          </button>
+          <button 
+            onClick={handleExport}
+            className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">download</span>
+            Exportar CSV
           </button>
         </div>
       </section>
@@ -407,6 +457,9 @@ const Products = () => {
                   </td>}
                   {visibleColumns.actions && <td className="px-6 py-4 print:hidden">
                     <div className="flex justify-center gap-2">
+                      <button onClick={() => { setSelectedProductForKardex(p); setIsKardexOpen(true); }} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-secondary hover:bg-secondary-container/20 transition-all" title="Kardex (Histórico)">
+                        <span className="material-symbols-outlined text-lg">history</span>
+                      </button>
                       <button onClick={() => handleEdit(p)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-primary hover:bg-primary-fixed/20 transition-all" title={t('common.edit')}>
                         <span className="material-symbols-outlined text-lg">edit</span>
                       </button>
@@ -426,6 +479,15 @@ const Products = () => {
           </table>
         </div>
       </section>
+
+      <KardexModal
+        isOpen={isKardexOpen}
+        onClose={() => {
+          setIsKardexOpen(false);
+          setSelectedProductForKardex(null);
+        }}
+        product={selectedProductForKardex}
+      />
     </div>
   );
 };
