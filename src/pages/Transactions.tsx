@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { exportToCSV } from '../lib/exportUtils';
 
 const Transactions = () => {
-  const { transactions, addTransaction, deleteTransaction, updateTransaction, products, customers, suppliers, globalSearchTerm } = useAppContext();
+  const { transactions, addTransaction, deleteTransaction, updateTransaction, products, customers, suppliers, globalSearchTerm, companyInfo } = useAppContext();
   const { t } = useTranslation();
   
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -52,11 +52,18 @@ const Transactions = () => {
   // Payment
   const [paymentMethod, setPaymentMethod] = useState('Numerário');
   const [paymentStatus, setPaymentStatus] = useState<'pago' | 'pendente'>('pago');
-  const [ivaRate, setIvaRate] = useState<number>(0);
+  const [dueDate, setDueDate] = useState('');
+  const [ivaRate, setIvaRate] = useState<number>(companyInfo?.ivaRate || 0);
   const [ivaAmount, setIvaAmount] = useState<number>(0);
   const [discount, setDiscount] = useState<string>('');
   const [amountPaid, setAmountPaid] = useState<string>('');
   const [change, setChange] = useState<number>(0);
+
+  useEffect(() => {
+    if (companyInfo?.ivaRate !== undefined && !editingId) {
+      setIvaRate(companyInfo.ivaRate);
+    }
+  }, [companyInfo?.ivaRate, editingId]);
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
@@ -71,8 +78,10 @@ const Transactions = () => {
 
   // Calculate IVA
   useEffect(() => {
+    const parsedDiscount = parseFloat(discount) || 0;
     if (cartItems.length > 0) {
-      setIvaAmount(cartTotal * (ivaRate / 100));
+      const taxableBase = Math.max(0, cartTotal - parsedDiscount);
+      setIvaAmount(taxableBase * (ivaRate / 100));
     } else {
       const totalValue = parseFloat(value) || 0;
       if (ivaRate > 0 && totalValue > 0) {
@@ -82,7 +91,7 @@ const Transactions = () => {
         setIvaAmount(0);
       }
     }
-  }, [cartTotal, value, ivaRate, cartItems.length]);
+  }, [cartTotal, value, ivaRate, cartItems.length, discount]);
 
   // Calculate item total for cart
   useEffect(() => {
@@ -101,10 +110,11 @@ const Transactions = () => {
   useEffect(() => {
     if (cartItems.length === 0 && itemTotal) {
       const baseValue = parseFloat(itemTotal) || 0;
-      const totalValue = baseValue * (1 + ivaRate / 100);
-      setValue(totalValue.toFixed(2));
+      const parsedDiscount = parseFloat(discount) || 0;
+      const totalValue = (baseValue * (1 + ivaRate / 100)) - parsedDiscount;
+      setValue(Math.max(0, totalValue).toFixed(2));
     }
-  }, [itemTotal, cartItems.length, ivaRate]);
+  }, [itemTotal, cartItems.length, ivaRate, discount]);
 
   useEffect(() => {
     if (cartItems.length > 0) {
@@ -134,6 +144,7 @@ const Transactions = () => {
     setSupplierId(t.supplierId || '');
     setPaymentMethod(t.paymentMethod || 'Numerário');
     setPaymentStatus(t.paymentStatus || 'pago');
+    setDueDate(t.dueDate || '');
     setIvaRate(t.ivaRate || 0);
     setIvaAmount(t.ivaAmount || 0);
     setDiscount(t.discount?.toString() || '');
@@ -159,7 +170,8 @@ const Transactions = () => {
     setSupplierId('');
     setPaymentMethod('Numerário');
     setPaymentStatus('pago');
-    setIvaRate(0);
+    setDueDate('');
+    setIvaRate(companyInfo?.ivaRate || 0);
     setIvaAmount(0);
     setDiscount('');
     setCartItems([]);
@@ -171,7 +183,7 @@ const Transactions = () => {
 
   useEffect(() => {
     const parsedDiscount = parseFloat(discount) || 0;
-    const total = cartItems.length > 0 ? (cartTotal + ivaAmount - parsedDiscount) : (parseFloat(value) || 0);
+    const total = cartItems.length > 0 ? (Math.max(0, cartTotal - parsedDiscount) + ivaAmount) : (parseFloat(value) || 0);
     const paid = parseFloat(amountPaid) || 0;
     if (paid >= total) {
       setChange(paid - total);
@@ -319,7 +331,7 @@ const Transactions = () => {
     }
 
     const parsedDiscount = parseFloat(discount) || 0;
-    const parsedValue = isMultiItem ? (cartTotal + ivaAmount - parsedDiscount) : parseFloat(value);
+    const parsedValue = isMultiItem ? (Math.max(0, cartTotal - parsedDiscount) + ivaAmount) : parseFloat(value);
     if (isNaN(parsedValue) || parsedValue < 0) {
       toast.error(t('transactions.errors.invalidValue'));
       return;
@@ -332,6 +344,7 @@ const Transactions = () => {
       category,
       paymentMethod,
       paymentStatus,
+      dueDate: paymentStatus === 'pendente' ? (dueDate || null) : null,
       ivaRate,
       ivaAmount,
       discount: parsedDiscount,
@@ -339,7 +352,7 @@ const Transactions = () => {
 
     if (isMultiItem) {
       transactionData.items = cartItems;
-      transactionData.customerId = type === 'receita' ? (customerId || null) : null;
+      transactionData.customerId = (type === 'receita' || type === 'cotacao') ? (customerId || null) : null;
       transactionData.supplierId = type === 'despesa' ? (supplierId || null) : null;
       transactionData.productId = null;
       transactionData.quantity = null;
@@ -363,7 +376,7 @@ const Transactions = () => {
         transactionData.unit = null;
       }
       transactionData.items = null;
-      transactionData.customerId = type === 'receita' ? (customerId || null) : null;
+      transactionData.customerId = (type === 'receita' || type === 'cotacao') ? (customerId || null) : null;
       transactionData.supplierId = type === 'despesa' ? (supplierId || null) : null;
     }
 
@@ -593,6 +606,7 @@ const Transactions = () => {
                 <option value="all">{t('transactions.all')}</option>
                 <option value="receita">{t('transactions.revenue')}</option>
                 <option value="despesa">{t('transactions.expense')}</option>
+                <option value="cotacao">Cotações</option>
               </select>
             </div>
             <div>
@@ -659,10 +673,11 @@ const Transactions = () => {
               >
                 <option value="receita">{t('transactions.revenueSale')}</option>
                 <option value="despesa">{t('transactions.expensePurchase')}</option>
+                <option value="cotacao">Cotação / Pró-forma</option>
               </select>
             </div>
             
-            {type === 'receita' ? (
+            {type === 'receita' || type === 'cotacao' ? (
               <div className="space-y-2 lg:col-span-2">
                 <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.customerOptional')}</label>
                 <select
@@ -963,7 +978,19 @@ const Transactions = () => {
                   <option value="pendente">{t('transactions.pending')}</option>
                 </select>
               </div>
-              <div className="space-y-2 lg:col-span-2">
+              {paymentStatus === 'pendente' && (
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-on-surface-variant ml-1">Data de Vencimento</label>
+                  <input
+                    className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+              <div className={`space-y-2 ${paymentStatus === 'pendente' ? 'lg:col-span-1' : 'lg:col-span-2'}`}>
                 <label className="text-xs font-bold text-on-surface-variant ml-1">{t('transactions.totalValueMZN')}</label>
                 <input
                   className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim font-bold text-primary"
@@ -1184,8 +1211,8 @@ const Transactions = () => {
                   )}
                   {visibleColumns.type && (
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full print:border print:border-outline-variant/20 print:bg-transparent print:text-on-surface ${transaction.type === 'receita' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}`}>
-                        {transaction.type === 'receita' ? t('transactions.revenueSale').split(' ')[0] : t('transactions.expensePurchase').split(' ')[0]}
+                      <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full print:border print:border-outline-variant/20 print:bg-transparent print:text-on-surface ${transaction.type === 'receita' ? 'bg-secondary-container text-on-secondary-container' : transaction.type === 'cotacao' ? 'bg-tertiary-container text-on-tertiary-container' : 'bg-error-container text-on-error-container'}`}>
+                        {transaction.type === 'receita' ? t('transactions.revenueSale').split(' ')[0] : transaction.type === 'cotacao' ? 'Cotação' : t('transactions.expensePurchase').split(' ')[0]}
                       </span>
                     </td>
                   )}
@@ -1201,13 +1228,25 @@ const Transactions = () => {
                     </td>
                   )}
                   {visibleColumns.value && (
-                    <td className={`px-6 py-4 text-right font-headline font-bold print:text-on-surface ${transaction.type === 'receita' ? 'text-secondary' : 'text-error'}`}>
-                      {transaction.type === 'receita' ? '+' : '-'} {formatCurrency(transaction.value)}
+                    <td className={`px-6 py-4 text-right font-headline font-bold print:text-on-surface ${transaction.type === 'receita' ? 'text-secondary' : transaction.type === 'cotacao' ? 'text-tertiary' : 'text-error'}`}>
+                      {transaction.type === 'receita' ? '+' : transaction.type === 'cotacao' ? '' : '-'} {formatCurrency(transaction.value)}
                     </td>
                   )}
                   {visibleColumns.actions && (
                     <td className="px-6 py-4 print:hidden">
                       <div className="flex justify-center gap-2">
+                        {transaction.type === 'cotacao' && (
+                          <button onClick={() => {
+                            const newTransaction = { 
+                              ...transaction, 
+                              type: 'receita' as TransactionType,
+                              date: new Date().toISOString().split('T')[0]
+                            };
+                            updateTransaction(transaction.id, newTransaction);
+                          }} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-tertiary hover:bg-tertiary-container/20 transition-all" title="Converter em Venda">
+                            <span className="material-symbols-outlined text-lg">point_of_sale</span>
+                          </button>
+                        )}
                         <button onClick={() => setSelectedReceiptTransaction(transaction)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-secondary hover:bg-secondary-container/20 transition-all" title={t('transactions.viewReceipt')}>
                           <span className="material-symbols-outlined text-lg">receipt_long</span>
                         </button>

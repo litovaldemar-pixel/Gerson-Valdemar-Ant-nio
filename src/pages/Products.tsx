@@ -21,7 +21,10 @@ const Products = () => {
   const [purchaseUnit, setPurchaseUnit] = useState<string>('un');
   const [conversionFactor, setConversionFactor] = useState<string>('1');
   const [supplierId, setSupplierId] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [batchNumber, setBatchNumber] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+
   const [showColumnMenu, setShowColumnMenu] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState({
     product: true,
@@ -30,6 +33,7 @@ const Products = () => {
     cost: true,
     stock: true,
     totalCost: true,
+    batch: true,
     actions: true
   });
 
@@ -55,6 +59,8 @@ const Products = () => {
     setPurchaseUnit(p.purchaseUnit || 'un');
     setConversionFactor(p.conversionFactor?.toString() || '1');
     setSupplierId(p.supplierId || '');
+    setExpiryDate(p.expiryDate || '');
+    setBatchNumber(p.batchNumber || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -71,6 +77,8 @@ const Products = () => {
     setPurchaseUnit('un');
     setConversionFactor('1');
     setSupplierId('');
+    setExpiryDate('');
+    setBatchNumber('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -89,6 +97,8 @@ const Products = () => {
       purchaseUnit,
       conversionFactor: parseFloat(conversionFactor || '1'),
       supplierId: supplierId || null,
+      expiryDate: expiryDate || null,
+      batchNumber: batchNumber || null,
     };
 
     if (editingId) {
@@ -109,6 +119,8 @@ const Products = () => {
     setPurchaseUnit('un');
     setConversionFactor('1');
     setSupplierId('');
+    setExpiryDate('');
+    setBatchNumber('');
   };
 
   const [searchParams, setSearchParams] = useState(new URLSearchParams(window.location.search));
@@ -335,6 +347,25 @@ const Products = () => {
               ))}
             </select>
           </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-on-surface-variant ml-1">Data de Validade</label>
+            <input
+              className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              type="date"
+              value={expiryDate}
+              onChange={(e) => setExpiryDate(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-on-surface-variant ml-1">Lote</label>
+            <input
+              className="w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-fixed-dim"
+              placeholder="Nº do Lote"
+              type="text"
+              value={batchNumber}
+              onChange={(e) => setBatchNumber(e.target.value)}
+            />
+          </div>
           <div className="flex gap-2 w-full md:col-span-2 lg:col-span-4">
             {editingId && (
               <button type="button" onClick={handleCancelEdit} className="w-full bg-surface-variant text-on-surface-variant py-3 rounded-lg font-bold text-sm hover:bg-outline-variant transition-colors">
@@ -403,6 +434,10 @@ const Products = () => {
                     <span className="text-sm text-on-surface">{t('products.totalCostCol')}</span>
                   </label>
                   <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.batch} onChange={() => toggleColumn('batch')} className="rounded border-outline-variant text-primary focus:ring-primary" />
+                    <span className="text-sm text-on-surface">Lote/Validade</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.actions} onChange={() => toggleColumn('actions')} className="rounded border-outline-variant text-primary focus:ring-primary" />
                     <span className="text-sm text-on-surface">{t('customers.actionsLabel')}</span>
                   </label>
@@ -422,6 +457,7 @@ const Products = () => {
                 {visibleColumns.price && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">{t('products.salePriceCol')}</th>}
                 {visibleColumns.cost && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">{t('products.costCol')}</th>}
                 {visibleColumns.stock && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">{t('products.stockCol')}</th>}
+                {visibleColumns.batch && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center">Lote/Validade</th>}
                 {visibleColumns.totalCost && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right">{t('products.totalCostCol')}</th>}
                 {visibleColumns.actions && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-center print:hidden">{t('customers.actionsLabel')}</th>}
               </tr>
@@ -451,6 +487,11 @@ const Products = () => {
                     <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${p.stock <= p.minStock ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container'}`}>
                       {p.stock} {p.unit || 'un'}
                     </span>
+                  </td>}
+                  {visibleColumns.batch && <td className="px-6 py-4 text-center text-sm text-on-surface-variant">
+                    {p.batchNumber && <div>Lote: {p.batchNumber}</div>}
+                    {p.expiryDate && <div>Val: {new Date(p.expiryDate).toLocaleDateString()}</div>}
+                    {!p.batchNumber && !p.expiryDate && '-'}
                   </td>}
                   {visibleColumns.totalCost && <td className="px-6 py-4 text-sm font-mono text-right text-error">
                     {new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(p.cost * p.stock)}

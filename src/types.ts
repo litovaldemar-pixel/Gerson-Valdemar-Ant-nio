@@ -19,7 +19,7 @@ export interface CompanyInfo {
   ivaRate?: number;
 }
 
-export type TransactionType = 'receita' | 'despesa';
+export type TransactionType = 'receita' | 'despesa' | 'cotacao';
 export type MeasurementUnit = 'un' | 'kg' | 'lt' | 'mt' | 'cx' | 'pct' | 'par' | 'saco' | 'fardo';
 
 export interface TransactionItem {
@@ -38,6 +38,7 @@ export interface Transaction {
   userId?: string;
   companyId?: string;
   date: string;
+  dueDate?: string;
   description: string;
   category: string;
   type: TransactionType;
@@ -89,6 +90,8 @@ export interface Product {
   purchaseUnit?: MeasurementUnit;
   conversionFactor?: number;
   supplierId?: string;
+  expiryDate?: string;
+  batchNumber?: string;
 }
 
 export const getCategoryTranslationKey = (category: string): string => {

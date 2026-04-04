@@ -97,12 +97,18 @@ export default function Payroll() {
         paymentMethod: 'Transferência Bancária',
       };
 
+      // Calculate due date (10th of next month)
+      const txDate = new Date(date);
+      const nextMonth = new Date(txDate.getFullYear(), txDate.getMonth() + 1, 10);
+      const dueDateStr = nextMonth.toISOString().split('T')[0];
+
       // 2. INSS Transaction (Employee 3% + Employer 4%)
       const inssTx: Omit<Transaction, 'id'> = {
         type: 'despesa',
         description: `INSS (7%) - ${emp.name}`,
         value: calc.totalInss,
         date: date,
+        dueDate: dueDateStr,
         category: 'Estado',
         paymentStatus: 'pendente',
       };
@@ -117,6 +123,7 @@ export default function Payroll() {
           description: `IRPS - ${emp.name}`,
           value: calc.irps,
           date: date,
+          dueDate: dueDateStr,
           category: 'Estado',
           paymentStatus: 'pendente',
         };
@@ -313,13 +320,94 @@ export default function Payroll() {
                           <td className="py-3 px-4 text-sm text-error text-right">-{formatCurrency(calc.absences + calc.advances)}</td>
                           <td className="py-3 px-4 text-sm font-bold text-primary text-right">{formatCurrency(calc.netSalary)}</td>
                           <td className="py-3 px-4 text-center print:hidden">
-                            <button
-                              onClick={() => removeEmployee(emp.id)}
-                              className="text-slate-400 hover:text-error transition-colors p-1"
-                              title={t('payroll.remove')}
-                            >
-                              <span className="material-symbols-outlined text-sm">delete</span>
-                            </button>
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => {
+                                  // Simple print functionality for individual payslip
+                                  const printWindow = window.open('', '_blank');
+                                  if (printWindow) {
+                                    printWindow.document.write(`
+                                      <html>
+                                        <head>
+                                          <title>Recibo de Vencimento - ${emp.name}</title>
+                                          <style>
+                                            body { font-family: sans-serif; padding: 20px; }
+                                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                                            th { background-color: #f2f2f2; }
+                                            .text-right { text-align: right; }
+                                            .bold { font-weight: bold; }
+                                          </style>
+                                        </head>
+                                        <body>
+                                          <h2>Recibo de Vencimento</h2>
+                                          <p><strong>Funcionário:</strong> ${emp.name}</p>
+                                          <p><strong>Data de Processamento:</strong> ${date}</p>
+                                          <table>
+                                            <thead>
+                                              <tr>
+                                                <th>Descrição</th>
+                                                <th class="text-right">Vencimentos</th>
+                                                <th class="text-right">Descontos</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              <tr>
+                                                <td>Salário Base</td>
+                                                <td class="text-right">${formatCurrency(calc.gross)}</td>
+                                                <td></td>
+                                              </tr>
+                                              <tr>
+                                                <td>INSS (3%)</td>
+                                                <td></td>
+                                                <td class="text-right">${formatCurrency(calc.inssEmployee)}</td>
+                                              </tr>
+                                              <tr>
+                                                <td>IRPS</td>
+                                                <td></td>
+                                                <td class="text-right">${formatCurrency(calc.irps)}</td>
+                                              </tr>
+                                              <tr>
+                                                <td>Faltas</td>
+                                                <td></td>
+                                                <td class="text-right">${formatCurrency(calc.absences)}</td>
+                                              </tr>
+                                              <tr>
+                                                <td>Adiantamentos</td>
+                                                <td></td>
+                                                <td class="text-right">${formatCurrency(calc.advances)}</td>
+                                              </tr>
+                                              <tr>
+                                                <td class="bold">Totais</td>
+                                                <td class="text-right bold">${formatCurrency(calc.gross)}</td>
+                                                <td class="text-right bold">${formatCurrency(calc.inssEmployee + calc.irps + calc.absences + calc.advances)}</td>
+                                              </tr>
+                                              <tr>
+                                                <td class="bold">Líquido a Receber</td>
+                                                <td colspan="2" class="text-right bold">${formatCurrency(calc.netSalary)}</td>
+                                              </tr>
+                                            </tbody>
+                                          </table>
+                                        </body>
+                                      </html>
+                                    `);
+                                    printWindow.document.close();
+                                    printWindow.print();
+                                  }
+                                }}
+                                className="text-slate-400 hover:text-primary transition-colors p-1"
+                                title="Imprimir Recibo"
+                              >
+                                <span className="material-symbols-outlined text-sm">print</span>
+                              </button>
+                              <button
+                                onClick={() => removeEmployee(emp.id)}
+                                className="text-slate-400 hover:text-error transition-colors p-1"
+                                title={t('payroll.remove')}
+                              >
+                                <span className="material-symbols-outlined text-sm">delete</span>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );

@@ -15,6 +15,7 @@ import Statement from './pages/Statement';
 import Login from './pages/Login';
 import AdminPanel from './pages/AdminPanel';
 import Payroll from './pages/Payroll';
+import POS from './pages/POS';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -29,6 +30,7 @@ const AppRoutes = () => {
       <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
         <Route index element={<Home />} />
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="pos" element={<POS />} />
         <Route path="lancamentos" element={<Transactions />} />
         <Route path="clientes" element={<Customers />} />
         <Route path="fornecedores" element={<Suppliers />} />

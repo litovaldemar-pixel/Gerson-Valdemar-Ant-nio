@@ -15,7 +15,7 @@ export default function KardexModal({ isOpen, onClose, product }: KardexModalPro
   if (!isOpen || !product) return null;
 
   const productTransactions = transactions.filter(t => 
-    t.items?.some(item => item.productId === product.id)
+    t.type !== 'cotacao' && t.items?.some(item => item.productId === product.id)
   ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const formatCurrency = (value: number) => {

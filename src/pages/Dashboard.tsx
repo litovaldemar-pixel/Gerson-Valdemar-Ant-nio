@@ -134,6 +134,21 @@ const Dashboard = () => {
 
   const chartData = Object.values(chartDataMap).reverse(); // Reverse to show chronological order if sorted descending originally
 
+  // Cash Flow Projection Data
+  const futureTransactions = transactions.filter(t => t.type !== 'cotacao' && t.paymentStatus === 'pendente' && t.dueDate && t.dueDate >= new Date().toISOString().split('T')[0]);
+  const cashFlowMap = futureTransactions.reduce((acc, curr) => {
+    if (!curr.dueDate) return acc;
+    const date = new Date(curr.dueDate).toLocaleDateString(t('common.locale', 'pt-MZ'), { day: '2-digit', month: 'short' });
+    if (!acc[date]) {
+      acc[date] = { name: date, Entrada: 0, Saida: 0 };
+    }
+    if (curr.type === 'receita') acc[date].Entrada += curr.value;
+    if (curr.type === 'despesa') acc[date].Saida += curr.value;
+    return acc;
+  }, {} as Record<string, any>);
+  
+  const cashFlowData = Object.values(cashFlowMap).sort((a: any, b: any) => new Date(a.name).getTime() - new Date(b.name).getTime());
+
   const filteredCustomers = customers.filter(c => {
     if (!globalSearchTerm) return true;
     const term = globalSearchTerm.toLowerCase();
@@ -358,13 +373,13 @@ const Dashboard = () => {
       </section>
 
       {/* Charts and Secondary Metrics */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Fluxo de Caixa (Bar Chart) */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.4 }}
-          className="lg:col-span-2 bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10"
+          className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10"
         >
           <h3 className="text-lg font-bold font-headline text-primary mb-6">{t('dashboard.cashFlow')}</h3>
           <div className="h-72 w-full">
@@ -386,6 +401,35 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
+        {/* Projeção de Fluxo de Caixa (Bar Chart) */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.5 }}
+          className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10"
+        >
+          <h3 className="text-lg font-bold font-headline text-primary mb-6">Projeção de Fluxo de Caixa</h3>
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <BarChart data={cashFlowData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e1e3e4" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#737780' }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#737780' }} tickFormatter={(value) => `${value / 1000}k`} />
+                <Tooltip 
+                  cursor={{ fill: '#f3f4f5' }}
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  formatter={(value: number) => formatCurrency(value)}
+                />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
+                <Bar dataKey="Entrada" name="Entradas Previstas" fill="#006c47" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                <Bar dataKey="Saida" name="Saídas Previstas" fill="#ba1a1a" radius={[4, 4, 0, 0]} maxBarSize={40} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+      </section>
+
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Despesas por Categoria (Donut Chart) */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

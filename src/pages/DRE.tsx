@@ -105,6 +105,17 @@ const DRE = () => {
   // DOL = Contribution Margin / Operating Income (EBITDA in this simplified case)
   const alavancagemOperacional = ebitda > 0 ? margemContribuicao / ebitda : 0;
 
+  // Apuramento de IVA
+  const ivaLiquidado = filteredTransactions
+    .filter(t => t.type === 'receita')
+    .reduce((acc, curr) => acc + (curr.ivaAmount || 0), 0);
+
+  const ivaDedutivel = filteredTransactions
+    .filter(t => t.type === 'despesa')
+    .reduce((acc, curr) => acc + (curr.ivaAmount || 0), 0);
+
+  const ivaPagar = ivaLiquidado - ivaDedutivel;
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat(t('common.locale', 'pt-MZ'), {
       style: 'currency',
@@ -373,6 +384,27 @@ const DRE = () => {
         </div>
       </div>
       
+      {/* Apuramento de IVA */}
+      <div className="mt-8 bg-white rounded-2xl shadow-sm border border-outline-variant/20 overflow-hidden">
+        <div className="bg-surface-container-lowest p-6 border-b border-outline-variant/20">
+          <h4 className="text-lg font-headline font-extrabold text-primary">Apuramento de IVA</h4>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 flex flex-col items-center justify-center text-center">
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">IVA Liquidado (Vendas)</p>
+            <p className="font-headline font-bold text-2xl text-secondary mt-2">{formatCurrency(ivaLiquidado)}</p>
+          </div>
+          <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 flex flex-col items-center justify-center text-center">
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">IVA Dedutível (Compras)</p>
+            <p className="font-headline font-bold text-2xl text-error mt-2">{formatCurrency(ivaDedutivel)}</p>
+          </div>
+          <div className={`p-6 rounded-xl border flex flex-col items-center justify-center text-center ${ivaPagar > 0 ? 'bg-error-container/20 border-error/30' : 'bg-secondary-container/20 border-secondary/30'}`}>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">{ivaPagar > 0 ? 'IVA a Pagar' : 'IVA a Recuperar'}</p>
+            <p className={`font-headline font-bold text-2xl mt-2 ${ivaPagar > 0 ? 'text-error' : 'text-secondary'}`}>{formatCurrency(Math.abs(ivaPagar))}</p>
+          </div>
+        </div>
+      </div>
+
       {/* System Footer */}
       <footer className="mt-12 p-8 border-t border-outline-variant/10 text-center print:hidden">
         <p className="text-[10px] text-on-surface-variant font-medium uppercase tracking-[0.3em]">{companyInfo?.name || 'Financial Architect'} © 2024 - Sistema de Alta Precisão</p>
