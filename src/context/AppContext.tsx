@@ -110,13 +110,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [pinModalOpen, setPinModalOpen] = useState(false);
   const [pendingCompanyId, setPendingCompanyId] = useState<string | null>(null);
   const [pinError, setPinError] = useState<string>('');
-  const lastReceiptNumberRef = useRef<number>(0);
+  const lastReceiptNumberRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
-    const maxReceipt = allTransactions.reduce((max, t) => Math.max(max, t.receiptNumber || 0), 0);
-    if (maxReceipt > lastReceiptNumberRef.current) {
-      lastReceiptNumberRef.current = maxReceipt;
-    }
+    const newRef: Record<string, number> = {};
+    allTransactions.forEach(t => {
+      const key = t.companyId || 'default';
+      newRef[key] = Math.max(newRef[key] || 0, t.receiptNumber || 0);
+    });
+    lastReceiptNumberRef.current = newRef;
   }, [allTransactions]);
 
   useEffect(() => {
@@ -192,13 +194,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     // Filter data by current company
-    // If no currentCompanyId, or if it's a legacy record (no companyId), we show it if we are in the "default" or first company
-    const isFirstCompany = companies.length === 0 || companies[0].id === currentCompanyId;
+    // If no currentCompanyId, or if it's a legacy record (no companyId), we show it if we are in the "default" workspace or first company
+    const showUnassigned = currentCompanyId === null || companies.length === 0 || companies[0].id === currentCompanyId;
     
-    setTransactions(allTransactions.filter(t => t.companyId === currentCompanyId || (!t.companyId && isFirstCompany)));
-    setCustomers(allCustomers.filter(c => c.companyId === currentCompanyId || (!c.companyId && isFirstCompany)));
-    setSuppliers(allSuppliers.filter(s => s.companyId === currentCompanyId || (!s.companyId && isFirstCompany)));
-    setProducts(allProducts.filter(p => p.companyId === currentCompanyId || (!p.companyId && isFirstCompany)));
+    setTransactions(allTransactions.filter(t => t.companyId === currentCompanyId || (!t.companyId && showUnassigned)));
+    setCustomers(allCustomers.filter(c => c.companyId === currentCompanyId || (!c.companyId && showUnassigned)));
+    setSuppliers(allSuppliers.filter(s => s.companyId === currentCompanyId || (!s.companyId && showUnassigned)));
+    setProducts(allProducts.filter(p => p.companyId === currentCompanyId || (!p.companyId && showUnassigned)));
     
     // Update companyInfo to match current company if it exists in DB
     if (currentCompanyId) {
@@ -250,9 +252,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
     if (!user) return;
     try {
-      // Use ref to ensure synchronous calls get different receipt numbers
-      const nextReceiptNumber = lastReceiptNumberRef.current + 1;
-      lastReceiptNumberRef.current = nextReceiptNumber;
+      const companyKey = currentCompanyId || 'default';
+      const nextReceiptNumber = (lastReceiptNumberRef.current[companyKey] || 0) + 1;
+      lastReceiptNumberRef.current[companyKey] = nextReceiptNumber;
 
       const newTransaction: Omit<Transaction, 'id'> = { 
         ...transaction, 

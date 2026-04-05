@@ -112,7 +112,7 @@ service cloud.firestore {
              data.date is string && data.date.size() > 0 && data.date.size() < 50 &&
              data.description is string && data.description.size() > 0 && data.description.size() < 500 &&
              data.category is string && data.category.size() > 0 && data.category.size() < 100 &&
-             data.type in ['receita', 'despesa'] &&
+             data.type in ['receita', 'despesa', 'cotacao'] &&
              data.value is number && data.value >= 0 &&
              (!('productId' in data) || data.productId == null || (data.productId is string && data.productId.size() < 100)) &&
              (!('quantity' in data) || data.quantity == null || (data.quantity is number && data.quantity >= 0)) &&
@@ -123,6 +123,10 @@ service cloud.firestore {
              (!('paymentStatus' in data) || data.paymentStatus == null || data.paymentStatus in ['pago', 'pendente']) &&
              (!('receiptNumber' in data) || data.receiptNumber == null || data.receiptNumber is number) &&
              (!('items' in data) || data.items == null || (data.items is list && data.items.size() <= 100)) &&
+             (!('dueDate' in data) || data.dueDate == null || (data.dueDate is string && data.dueDate.size() < 50)) &&
+             (!('ivaRate' in data) || data.ivaRate == null || (data.ivaRate is number && data.ivaRate >= 0)) &&
+             (!('ivaAmount' in data) || data.ivaAmount == null || (data.ivaAmount is number && data.ivaAmount >= 0)) &&
+             (!('discount' in data) || data.discount == null || (data.discount is number && data.discount >= 0)) &&
              (!('companyId' in data) || data.companyId == null || (data.companyId is string && data.companyId.size() < 100));
     }
 
@@ -156,6 +160,8 @@ service cloud.firestore {
              data.cost is number && data.cost >= 0 &&
              data.stock is number && data.stock >= 0 &&
              data.minStock is number && data.minStock >= 0 &&
+             (!('batchNumber' in data) || data.batchNumber == null || (data.batchNumber is string && data.batchNumber.size() < 100)) &&
+             (!('expiryDate' in data) || data.expiryDate == null || (data.expiryDate is string && data.expiryDate.size() < 50)) &&
              (!('companyId' in data) || data.companyId == null || (data.companyId is string && data.companyId.size() < 100));
     }
 

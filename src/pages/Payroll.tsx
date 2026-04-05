@@ -10,9 +10,11 @@ import PrintHeader from '../components/PrintHeader';
 interface EmployeePayroll {
   id: string;
   name: string;
+  isPartner: boolean;
   grossSalary: number;
   irpsRate: number;
-  absences: number; // Faltas em valor monetário
+  allowances: number; // Subsídios
+  absentDays: number; // Número de dias em falta
   advances: number; // Adiantamentos (Vales)
 }
 
@@ -25,9 +27,11 @@ export default function Payroll() {
 
   // Form states for adding new employee
   const [employeeName, setEmployeeName] = useState('');
+  const [isPartner, setIsPartner] = useState(false);
   const [grossSalary, setGrossSalary] = useState<number | ''>('');
   const [irpsRate, setIrpsRate] = useState<number>(10);
-  const [absences, setAbsences] = useState<number | ''>('');
+  const [allowances, setAllowances] = useState<number | ''>('');
+  const [absentDays, setAbsentDays] = useState<number | ''>('');
   const [advances, setAdvances] = useState<number | ''>('');
 
   const handleAddEmployee = (e: React.FormEvent) => {
@@ -37,17 +41,21 @@ export default function Payroll() {
     const newEmployee: EmployeePayroll = {
       id: Date.now().toString() + Math.random().toString(36).substring(7),
       name: employeeName,
+      isPartner,
       grossSalary: Number(grossSalary),
       irpsRate: Number(irpsRate),
-      absences: Number(absences) || 0,
+      allowances: Number(allowances) || 0,
+      absentDays: Number(absentDays) || 0,
       advances: Number(advances) || 0
     };
 
     setEmployees([...employees, newEmployee]);
     setEmployeeName('');
+    setIsPartner(false);
     setGrossSalary('');
     setIrpsRate(10);
-    setAbsences('');
+    setAllowances('');
+    setAbsentDays('');
     setAdvances('');
   };
 
@@ -57,78 +65,125 @@ export default function Payroll() {
 
   const calculateEmployeePayroll = (emp: EmployeePayroll) => {
     const gross = emp.grossSalary;
-    const inssEmployee = gross * 0.03;
-    const inssEmployer = gross * 0.04;
-    const totalInss = inssEmployee + inssEmployer;
-    const irps = gross > 20000 ? gross * (emp.irpsRate / 100) : 0;
-    const netSalary = gross - inssEmployee - irps - emp.absences - emp.advances;
+    const allowances = emp.allowances || 0;
     
-    return { gross, inssEmployee, inssEmployer, totalInss, irps, netSalary, absences: emp.absences, advances: emp.advances };
+    // Calculate absence value based on days (assuming 30 days per month)
+    const dailyRate = gross / 30;
+    const absenceValue = dailyRate * (emp.absentDays || 0);
+    
+    const baseForInss = gross + allowances - absenceValue;
+    
+    const inssEmployee = baseForInss * 0.03;
+    const inssEmployer = baseForInss * 0.04;
+    const totalInss = inssEmployee + inssEmployer;
+    
+    const baseForIrps = baseForInss - inssEmployee;
+    const irps = baseForIrps > 20000 ? baseForIrps * (emp.irpsRate / 100) : 0;
+    
+    const netSalary = baseForInss - inssEmployee - irps - emp.advances;
+    
+    return { 
+      gross, 
+      allowances,
+      absenceValue,
+      inssEmployee, 
+      inssEmployer, 
+      totalInss, 
+      irps, 
+      netSalary, 
+      absentDays: emp.absentDays, 
+      advances: emp.advances 
+    };
   };
 
   const totals = employees.reduce((acc, emp) => {
     const calc = calculateEmployeePayroll(emp);
     return {
       gross: acc.gross + calc.gross,
+      allowances: acc.allowances + calc.allowances,
+      absenceValue: acc.absenceValue + calc.absenceValue,
       inssEmployee: acc.inssEmployee + calc.inssEmployee,
       inssEmployer: acc.inssEmployer + calc.inssEmployer,
       totalInss: acc.totalInss + calc.totalInss,
       irps: acc.irps + calc.irps,
-      absences: acc.absences + calc.absences,
       advances: acc.advances + calc.advances,
       netSalary: acc.netSalary + calc.netSalary
     };
-  }, { gross: 0, inssEmployee: 0, inssEmployer: 0, totalInss: 0, irps: 0, absences: 0, advances: 0, netSalary: 0 });
+  }, { gross: 0, allowances: 0, absenceValue: 0, inssEmployee: 0, inssEmployer: 0, totalInss: 0, irps: 0, advances: 0, netSalary: 0 });
 
   const handleProcessPayroll = () => {
     if (employees.length === 0) return;
 
     employees.forEach(emp => {
       const calc = calculateEmployeePayroll(emp);
-
-      // 1. Net Salary Transaction
-      const netSalaryTx: Omit<Transaction, 'id'> = {
-        type: 'despesa',
-        description: `Salário Líquido - ${emp.name}`,
-        value: calc.netSalary,
-        date: date,
-        category: 'Pessoal',
-        paymentStatus: 'pago',
-        paymentMethod: 'Transferência Bancária',
-      };
+      const roleStr = emp.isPartner ? 'Sócio' : 'Colaborador';
 
       // Calculate due date (10th of next month)
       const txDate = new Date(date);
       const nextMonth = new Date(txDate.getFullYear(), txDate.getMonth() + 1, 10);
       const dueDateStr = nextMonth.toISOString().split('T')[0];
 
-      // 2. INSS Transaction (Employee 3% + Employer 4%)
-      const inssTx: Omit<Transaction, 'id'> = {
+      // 1. Gross Salary Transaction
+      const grossSalaryTx: Omit<Transaction, 'id'> = {
         type: 'despesa',
-        description: `INSS (7%) - ${emp.name}`,
-        value: calc.totalInss,
+        description: `Processamento Salário Bruto - ${emp.name} (${roleStr})`,
+        value: calc.gross + calc.allowances, // Total remuneration
         date: date,
-        dueDate: dueDateStr,
-        category: 'Estado',
+        category: emp.isPartner ? 'Salário Sócio' : 'Salário Colaborador',
         paymentStatus: 'pendente',
       };
 
-      addTransaction(netSalaryTx);
-      addTransaction(inssTx);
+      // 2. INSS Employer (4%)
+      const inssEmployerTx: Omit<Transaction, 'id'> = {
+        type: 'despesa',
+        description: `INSS Empresa (4%) - ${emp.name} (${roleStr})`,
+        value: calc.inssEmployer,
+        date: date,
+        dueDate: dueDateStr,
+        category: 'INSS Empresa',
+        paymentStatus: 'pendente',
+      };
 
-      // 3. IRPS Transaction
+      // 3. INSS Employee Retido (3%)
+      const inssEmployeeTx: Omit<Transaction, 'id'> = {
+        type: 'despesa',
+        description: `INSS Retido (3%) - ${emp.name} (${roleStr})`,
+        value: calc.inssEmployee,
+        date: date,
+        dueDate: dueDateStr,
+        category: 'INSS Retido',
+        paymentStatus: 'pendente',
+      };
+
+      addTransaction(grossSalaryTx);
+      addTransaction(inssEmployerTx);
+      addTransaction(inssEmployeeTx);
+
+      // 4. IRPS Retido
       if (calc.irps > 0) {
         const irpsTx: Omit<Transaction, 'id'> = {
           type: 'despesa',
-          description: `IRPS - ${emp.name}`,
+          description: `IRPS Retido - ${emp.name} (${roleStr})`,
           value: calc.irps,
           date: date,
           dueDate: dueDateStr,
-          category: 'Estado',
+          category: 'IRPS Retido',
           paymentStatus: 'pendente',
         };
         addTransaction(irpsTx);
       }
+
+      // 5. Net Salary Payment
+      const netSalaryTx: Omit<Transaction, 'id'> = {
+        type: 'despesa',
+        description: `Pagamento Salário Líquido - ${emp.name} (${roleStr})`,
+        value: calc.netSalary,
+        date: date,
+        category: 'Pagamento Salário',
+        paymentStatus: 'pago',
+        paymentMethod: 'Transferência Bancária',
+      };
+      addTransaction(netSalaryTx);
     });
 
     setEmployees([]);
@@ -148,10 +203,12 @@ export default function Payroll() {
       return {
         Nome: emp.name,
         'Salário Bruto': calc.gross,
+        'Subsídios': calc.allowances,
         'INSS (3%)': calc.inssEmployee,
         'INSS Empresa (4%)': calc.inssEmployer,
         'IRPS': calc.irps,
-        'Faltas': calc.absences,
+        'Faltas (Dias)': calc.absentDays,
+        'Faltas (Valor)': calc.absenceValue,
         'Adiantamentos': calc.advances,
         'Salário Líquido': calc.netSalary
       };
@@ -194,6 +251,19 @@ export default function Payroll() {
               />
             </div>
 
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isPartner"
+                checked={isPartner}
+                onChange={(e) => setIsPartner(e.target.checked)}
+                className="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
+              />
+              <label htmlFor="isPartner" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                É Sócio/Gerente?
+              </label>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 {t('payroll.grossSalary')}
@@ -232,19 +302,33 @@ export default function Payroll() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Faltas (Valor)
+                  Subsídios
                 </label>
                 <input
                   type="number"
                   min="0"
                   step="0.01"
-                  value={absences}
-                  onChange={(e) => setAbsences(e.target.value ? Number(e.target.value) : '')}
+                  value={allowances}
+                  onChange={(e) => setAllowances(e.target.value ? Number(e.target.value) : '')}
                   className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   placeholder="0.00"
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Faltas (Dias)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={absentDays}
+                  onChange={(e) => setAbsentDays(e.target.value ? Number(e.target.value) : '')}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  placeholder="0"
+                />
+              </div>
+              <div className="col-span-2">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Adiantamentos
                 </label>
@@ -301,6 +385,7 @@ export default function Payroll() {
                     <tr className="border-b border-slate-200 dark:border-slate-700">
                       <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('payroll.employee')}</th>
                       <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('payroll.gross')}</th>
+                      <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Subsídios</th>
                       <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('payroll.inss')}</th>
                       <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('payroll.irps')}</th>
                       <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Faltas/Adiant.</th>
@@ -315,9 +400,10 @@ export default function Payroll() {
                         <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                           <td className="py-3 px-4 text-sm font-medium text-slate-900 dark:text-white">{emp.name}</td>
                           <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400 text-right">{formatCurrency(calc.gross)}</td>
+                          <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400 text-right">{formatCurrency(calc.allowances)}</td>
                           <td className="py-3 px-4 text-sm text-error text-right">-{formatCurrency(calc.inssEmployee)}</td>
                           <td className="py-3 px-4 text-sm text-error text-right">-{formatCurrency(calc.irps)}</td>
-                          <td className="py-3 px-4 text-sm text-error text-right">-{formatCurrency(calc.absences + calc.advances)}</td>
+                          <td className="py-3 px-4 text-sm text-error text-right">-{formatCurrency(calc.absenceValue + calc.advances)}</td>
                           <td className="py-3 px-4 text-sm font-bold text-primary text-right">{formatCurrency(calc.netSalary)}</td>
                           <td className="py-3 px-4 text-center print:hidden">
                             <div className="flex items-center justify-center gap-2">
@@ -358,6 +444,11 @@ export default function Payroll() {
                                                 <td></td>
                                               </tr>
                                               <tr>
+                                                <td>Subsídios</td>
+                                                <td class="text-right">${formatCurrency(calc.allowances)}</td>
+                                                <td></td>
+                                              </tr>
+                                              <tr>
                                                 <td>INSS (3%)</td>
                                                 <td></td>
                                                 <td class="text-right">${formatCurrency(calc.inssEmployee)}</td>
@@ -368,9 +459,9 @@ export default function Payroll() {
                                                 <td class="text-right">${formatCurrency(calc.irps)}</td>
                                               </tr>
                                               <tr>
-                                                <td>Faltas</td>
+                                                <td>Faltas (${calc.absentDays} dias)</td>
                                                 <td></td>
-                                                <td class="text-right">${formatCurrency(calc.absences)}</td>
+                                                <td class="text-right">${formatCurrency(calc.absenceValue)}</td>
                                               </tr>
                                               <tr>
                                                 <td>Adiantamentos</td>
@@ -379,8 +470,8 @@ export default function Payroll() {
                                               </tr>
                                               <tr>
                                                 <td class="bold">Totais</td>
-                                                <td class="text-right bold">${formatCurrency(calc.gross)}</td>
-                                                <td class="text-right bold">${formatCurrency(calc.inssEmployee + calc.irps + calc.absences + calc.advances)}</td>
+                                                <td class="text-right bold">${formatCurrency(calc.gross + calc.allowances)}</td>
+                                                <td class="text-right bold">${formatCurrency(calc.inssEmployee + calc.irps + calc.absenceValue + calc.advances)}</td>
                                               </tr>
                                               <tr>
                                                 <td class="bold">Líquido a Receber</td>
@@ -430,6 +521,10 @@ export default function Payroll() {
                     <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(totals.gross)}</span>
                   </div>
                   <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-700">
+                    <span className="text-slate-600 dark:text-slate-400">Subsídios</span>
+                    <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(totals.allowances)}</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-700">
                     <span className="text-slate-600 dark:text-slate-400">{t('payroll.totalInssEmployee')}</span>
                     <span className="font-medium text-error">-{formatCurrency(totals.inssEmployee)}</span>
                   </div>
@@ -439,7 +534,7 @@ export default function Payroll() {
                   </div>
                   <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-700">
                     <span className="text-slate-600 dark:text-slate-400">Total Faltas/Adiantamentos</span>
-                    <span className="font-medium text-error">-{formatCurrency(totals.absences + totals.advances)}</span>
+                    <span className="font-medium text-error">-{formatCurrency(totals.absenceValue + totals.advances)}</span>
                   </div>
                   <div className="flex justify-between items-center pt-2">
                     <span className="text-lg font-bold text-slate-900 dark:text-white">{t('payroll.totalNet')}</span>

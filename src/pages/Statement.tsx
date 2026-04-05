@@ -59,13 +59,19 @@ const Statement = () => {
       '491': { conta: '491', descricao: t('statement.accounts.491.desc', 'Acréscimos de rendimentos'), categoria: t('statement.accounts.491.cat', '49 Acréscimos e diferimentos'), debito: 0, credito: 0, movimentos: [] },
       '511': { conta: '511', descricao: t('statement.accounts.511.desc', 'Capital social'), categoria: t('statement.accounts.511.cat', '51 Capital'), debito: 0, credito: 0, movimentos: [] },
       '591': { conta: '591', descricao: t('statement.accounts.591.desc', 'Resultados transitados'), categoria: t('statement.accounts.591.cat', '59 Resultados transitados'), debito: 0, credito: 0, movimentos: [] },
-      '621': { conta: '621', descricao: t('statement.accounts.621.desc', 'Remunerações do pessoal'), categoria: t('statement.accounts.621.cat', '62 Gastos com o pessoal'), debito: 0, credito: 0, movimentos: [] },
+      '621': { conta: '621', descricao: t('statement.accounts.621.desc', 'Remunerações dos órgãos sociais'), categoria: t('statement.accounts.621.cat', '62 Gastos com o pessoal'), debito: 0, credito: 0, movimentos: [] },
+      '622': { conta: '622', descricao: t('statement.accounts.622.desc', 'Remunerações do pessoal'), categoria: t('statement.accounts.622.cat', '62 Gastos com o pessoal'), debito: 0, credito: 0, movimentos: [] },
+      '623': { conta: '623', descricao: t('statement.accounts.623.desc', 'Encargos sobre remunerações'), categoria: t('statement.accounts.623.cat', '62 Gastos com o pessoal'), debito: 0, credito: 0, movimentos: [] },
       '631': { conta: '631', descricao: t('statement.accounts.631.desc', 'Subcontratos'), categoria: t('statement.accounts.631.cat', '63 Fornecimento e serviços de terceiros'), debito: 0, credito: 0, movimentos: [] },
       '681': { conta: '681', descricao: t('statement.accounts.681.desc', 'Impostos e taxas'), categoria: t('statement.accounts.681.cat', '68 Outros gastos e perdas operacionais'), debito: 0, credito: 0, movimentos: [] },
       '711': { conta: '711', descricao: t('statement.accounts.711.desc', 'Vendas de mercadorias'), categoria: t('statement.accounts.711.cat', '71 Vendas'), debito: 0, credito: 0, movimentos: [] },
       '721': { conta: '721', descricao: t('statement.accounts.721.desc', 'Prestação de serviços'), categoria: t('statement.accounts.721.cat', '72 Prestação de serviços'), debito: 0, credito: 0, movimentos: [] },
       '781': { conta: '781', descricao: t('statement.accounts.781.desc', 'Juros obtidos'), categoria: t('statement.accounts.781.cat', '78 Rendimentos e ganhos financeiros'), debito: 0, credito: 0, movimentos: [] },
       '881': { conta: '881', descricao: t('statement.accounts.881.desc', 'Resultado líquido do peródo'), categoria: t('statement.accounts.881.cat', '88 Resultado líquido do peródo'), debito: 0, credito: 0, movimentos: [] },
+      '4491': { conta: '4491', descricao: t('statement.accounts.4491.desc', 'INSS'), categoria: t('statement.accounts.4491.cat', '44 Estado'), debito: 0, credito: 0, movimentos: [] },
+      '442': { conta: '442', descricao: t('statement.accounts.442.desc', 'IRPS'), categoria: t('statement.accounts.442.cat', '44 Estado'), debito: 0, credito: 0, movimentos: [] },
+      '4621': { conta: '4621', descricao: t('statement.accounts.4621.desc', 'Sócios - Remunerações a pagar'), categoria: t('statement.accounts.4621.cat', '46 Outros credores'), debito: 0, credito: 0, movimentos: [] },
+      '4622': { conta: '4622', descricao: t('statement.accounts.4622.desc', 'Pessoal - Remunerações a pagar'), categoria: t('statement.accounts.4622.cat', '46 Outros credores'), debito: 0, credito: 0, movimentos: [] },
     };
 
     // Add dynamic accounts for customers
@@ -143,10 +149,79 @@ const Statement = () => {
       } else {
         // Despesa
         let debitAccount = '681'; // Default
+        
+        if (t.category === 'Salário Sócio') {
+          debitAccount = '621';
+          accountsMap[debitAccount].debito += t.value;
+          accountsMap[debitAccount].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          
+          if (t.paymentStatus === 'pago') {
+            accountsMap[caixaOrBanco].credito += t.value;
+            accountsMap[caixaOrBanco].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          } else {
+            accountsMap['4621'].credito += t.value;
+            accountsMap['4621'].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          }
+          return; // Skip default processing
+        } else if (t.category === 'Salário Colaborador') {
+          debitAccount = '623';
+          accountsMap[debitAccount].debito += t.value;
+          accountsMap[debitAccount].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          
+          if (t.paymentStatus === 'pago') {
+            accountsMap[caixaOrBanco].credito += t.value;
+            accountsMap[caixaOrBanco].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          } else {
+            accountsMap['4622'].credito += t.value;
+            accountsMap['4622'].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          }
+          return; // Skip default processing
+        } else if (t.category === 'INSS Empresa') {
+          debitAccount = '623';
+          accountsMap[debitAccount].debito += t.value;
+          accountsMap[debitAccount].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          
+          if (t.paymentStatus === 'pago') {
+            accountsMap[caixaOrBanco].credito += t.value;
+            accountsMap[caixaOrBanco].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          } else {
+            accountsMap['4491'].credito += t.value;
+            accountsMap['4491'].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          }
+          return; // Skip default processing
+        } else if (t.category === 'INSS Retido') {
+          // INSS Retido reduces the payable amount to the employee/partner and increases the payable to INSS
+          // Since we are not doing full double-entry for every single deduction in the UI, 
+          // we represent this as a debit to 4621/4622 and credit to 4491
+          debitAccount = t.description?.includes('Sócio') ? '4621' : '4622';
+          accountsMap[debitAccount].debito += t.value;
+          accountsMap[debitAccount].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          
+          accountsMap['4491'].credito += t.value;
+          accountsMap['4491'].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          return; // Skip default processing
+        } else if (t.category === 'IRPS Retido') {
+          debitAccount = t.description?.includes('Sócio') ? '4621' : '4622';
+          accountsMap[debitAccount].debito += t.value;
+          accountsMap[debitAccount].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          
+          accountsMap['442'].credito += t.value;
+          accountsMap['442'].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          return; // Skip default processing
+        } else if (t.category === 'Pagamento Salário') {
+          debitAccount = t.description?.includes('Sócio') ? '4621' : '4622';
+          accountsMap[debitAccount].debito += t.value;
+          accountsMap[debitAccount].movimentos.push({ ...t, tipoMovimento: 'debito' });
+          
+          accountsMap[caixaOrBanco].credito += t.value;
+          accountsMap[caixaOrBanco].movimentos.push({ ...t, tipoMovimento: 'credito' });
+          return; // Skip default processing
+        }
+
         const isSalary = t.category === 'Pessoal' || t.category === 'Salário' || t.category === 'Assistência Médica';
 
         if (isSalary) {
-          debitAccount = '621';
+          debitAccount = '622';
         } else if (isServicos) {
           debitAccount = '631';
         } else {
