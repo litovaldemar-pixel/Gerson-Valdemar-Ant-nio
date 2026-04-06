@@ -1,4 +1,37 @@
 {
+  "pinModal": {
+    "title": "受限访问",
+    "message": "公司 {{companyName}} 受 PIN 保护。请输入 PIN 以访问。",
+    "access": "访问",
+    "enterPin": "输入公司 PIN 以访问",
+    "incorrectPin": "PIN 不正确"
+  },
+  "pos": {
+    "productNotFound": "未找到产品",
+    "outOfStock": "缺货",
+    "insufficientStock": "库存不足",
+    "saleCompleted": "销售成功完成！",
+    "barcodePlaceholder": "条形码（按Enter添加）",
+    "searchPlaceholder": "按名称，SKU或类别搜索产品...",
+    "cart": "购物车",
+    "emptyCart": "购物车为空",
+    "finalCustomer": "最终客户（消费者）",
+    "cash": "现金",
+    "mpesa": "M-Pesa",
+    "emola": "E-mola",
+    "card": "卡",
+    "iva0": "增值税: 0%",
+    "iva16": "增值税: 16%",
+    "iva17": "增值税: 17%",
+    "subtotal": "小计:",
+    "iva": "增值税 ({{rate}}%):",
+    "discount": "折扣:",
+    "total": "总计:",
+    "amountPaid": "已付金额:",
+    "change": "找零:",
+    "checkout": "结账",
+    "posSale": "POS 销售"
+  },
   "dashboard": {
     "filters": {
       "hoje": "今天",
@@ -26,7 +59,13 @@
     "revenueByCategory": "按类别划分的收入",
     "customers": "客户",
     "suppliers": "供应商",
-    "products": "产品"
+    "products": "产品",
+    "netProfit": "净利润",
+    "recentTransactions": "最近交易",
+    "viewAll": "查看全部",
+    "financialSummary": "财务摘要",
+    "revenueVsExpenses": "收入与支出",
+    "topProducts": "畅销产品"
   },
   "customers": {
     "subtitle": "管理您的客户组合。",
@@ -83,6 +122,12 @@
     "cheque": "支票",
     "mobileMoney": "M-Pesa/E-Mola",
     "paymentStatus": "付款状态",
+    "paymentDetails": "付款详情",
+    "amountPaid": "已付金额 (MZN)",
+    "change": "找零 (MZN)",
+    "ivaLiquidado": "已结算增值税 (%)",
+    "ivaDedutivel": "可抵扣增值税 (%)",
+    "ivaAmount": "增值税金额 (MZN)",
     "paid": "已付",
     "pending": "待处理",
     "productsToSell": "待售产品（可选）",
@@ -289,7 +334,9 @@
     "logout": "退出应用",
     "admin": "管理面板",
     "mainMenu": "主菜单",
-    "addCompany": "添加公司"
+    "addCompany": "添加公司",
+    "lockSession": "锁定会话",
+    "loggedInAs": "登录为："
   },
   "header": {
     "newTransaction": "新交易",
@@ -301,18 +348,6 @@
     "newSupplier": "新供应商",
     "language": "语言",
     "changePassword": "更改密码"
-  },
-  "dashboard": {
-    "totalRevenue": "总收入",
-    "totalExpenses": "总支出",
-    "netProfit": "净利润",
-    "profitMargin": "利润率",
-    "recentTransactions": "最近交易",
-    "viewAll": "查看全部",
-    "financialSummary": "财务摘要",
-    "revenueVsExpenses": "收入与支出",
-    "expensesByCategory": "按类别划分的支出",
-    "topProducts": "畅销产品"
   },
   "common": {
     "save": "保存",

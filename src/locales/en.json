@@ -1,4 +1,37 @@
 {
+  "pinModal": {
+    "title": "Restricted Access",
+    "message": "The company {{companyName}} is protected by a PIN. Please enter the PIN to access.",
+    "access": "Access",
+    "enterPin": "Enter the company PIN to access",
+    "incorrectPin": "Incorrect PIN"
+  },
+  "pos": {
+    "productNotFound": "Product not found",
+    "outOfStock": "Out of stock",
+    "insufficientStock": "Insufficient stock",
+    "saleCompleted": "Sale completed successfully!",
+    "barcodePlaceholder": "Barcode (Enter to add)",
+    "searchPlaceholder": "Search product by name, SKU or category...",
+    "cart": "Cart",
+    "emptyCart": "Empty cart",
+    "finalCustomer": "Final Customer (Consumer)",
+    "cash": "Cash",
+    "mpesa": "M-Pesa",
+    "emola": "E-mola",
+    "card": "Card",
+    "iva0": "VAT: 0%",
+    "iva16": "VAT: 16%",
+    "iva17": "VAT: 17%",
+    "subtotal": "Subtotal:",
+    "iva": "VAT ({{rate}}%):",
+    "discount": "Discount:",
+    "total": "Total:",
+    "amountPaid": "Amount Paid:",
+    "change": "Change:",
+    "checkout": "Checkout",
+    "posSale": "POS Sale"
+  },
   "dashboard": {
     "filters": {
       "hoje": "Today",
@@ -26,7 +59,13 @@
     "revenueByCategory": "Revenue by Category",
     "customers": "Customers",
     "suppliers": "Suppliers",
-    "products": "Products"
+    "products": "Products",
+    "netProfit": "Net Profit",
+    "recentTransactions": "Recent Transactions",
+    "viewAll": "View all",
+    "financialSummary": "Financial Summary",
+    "revenueVsExpenses": "Revenue vs Expenses",
+    "topProducts": "Top Products"
   },
   "customers": {
     "subtitle": "Manage your customer portfolio.",
@@ -296,7 +335,9 @@
     "logout": "Logout App",
     "admin": "Admin Panel",
     "mainMenu": "Main Menu",
-    "addCompany": "Add Company"
+    "addCompany": "Add Company",
+    "lockSession": "Lock Session",
+    "loggedInAs": "Logged in as:"
   },
   "header": {
     "newTransaction": "New Transaction",
@@ -308,22 +349,6 @@
     "newSupplier": "New Supplier",
     "language": "Language",
     "changePassword": "Change Password"
-  },
-  "dashboard": {
-    "title": "Dashboard",
-    "subtitle": "Overview of your business and financial health.",
-    "totalRevenue": "Total Revenue",
-    "totalExpenses": "Total Expenses",
-    "netProfit": "Net Profit",
-    "profitMargin": "Profit Margin",
-    "recentTransactions": "Recent Transactions",
-    "viewAll": "View all",
-    "financialSummary": "Financial Summary",
-    "revenueVsExpenses": "Revenue vs Expenses",
-    "expensesByCategory": "Expenses by Category",
-    "topProducts": "Top Products",
-    "currentBalance": "Current Balance",
-    "print": "Print"
   },
   "common": {
     "save": "Save",

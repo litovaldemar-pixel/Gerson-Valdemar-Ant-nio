@@ -49,14 +49,14 @@ const POS = () => {
     if (product) {
       addToCart(product);
     } else {
-      toast.error('Produto não encontrado');
+      toast.error(t('pos.productNotFound'));
     }
     setBarcodeInput('');
   };
 
   const addToCart = (product: any) => {
     if (product.stock <= 0) {
-      toast.error('Produto sem stock');
+      toast.error(t('pos.outOfStock'));
       return;
     }
 
@@ -64,7 +64,7 @@ const POS = () => {
       const existing = prev.find(item => item.productId === product.id);
       if (existing) {
         if (existing.quantity >= product.stock) {
-          toast.error('Stock insuficiente');
+          toast.error(t('pos.insufficientStock'));
           return prev;
         }
         return prev.map(item => 
@@ -98,7 +98,7 @@ const POS = () => {
       const item = prev[index];
       const product = products.find(p => p.id === item.productId);
       if (product && newQty > product.stock) {
-        toast.error('Stock insuficiente');
+        toast.error(t('pos.insufficientStock'));
         return prev;
       }
       
@@ -123,7 +123,7 @@ const POS = () => {
     if (cart.length === 0) return;
 
     const transactionData = {
-      description: `Venda POS${customerId ? ` - ${customers.find(c => c.id === customerId)?.name}` : ''}`,
+      description: `${t('pos.posSale')}${customerId ? ` - ${customers.find(c => c.id === customerId)?.name}` : ''}`,
       value: finalTotal,
       type: 'receita' as const,
       category: 'Vendas',
@@ -138,7 +138,7 @@ const POS = () => {
     };
 
     addTransaction(transactionData);
-    toast.success('Venda concluída com sucesso!');
+    toast.success(t('pos.saleCompleted'));
     
     // Reset
     setCart([]);
@@ -174,7 +174,7 @@ const POS = () => {
               <input
                 ref={barcodeInputRef}
                 type="text"
-                placeholder="Código de Barras (Enter para adicionar)"
+                placeholder={t('pos.barcodePlaceholder')}
                 className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary outline-none"
                 value={barcodeInput}
                 onChange={(e) => setBarcodeInput(e.target.value)}
@@ -186,7 +186,7 @@ const POS = () => {
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
             <input
               type="text"
-              placeholder="Buscar produto por nome, SKU ou categoria..."
+              placeholder={t('pos.searchPlaceholder')}
               className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -225,7 +225,7 @@ const POS = () => {
         <div className="p-4 border-b border-outline-variant/20 bg-surface-container-lowest">
           <h2 className="text-xl font-headline font-extrabold text-primary flex items-center gap-2">
             <span className="material-symbols-outlined">shopping_cart</span>
-            Carrinho
+            {t('pos.cart')}
           </h2>
         </div>
 
@@ -233,7 +233,7 @@ const POS = () => {
           {cart.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-on-surface-variant opacity-50">
               <span className="material-symbols-outlined text-6xl mb-4">shopping_basket</span>
-              <p>Carrinho vazio</p>
+              <p>{t('pos.emptyCart')}</p>
             </div>
           ) : (
             cart.map((item, idx) => (
@@ -266,7 +266,7 @@ const POS = () => {
               value={customerId}
               onChange={(e) => setCustomerId(e.target.value)}
             >
-              <option value="">Cliente Final (Consumidor)</option>
+              <option value="">{t('pos.finalCustomer')}</option>
               {customers.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
@@ -279,33 +279,33 @@ const POS = () => {
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
             >
-              <option value="Numerário">Numerário</option>
-              <option value="M-Pesa">M-Pesa</option>
-              <option value="E-mola">E-mola</option>
-              <option value="Cartão">Cartão</option>
+              <option value="Numerário">{t('pos.cash')}</option>
+              <option value="M-Pesa">{t('pos.mpesa')}</option>
+              <option value="E-mola">{t('pos.emola')}</option>
+              <option value="Cartão">{t('pos.card')}</option>
             </select>
             <select
               className="w-full bg-surface-container border border-outline-variant/30 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary outline-none"
               value={ivaRate}
               onChange={(e) => setIvaRate(Number(e.target.value))}
             >
-              <option value={0}>IVA: 0%</option>
-              <option value={16}>IVA: 16%</option>
-              <option value={17}>IVA: 17%</option>
+              <option value={0}>{t('pos.iva0')}</option>
+              <option value={16}>{t('pos.iva16')}</option>
+              <option value={17}>{t('pos.iva17')}</option>
             </select>
           </div>
 
           <div className="space-y-1 text-sm">
             <div className="flex justify-between text-on-surface-variant">
-              <span>Subtotal:</span>
+              <span>{t('pos.subtotal')}</span>
               <span>{formatCurrency(cartTotal)}</span>
             </div>
             <div className="flex justify-between text-on-surface-variant">
-              <span>IVA ({ivaRate}%):</span>
+              <span>{t('pos.iva', { rate: ivaRate })}</span>
               <span>{formatCurrency(ivaAmount)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-on-surface-variant">Desconto:</span>
+              <span className="text-on-surface-variant">{t('pos.discount')}</span>
               <input
                 type="number"
                 value={discount}
@@ -318,14 +318,14 @@ const POS = () => {
 
           <div className="pt-3 border-t border-outline-variant/20">
             <div className="flex justify-between items-end mb-4">
-              <span className="text-lg font-bold text-on-surface">Total:</span>
+              <span className="text-lg font-bold text-on-surface">{t('pos.total')}</span>
               <span className="text-3xl font-headline font-extrabold text-primary">{formatCurrency(finalTotal)}</span>
             </div>
 
             {paymentMethod === 'Numerário' && (
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-on-surface-variant">Valor Entregue:</span>
+                  <span className="text-sm text-on-surface-variant">{t('pos.amountPaid')}</span>
                   <input
                     type="number"
                     value={amountPaid}
@@ -336,7 +336,7 @@ const POS = () => {
                 </div>
                 {change > 0 && (
                   <div className="flex justify-between items-center text-secondary">
-                    <span className="text-sm font-bold">Troco:</span>
+                    <span className="text-sm font-bold">{t('pos.change')}</span>
                     <span className="font-bold">{formatCurrency(change)}</span>
                   </div>
                 )}
@@ -349,7 +349,7 @@ const POS = () => {
               className="w-full bg-primary text-on-primary py-4 rounded-xl font-bold text-lg hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
             >
               <span className="material-symbols-outlined">payments</span>
-              Finalizar Venda
+              {t('pos.checkout')}
             </button>
           </div>
         </div>

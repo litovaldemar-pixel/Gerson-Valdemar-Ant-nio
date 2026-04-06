@@ -1,4 +1,37 @@
 {
+  "pinModal": {
+    "title": "Accès Restreint",
+    "message": "L'entreprise {{companyName}} est protégée par un code PIN. Veuillez saisir le code PIN pour y accéder.",
+    "access": "Accéder",
+    "enterPin": "Saisissez le code PIN de l'entreprise pour y accéder",
+    "incorrectPin": "Code PIN incorrect"
+  },
+  "pos": {
+    "productNotFound": "Produit introuvable",
+    "outOfStock": "Rupture de stock",
+    "insufficientStock": "Stock insuffisant",
+    "saleCompleted": "Vente conclue avec succès !",
+    "barcodePlaceholder": "Code-barres (Entrée pour ajouter)",
+    "searchPlaceholder": "Rechercher un produit par nom, SKU ou catégorie...",
+    "cart": "Panier",
+    "emptyCart": "Panier vide",
+    "finalCustomer": "Client final (Consommateur)",
+    "cash": "Espèces",
+    "mpesa": "M-Pesa",
+    "emola": "E-mola",
+    "card": "Carte",
+    "iva0": "TVA : 0%",
+    "iva16": "TVA : 16%",
+    "iva17": "TVA : 17%",
+    "subtotal": "Sous-total :",
+    "iva": "TVA ({{rate}}%) :",
+    "discount": "Remise :",
+    "total": "Total :",
+    "amountPaid": "Montant payé :",
+    "change": "Monnaie :",
+    "checkout": "Finaliser la vente",
+    "posSale": "Vente POS"
+  },
   "dashboard": {
     "filters": {
       "hoje": "Aujourd'hui",
@@ -26,7 +59,13 @@
     "revenueByCategory": "Revenus par catégorie",
     "customers": "Clients",
     "suppliers": "Fournisseurs",
-    "products": "Produits"
+    "products": "Produits",
+    "netProfit": "Bénéfice Net",
+    "recentTransactions": "Transactions Récentes",
+    "viewAll": "Voir tout",
+    "financialSummary": "Résumé Financier",
+    "revenueVsExpenses": "Revenus vs Dépenses",
+    "topProducts": "Meilleurs Produits"
   },
   "customers": {
     "subtitle": "Gérez votre portefeuille de clients.",
@@ -83,6 +122,12 @@
     "cheque": "Chèque",
     "mobileMoney": "M-Pesa/E-Mola",
     "paymentStatus": "Statut du Paiement",
+    "paymentDetails": "Détails de Paiement",
+    "amountPaid": "Montant Payé (MZN)",
+    "change": "Monnaie (MZN)",
+    "ivaLiquidado": "TVA Liquidée (%)",
+    "ivaDedutivel": "TVA Déductible (%)",
+    "ivaAmount": "Montant de la TVA (MZN)",
     "paid": "Payé",
     "pending": "En attente",
     "productsToSell": "Produits à Vendre (Optionnel)",
@@ -289,7 +334,9 @@
     "logout": "Quitter l'application",
     "admin": "Panneau d'administration",
     "mainMenu": "Menu Principal",
-    "addCompany": "Ajouter une Entreprise"
+    "addCompany": "Ajouter une Entreprise",
+    "lockSession": "Verrouiller la Session",
+    "loggedInAs": "Connecté en tant que :"
   },
   "header": {
     "newTransaction": "Nouvelle Transaction",
@@ -301,18 +348,6 @@
     "newSupplier": "Nouveau Fournisseur",
     "language": "Langue",
     "changePassword": "Changer le mot de passe"
-  },
-  "dashboard": {
-    "totalRevenue": "Revenu Total",
-    "totalExpenses": "Dépenses Totales",
-    "netProfit": "Bénéfice Net",
-    "profitMargin": "Marge Bénéficiaire",
-    "recentTransactions": "Transactions Récentes",
-    "viewAll": "Voir tout",
-    "financialSummary": "Résumé Financier",
-    "revenueVsExpenses": "Revenus vs Dépenses",
-    "expensesByCategory": "Dépenses par Catégorie",
-    "topProducts": "Meilleurs Produits"
   },
   "common": {
     "save": "Enregistrer",

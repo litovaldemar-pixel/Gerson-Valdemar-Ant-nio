@@ -337,11 +337,13 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                   <label className="block text-sm font-bold text-on-surface-variant mb-1">{t('companySettings.securityPin')}</label>
                   <input
                     type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={formData.pin}
-                    onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
-                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                    onChange={(e) => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '') })}
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none tracking-widest font-mono"
                     placeholder={t('companySettings.pinPlaceholder')}
-                    maxLength={10}
+                    maxLength={6}
                   />
                   <p className="text-xs text-on-surface-variant mt-1">
                     {t('companySettings.pinNote')}

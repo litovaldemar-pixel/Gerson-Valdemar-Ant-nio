@@ -45,6 +45,8 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
   // We don't throw here to prevent crashing the app, but we log it clearly
 }
 
+import PinModal from '../components/PinModal';
+
 interface AppContextType {
   transactions: Transaction[];
   addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
@@ -239,7 +241,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setPendingCompanyId(null);
       setPinError('');
     } else {
-      setPinError('PIN incorreto');
+      setPinError(t('pinModal.incorrectPin', 'PIN incorreto'));
     }
   };
 
@@ -581,44 +583,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }}>
       {children}
       
-      {pinModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-outline-variant/10">
-              <h2 className="text-xl font-bold font-headline text-primary">{t('pinModal.title', 'Acesso Restrito')}</h2>
-              <p className="text-sm text-on-surface-variant mt-1">{t('pinModal.enterPin', 'Digite o PIN da empresa para acessar')}</p>
-            </div>
-            <div className="p-6">
-              <input
-                type="password"
-                maxLength={6}
-                autoFocus
-                placeholder="••••••"
-                className="w-full text-center text-2xl tracking-[0.5em] p-4 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-xl focus:ring-2 focus:ring-primary outline-none"
-                onChange={(e) => {
-                  setPinError('');
-                  if (e.target.value.length >= 4) {
-                    handlePinSubmit(e.target.value);
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handlePinSubmit(e.currentTarget.value);
-                  }
-                }}
-              />
-              {pinError && <p className="text-error text-sm font-bold mt-3 text-center">{pinError}</p>}
-            </div>
-            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-outline-variant/10 flex justify-end">
-              <button 
-                onClick={handlePinCancel}
-                className="px-4 py-2 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                {t('common.cancel')}
-              </button>
-            </div>
-          </div>
-        </div>
+      {pinModalOpen && pendingCompanyId && (
+        <PinModal
+          isOpen={pinModalOpen}
+          companyName={companies.find(c => c.id === pendingCompanyId)?.name || ''}
+          onConfirm={handlePinSubmit}
+          onCancel={handlePinCancel}
+          error={pinError}
+        />
       )}
     </AppContext.Provider>
   );

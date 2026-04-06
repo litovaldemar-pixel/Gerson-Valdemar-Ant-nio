@@ -207,7 +207,16 @@ const Dashboard = () => {
     if (percent < 0.05) return null; // Don't show label for very small slices
 
     return (
-      <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="12" fontWeight="bold">
+      <text 
+        x={x} 
+        y={y} 
+        fill="white" 
+        textAnchor="middle" 
+        dominantBaseline="central" 
+        fontSize="14" 
+        fontWeight="bold"
+        style={{ textShadow: '0px 1px 3px rgba(0,0,0,0.8)' }}
+      >
         {`${(percent * 100).toFixed(0)}%`}
       </text>
     );
@@ -544,7 +553,7 @@ const Dashboard = () => {
               <span className="material-symbols-outlined text-2xl">warning</span>
             </div>
             <h4 className={`text-3xl font-extrabold font-headline ${lowStockProducts.length > 0 ? 'text-error' : 'text-primary'}`}>{lowStockProducts.length}</h4>
-            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">Stock Baixo</p>
+            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">{t('dashboard.lowStockAlert').replace('Atenção: ', '').replace('Warning: ', '').replace('警告：', '').replace('Attention : ', '')}</p>
           </div>
         </motion.div>
       </section>
