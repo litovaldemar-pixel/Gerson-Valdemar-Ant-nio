@@ -16,6 +16,7 @@ import Login from './pages/Login';
 import AdminPanel from './pages/AdminPanel';
 import Payroll from './pages/Payroll';
 import POS from './pages/POS';
+import FinancialReport from './pages/FinancialReport';
 
 const PrivateRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) => {
   const { isAuthenticated, userRole } = useAuth();
@@ -45,6 +46,7 @@ const AppRoutes = () => {
         <Route path="salarios" element={<PrivateRoute allowedRoles={['admin']}><Payroll /></PrivateRoute>} />
         <Route path="dre" element={<PrivateRoute allowedRoles={['admin']}><DRE /></PrivateRoute>} />
         <Route path="balancete" element={<PrivateRoute allowedRoles={['admin', 'gerente']}><Statement /></PrivateRoute>} />
+        <Route path="relatorio" element={<PrivateRoute allowedRoles={['admin', 'gerente']}><FinancialReport /></PrivateRoute>} />
         <Route path="admin" element={<PrivateRoute allowedRoles={['admin']}><AdminPanel /></PrivateRoute>} />
       </Route>
     </Routes>

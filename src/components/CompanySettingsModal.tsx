@@ -26,7 +26,11 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
     pin: '',
     sector: 'comercio' as 'servicos' | 'comercio' | 'misto',
     logoUrl: '',
-    ivaRate: 3
+    ivaRate: 3,
+    description: '',
+    constitution: '',
+    nuel: '',
+    partners: ''
   });
 
   useEffect(() => {
@@ -41,13 +45,23 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
 
   useEffect(() => {
     if (isOpen && isCreating) {
-      setFormData({ name: '', nuit: '', contact: '', location: '', pin: '', sector: 'comercio', logoUrl: '', ivaRate: 3 });
+      setFormData({ name: '', nuit: '', contact: '', location: '', pin: '', sector: 'comercio', logoUrl: '', ivaRate: 3, description: '', constitution: '', nuel: '', partners: '' });
     }
   }, [isOpen, isCreating]);
 
   useEffect(() => {
     if (isOpen && !isCreating && companyInfo) {
-      setFormData({ ...companyInfo, pin: companyInfo.pin || '', sector: companyInfo.sector || 'comercio', logoUrl: companyInfo.logoUrl || '', ivaRate: companyInfo.ivaRate !== undefined ? companyInfo.ivaRate : 3 });
+      setFormData({ 
+        ...companyInfo, 
+        pin: companyInfo.pin || '', 
+        sector: companyInfo.sector || 'comercio', 
+        logoUrl: companyInfo.logoUrl || '', 
+        ivaRate: companyInfo.ivaRate !== undefined ? companyInfo.ivaRate : 3,
+        description: companyInfo.description || '',
+        constitution: companyInfo.constitution || '',
+        nuel: companyInfo.nuel || '',
+        partners: companyInfo.partners || ''
+      });
     }
   }, [isOpen, isCreating, companyInfo]);
 
@@ -305,6 +319,57 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                     placeholder="Ex: Av. 24 de Julho, Maputo"
                   />
                 </div>
+
+                <div className="md:col-span-2">
+                  <h4 className="text-sm font-bold text-primary mt-4 mb-2 border-b border-outline-variant/20 pb-1">Informações para Relatórios</h4>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">Descrição da Empresa</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none min-h-[80px]"
+                    placeholder="Breve descrição das atividades da empresa..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">Constituição da Empresa</label>
+                  <input
+                    type="text"
+                    value={formData.constitution}
+                    onChange={(e) => setFormData({ ...formData, constitution: e.target.value })}
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                    placeholder="Ex: Sociedade por Quotas"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">NUEL</label>
+                  <input
+                    type="text"
+                    value={formData.nuel}
+                    onChange={(e) => setFormData({ ...formData, nuel: e.target.value })}
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                    placeholder="Número Único de Entidade Legal"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">Participação dos Sócios</label>
+                  <textarea
+                    value={formData.partners}
+                    onChange={(e) => setFormData({ ...formData, partners: e.target.value })}
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none min-h-[80px]"
+                    placeholder="Ex: Sócio A (50%), Sócio B (50%)"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <h4 className="text-sm font-bold text-primary mt-4 mb-2 border-b border-outline-variant/20 pb-1">Configurações Fiscais e Segurança</h4>
+                </div>
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-bold text-on-surface-variant mb-1">{t('companySettings.sector')}</label>
                   <select

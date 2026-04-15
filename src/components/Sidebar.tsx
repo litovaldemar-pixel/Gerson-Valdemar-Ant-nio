@@ -211,6 +211,22 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             <span>{t('sidebar.statement')}</span>
           </NavLink>
         )}
+        {!isCaixa && (
+          <NavLink
+            to="/relatorio"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
+                isActive
+                  ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined">summarize</span>
+            <span>Relatório</span>
+          </NavLink>
+        )}
         <NavLink
           to="/"
           onClick={() => {

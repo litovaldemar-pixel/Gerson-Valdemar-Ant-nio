@@ -17,6 +17,10 @@ export interface CompanyInfo {
   pin?: string;
   sector?: 'servicos' | 'comercio' | 'misto';
   ivaRate?: number;
+  description?: string;
+  constitution?: string;
+  nuel?: string;
+  partners?: string;
 }
 
 export type TransactionType = 'receita' | 'despesa' | 'cotacao';
