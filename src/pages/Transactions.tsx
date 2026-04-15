@@ -6,6 +6,8 @@ import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { exportToCSV } from '../lib/exportUtils';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 const Transactions = () => {
   const { transactions, addTransaction, deleteTransaction, updateTransaction, products, customers, suppliers, globalSearchTerm, companyInfo } = useAppContext();
@@ -461,7 +463,7 @@ const Transactions = () => {
   const totalDespesas = filteredTransactions.filter(t => t.type === 'despesa').reduce((acc, curr) => acc + curr.value, 0);
   const saldoPrevisto = totalReceitas - totalDespesas;
 
-  const handleExport = () => {
+  const handleExportCSV = () => {
     const exportData = filteredTransactions.map(t => ({
       ID: t.id,
       Data: new Date(t.date).toLocaleDateString(t('common.locale', 'pt-MZ')),
@@ -475,6 +477,42 @@ const Transactions = () => {
       Status: t.paymentStatus || ''
     }));
     exportToCSV(exportData, 'transacoes.csv');
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF('landscape');
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text(t('sidebar.transactions'), 14, 22);
+    
+    // Add period
+    doc.setFontSize(11);
+    doc.text(`${t('statement.period', 'Período')}: ${filterDateStart ? new Date(filterDateStart).toLocaleDateString(t('common.locale', 'pt-MZ')) : t('statement.start', 'Início')} ${t('statement.to', 'a')} ${filterDateEnd ? new Date(filterDateEnd).toLocaleDateString(t('common.locale', 'pt-MZ')) : t('statement.today', 'Hoje')}`, 14, 30);
+
+    // Add table
+    const tableData = filteredTransactions.map(t => {
+      const clientOrSupplier = t.customerId ? customers.find(c => c.id === t.customerId)?.name : t.supplierId ? suppliers.find(s => s.id === t.supplierId)?.name : '-';
+      return [
+        new Date(t.date).toLocaleDateString(),
+        t.description,
+        clientOrSupplier || '-',
+        t.type === 'receita' ? t('transactions.revenue') : t.type === 'despesa' ? t('transactions.expense') : 'Cotação',
+        t.category,
+        formatCurrency(t.value),
+        t.paymentStatus === 'pago' ? t('transactions.paid') : t('transactions.pending')
+      ];
+    });
+
+    (doc as any).autoTable({
+      startY: 40,
+      head: [[t('transactions.dateCol'), t('transactions.descriptionCol'), t('transactions.clientSupplierCol'), t('transactions.typeCol'), t('transactions.categoryCol'), t('transactions.valueCol'), t('transactions.statusCol')]],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 108, 71] }, // Primary color
+    });
+
+    doc.save('transacoes.pdf');
   };
 
   const setQuickFilter = (filter: 'hoje' | 'semana' | 'mes' | 'ano' | 'todos') => {
@@ -555,11 +593,18 @@ const Transactions = () => {
             {t('dashboard.print')}
           </button>
           <button 
-            onClick={handleExport}
+            onClick={handleExportCSV}
             className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
           >
             <span className="material-symbols-outlined text-lg">download</span>
-            Exportar CSV
+            CSV
+          </button>
+          <button 
+            onClick={handleExportPDF}
+            className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
+            PDF
           </button>
           <button 
             onClick={() => setShowFilters(!showFilters)}

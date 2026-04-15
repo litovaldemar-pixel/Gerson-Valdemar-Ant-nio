@@ -56,6 +56,50 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
     window.print();
   };
 
+  const generateReceiptText = () => {
+    let text = `*${companyInfo?.name || t('receipt.yourCompany')}*\n`;
+    if (companyInfo?.nuit) text += `NUIT: ${companyInfo.nuit}\n`;
+    text += `--------------------------------\n`;
+    text += `Data: ${formatDate(transaction.date)}\n`;
+    text += `Recibo Nº: ${transaction.id.substring(0, 8).toUpperCase()}\n`;
+    
+    if (customer) text += `Cliente: ${customer.name}\n`;
+    
+    text += `--------------------------------\n`;
+    
+    if (isMultiItem) {
+      transaction.items?.forEach(item => {
+        text += `${item.quantity}x ${item.name}\n`;
+        text += `${formatCurrency(item.unitPrice)} = ${formatCurrency(item.total)}\n`;
+      });
+    } else {
+      text += `${quantity}x ${transaction.description}\n`;
+      text += `${formatCurrency(unitPrice)} = ${formatCurrency(totalValue)}\n`;
+    }
+    
+    text += `--------------------------------\n`;
+    text += `*TOTAL: ${formatCurrency(totalValue)}*\n`;
+    
+    if (transaction.paymentMethod) {
+      text += `Método: ${transaction.paymentMethod}\n`;
+    }
+    
+    text += `--------------------------------\n`;
+    text += `Obrigado pela preferência!\n`;
+    
+    return encodeURIComponent(text);
+  };
+
+  const handleWhatsApp = () => {
+    const text = generateReceiptText();
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+
+  const handleEmail = () => {
+    const text = generateReceiptText();
+    window.open(`mailto:?subject=Recibo - ${companyInfo?.name || 'Empresa'}&body=${text}`, '_blank');
+  };
+
   // Generate QR Code data
   const qrData = JSON.stringify({
     id: transaction.id,
@@ -184,21 +228,39 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
         </div>
 
         {/* Modal Footer - Explicit Buttons */}
-        <div className="px-6 py-4 border-t border-slate-200 flex gap-3 print:hidden bg-slate-50 shrink-0">
-          <button 
-            onClick={handlePrint} 
-            className="flex-1 bg-slate-800 text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors"
-          >
-            <span className="material-symbols-outlined text-lg">print</span>
-            {t('receipt.printReceipt')}
-          </button>
-          <button 
-            onClick={onClose} 
-            className="flex-1 bg-slate-200 text-slate-800 py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-300 transition-colors"
-          >
-            <span className="material-symbols-outlined text-lg">close</span>
-            {t('companySettings.close')}
-          </button>
+        <div className="px-6 py-4 border-t border-slate-200 flex flex-col gap-3 print:hidden bg-slate-50 shrink-0">
+          <div className="flex gap-2">
+            <button 
+              onClick={handleWhatsApp}
+              className="flex-1 bg-[#25D366] text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#128C7E] transition-colors"
+            >
+              <span className="material-symbols-outlined text-lg">chat</span>
+              WhatsApp
+            </button>
+            <button 
+              onClick={handleEmail}
+              className="flex-1 bg-surface-variant text-on-surface-variant py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-outline-variant transition-colors"
+            >
+              <span className="material-symbols-outlined text-lg">mail</span>
+              E-mail
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={handlePrint} 
+              className="flex-1 bg-slate-800 text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors"
+            >
+              <span className="material-symbols-outlined text-lg">print</span>
+              {t('receipt.printReceipt')}
+            </button>
+            <button 
+              onClick={onClose} 
+              className="flex-1 bg-slate-200 text-slate-800 py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-300 transition-colors"
+            >
+              <span className="material-symbols-outlined text-lg">close</span>
+              {t('companySettings.close')}
+            </button>
+          </div>
         </div>
       </div>
     </div>

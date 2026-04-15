@@ -11,7 +11,7 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
-  const { logout, user } = useAuth();
+  const { logout, user, userRole, updateUserRole } = useAuth();
   const { companyInfo, setCurrentCompanyId } = useAppContext();
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -23,6 +23,10 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     user?.email?.toLowerCase().includes('admin') ||
     user?.email?.toLowerCase().includes('gerson') ||
     user?.email?.toLowerCase() === 'teste@teste.com';
+
+  const isCaixa = userRole === 'caixa';
+  const isGerente = userRole === 'gerente';
+  const isAdmin = userRole === 'admin';
 
   const handleLogout = async () => {
     await logout();
@@ -42,10 +46,12 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           </div>
           <button 
             onClick={() => {
-              setIsCreatingMode(false);
-              setIsSettingsOpen(true);
+              if (isAdmin) {
+                setIsCreatingMode(false);
+                setIsSettingsOpen(true);
+              }
             }} 
-            className="text-left hover:opacity-80 transition-opacity focus:outline-none"
+            className={`text-left transition-opacity focus:outline-none ${isAdmin ? 'hover:opacity-80 cursor-pointer' : 'cursor-default'}`}
           >
             <h1 className="text-lg font-black text-blue-900 dark:text-blue-100 font-headline tracking-tight truncate max-w-[140px]">
               {companyInfo?.name || 'CapitalCorp'}
@@ -63,20 +69,22 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         </button>
       </div>
       <nav className="flex-1 px-3 space-y-1">
-        <NavLink
-          to="/dashboard"
-          onClick={onClose}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
-              isActive
-                ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
-                : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
-            }`
-          }
-        >
-          <span className="material-symbols-outlined">dashboard</span>
-          <span>{t('sidebar.dashboard')}</span>
-        </NavLink>
+        {!isCaixa && (
+          <NavLink
+            to="/dashboard"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
+                isActive
+                  ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined">dashboard</span>
+            <span>{t('sidebar.dashboard')}</span>
+          </NavLink>
+        )}
         <NavLink
           to="/pos"
           onClick={onClose}
@@ -91,104 +99,118 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           <span className="material-symbols-outlined">point_of_sale</span>
           <span>POS</span>
         </NavLink>
-        <NavLink
-          to="/lancamentos"
-          onClick={onClose}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
-              isActive
-                ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
-                : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
-            }`
-          }
-        >
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
-          <span>{t('sidebar.transactions')}</span>
-        </NavLink>
-        <NavLink
-          to="/clientes"
-          onClick={onClose}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
-              isActive
-                ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
-                : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
-            }`
-          }
-        >
-          <span className="material-symbols-outlined">group</span>
-          <span>{t('sidebar.customers')}</span>
-        </NavLink>
-        <NavLink
-          to="/fornecedores"
-          onClick={onClose}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
-              isActive
-                ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
-                : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
-            }`
-          }
-        >
-          <span className="material-symbols-outlined">local_shipping</span>
-          <span>{t('sidebar.suppliers')}</span>
-        </NavLink>
-        <NavLink
-          to="/mercadorias"
-          onClick={onClose}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
-              isActive
-                ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
-                : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
-            }`
-          }
-        >
-          <span className="material-symbols-outlined">inventory_2</span>
-          <span>{t('sidebar.products')}</span>
-        </NavLink>
-        <NavLink
-          to="/salarios"
-          onClick={onClose}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
-              isActive
-                ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
-                : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
-            }`
-          }
-        >
-          <span className="material-symbols-outlined">payments</span>
-          <span>{t('sidebar.payroll') || 'Salários'}</span>
-        </NavLink>
-        <NavLink
-          to="/dre"
-          onClick={onClose}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
-              isActive
-                ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
-                : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
-            }`
-          }
-        >
-          <span className="material-symbols-outlined">insert_chart</span>
-          <span>{t('sidebar.dre')}</span>
-        </NavLink>
-        <NavLink
-          to="/balancete"
-          onClick={onClose}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
-              isActive
-                ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
-                : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
-            }`
-          }
-        >
-          <span className="material-symbols-outlined">receipt_long</span>
-          <span>{t('sidebar.statement')}</span>
-        </NavLink>
+        {!isCaixa && (
+          <NavLink
+            to="/lancamentos"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
+                isActive
+                  ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+            <span>{t('sidebar.transactions')}</span>
+          </NavLink>
+        )}
+        {!isCaixa && (
+          <NavLink
+            to="/clientes"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
+                isActive
+                  ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined">group</span>
+            <span>{t('sidebar.customers')}</span>
+          </NavLink>
+        )}
+        {!isCaixa && (
+          <NavLink
+            to="/fornecedores"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
+                isActive
+                  ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined">local_shipping</span>
+            <span>{t('sidebar.suppliers')}</span>
+          </NavLink>
+        )}
+        {!isCaixa && (
+          <NavLink
+            to="/mercadorias"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
+                isActive
+                  ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined">inventory_2</span>
+            <span>{t('sidebar.products')}</span>
+          </NavLink>
+        )}
+        {isAdmin && (
+          <NavLink
+            to="/salarios"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
+                isActive
+                  ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined">payments</span>
+            <span>{t('sidebar.payroll') || 'Salários'}</span>
+          </NavLink>
+        )}
+        {isAdmin && (
+          <NavLink
+            to="/dre"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
+                isActive
+                  ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined">insert_chart</span>
+            <span>{t('sidebar.dre')}</span>
+          </NavLink>
+        )}
+        {!isCaixa && (
+          <NavLink
+            to="/balancete"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out ${
+                isActive
+                  ? 'text-blue-900 dark:text-blue-100 font-bold border-r-4 border-blue-900 dark:border-blue-400 bg-white/50 dark:bg-slate-900/50'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-white/30 dark:hover:bg-slate-800/30'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined">receipt_long</span>
+            <span>{t('sidebar.statement')}</span>
+          </NavLink>
+        )}
         <NavLink
           to="/"
           onClick={() => {
@@ -206,17 +228,19 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           <span className="material-symbols-outlined">home</span>
           <span>{t('sidebar.mainMenu')}</span>
         </NavLink>
-        <button
-          onClick={() => {
-            onClose();
-            setIsCreatingMode(true);
-            setIsSettingsOpen(true);
-          }}
-          className="w-full flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10"
-        >
-          <span className="material-symbols-outlined">add_business</span>
-          <span>{t('sidebar.addCompany')}</span>
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => {
+              onClose();
+              setIsCreatingMode(true);
+              setIsSettingsOpen(true);
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 font-medium font-inter text-sm uppercase tracking-wider transition-all duration-300 ease-in-out text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10"
+          >
+            <span className="material-symbols-outlined">add_business</span>
+            <span>{t('sidebar.addCompany')}</span>
+          </button>
+        )}
       </nav>
       <div className="px-4 mt-auto flex flex-col gap-2">
         {companyInfo?.pin && (
@@ -241,6 +265,18 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         {user?.email && (
           <div className="text-center mt-2">
             <p className="text-[10px] text-on-surface-variant opacity-60">{t('sidebar.loggedInAs', 'Logado como:')} {user.email}</p>
+            <div className="mt-2 p-2 bg-surface-container rounded-lg border border-outline-variant/20">
+              <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-1">Testar Perfil de Acesso:</p>
+              <select 
+                value={userRole || 'admin'} 
+                onChange={(e) => updateUserRole(e.target.value as 'admin' | 'gerente' | 'caixa')}
+                className="w-full text-xs bg-white dark:bg-slate-900 border border-outline-variant/30 rounded p-1"
+              >
+                <option value="admin">Administrador</option>
+                <option value="gerente">Gerente</option>
+                <option value="caixa">Caixa</option>
+              </select>
+            </div>
           </div>
         )}
       </div>

@@ -6,6 +6,9 @@ import { motion } from 'motion/react';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { exportToCSV } from '../lib/exportUtils';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 const Dashboard = () => {
   const { transactions, customers, suppliers, products, companyInfo, globalSearchTerm } = useAppContext();
@@ -222,6 +225,60 @@ const Dashboard = () => {
     );
   };
 
+  const handleExportCSV = () => {
+    const exportData = [
+      { Metrica: t('dashboard.profitMargin'), Valor: `${margemLucro}%` },
+      { Metrica: t('dashboard.expenseIndex'), Valor: `${indiceDespesas}%` },
+      { Metrica: t('dashboard.currentBalance'), Valor: saldoPrevisto },
+      { Metrica: t('dashboard.totalRevenue'), Valor: totalReceitas },
+      { Metrica: t('dashboard.totalExpenses'), Valor: totalDespesas },
+      { Metrica: 'Contas a Receber', Valor: contasAReceber },
+      { Metrica: 'Contas a Pagar', Valor: contasAPagar },
+      { Metrica: t('dashboard.customers'), Valor: filteredCustomers.length },
+      { Metrica: t('dashboard.suppliers'), Valor: filteredSuppliers.length },
+      { Metrica: t('dashboard.products'), Valor: filteredProducts.length },
+      { Metrica: t('dashboard.lowStockAlert').replace('Atenção: ', '').replace('Warning: ', '').replace('警告：', '').replace('Attention : ', ''), Valor: lowStockProducts.length },
+    ];
+    exportToCSV(exportData, `Dashboard_${dateFilter}.csv`);
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text(t('dashboard.title'), 14, 22);
+    
+    // Add period
+    doc.setFontSize(11);
+    doc.text(`${t('common.period')}: ${dateFilter === 'hoje' ? t('common.today') : dateFilter === 'semana' ? t('common.week') : dateFilter === 'mes' ? t('common.month') : dateFilter === 'ano' ? t('common.year') : t('common.all')}`, 14, 30);
+
+    // Add table
+    const tableData = [
+      [t('dashboard.profitMargin'), `${margemLucro}%`],
+      [t('dashboard.expenseIndex'), `${indiceDespesas}%`],
+      [t('dashboard.currentBalance'), formatCurrency(saldoPrevisto)],
+      [t('dashboard.totalRevenue'), formatCurrency(totalReceitas)],
+      [t('dashboard.totalExpenses'), formatCurrency(totalDespesas)],
+      ['Contas a Receber', formatCurrency(contasAReceber)],
+      ['Contas a Pagar', formatCurrency(contasAPagar)],
+      [t('dashboard.customers'), filteredCustomers.length.toString()],
+      [t('dashboard.suppliers'), filteredSuppliers.length.toString()],
+      [t('dashboard.products'), filteredProducts.length.toString()],
+      [t('dashboard.lowStockAlert').replace('Atenção: ', '').replace('Warning: ', '').replace('警告：', '').replace('Attention : ', ''), lowStockProducts.length.toString()],
+    ];
+
+    (doc as any).autoTable({
+      startY: 40,
+      head: [['Métrica', 'Valor']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 108, 71] }, // Primary color
+    });
+
+    doc.save(`Dashboard_${dateFilter}.pdf`);
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -257,13 +314,29 @@ const Dashboard = () => {
               </button>
             ))}
           </div>
-          <button 
-            onClick={() => window.print()}
-            className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
-          >
-            <span className="material-symbols-outlined text-lg">print</span>
-            {t('dashboard.print')}
-          </button>
+          <div className="flex gap-2 print:hidden">
+            <button 
+              onClick={handleExportCSV}
+              className="flex items-center gap-2 bg-surface-container-highest text-on-surface px-4 py-2 rounded font-bold text-sm hover:bg-surface-variant transition-all"
+            >
+              <span className="material-symbols-outlined text-sm">download</span>
+              CSV
+            </button>
+            <button 
+              onClick={handleExportPDF}
+              className="flex items-center gap-2 bg-surface-container-highest text-on-surface px-4 py-2 rounded font-bold text-sm hover:bg-surface-variant transition-all"
+            >
+              <span className="material-symbols-outlined text-sm">picture_as_pdf</span>
+              PDF
+            </button>
+            <button 
+              onClick={() => window.print()}
+              className="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded font-bold text-sm hover:opacity-90 transition-all"
+            >
+              <span className="material-symbols-outlined text-sm">print</span>
+              {t('dashboard.print')}
+            </button>
+          </div>
         </div>
       </section>
 

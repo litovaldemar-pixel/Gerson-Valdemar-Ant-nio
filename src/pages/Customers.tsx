@@ -5,6 +5,8 @@ import { Customer } from '../types';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
 import { exportToCSV } from '../lib/exportUtils';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 const Customers = () => {
   const { customers, addCustomer, deleteCustomer, updateCustomer, globalSearchTerm } = useAppContext();
@@ -86,7 +88,7 @@ const Customers = () => {
     setStatus('Ativo');
   };
 
-  const handleExport = () => {
+  const handleExportCSV = () => {
     const exportData = filteredCustomers.map(c => ({
       ID: c.id,
       Nome: c.name,
@@ -95,6 +97,32 @@ const Customers = () => {
       Status: c.status
     }));
     exportToCSV(exportData, 'clientes.csv');
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text(t('sidebar.customers'), 14, 22);
+    
+    // Add table
+    const tableData = filteredCustomers.map(c => [
+      c.name,
+      c.email || '-',
+      c.document || '-',
+      c.status
+    ]);
+
+    (doc as any).autoTable({
+      startY: 30,
+      head: [[t('customers.nameLabel'), t('customers.emailLabel'), t('customers.documentLabel'), t('customers.statusLabel')]],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 108, 71] }, // Primary color
+    });
+
+    doc.save('clientes.pdf');
   };
 
   return (
@@ -119,11 +147,18 @@ const Customers = () => {
             {t('dashboard.print')}
           </button>
           <button 
-            onClick={handleExport}
+            onClick={handleExportCSV}
             className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
           >
             <span className="material-symbols-outlined text-lg">download</span>
-            Exportar CSV
+            CSV
+          </button>
+          <button 
+            onClick={handleExportPDF}
+            className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
+            PDF
           </button>
         </div>
       </section>

@@ -11,14 +11,20 @@ import {
   sendPasswordResetEmail,
   User 
 } from 'firebase/auth';
+import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+
+export type UserRole = 'admin' | 'gerente' | 'caixa';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
+  userRole: UserRole | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updatePassword: (email: string, oldPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
+  updateUserRole: (role: UserRole) => Promise<void>;
   loading: boolean;
 }
 
@@ -26,16 +32,65 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    let unsubscribeSnapshot: () => void;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
+      if (currentUser) {
+        try {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          
+          // Set up real-time listener for role changes
+          unsubscribeSnapshot = onSnapshot(userDocRef, async (docSnap) => {
+            if (docSnap.exists()) {
+              setUserRole(docSnap.data().role as UserRole);
+            } else {
+              // Default to admin for the first user or if not set
+              const defaultRole = 'admin';
+              setUserRole(defaultRole);
+              await setDoc(userDocRef, {
+                email: currentUser.email,
+                role: defaultRole,
+                createdAt: new Date().toISOString()
+              });
+            }
+            setLoading(false);
+          }, (error) => {
+            console.error("Error listening to user role:", error);
+            setUserRole('admin'); // Fallback
+            setLoading(false);
+          });
+          
+        } catch (error) {
+          console.error("Error setting up user role listener:", error);
+          setUserRole('admin'); // Fallback
+          setLoading(false);
+        }
+      } else {
+        setUserRole(null);
+        setLoading(false);
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
+      }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeSnapshot) unsubscribeSnapshot();
+    };
   }, []);
+
+  const updateUserRole = async (role: UserRole) => {
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, 'users', user.uid), { role });
+    } catch (error) {
+      console.error("Error updating user role:", error);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     try {
@@ -115,7 +170,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updatePassword, resetPassword, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, userRole, login, logout, updatePassword, resetPassword, updateUserRole, loading }}>
       {!loading && children}
     </AuthContext.Provider>
   );

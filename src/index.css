@@ -136,7 +136,9 @@
     overflow: visible !important;
     display: block !important;
     position: relative !important;
-    width: 100% !important;
-    max-width: none !important;
+    width: 80mm !important; /* Optimized for 80mm thermal printers */
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
   }
 }

@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
+import { exportToCSV } from '../lib/exportUtils';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 const DRE = () => {
   const { transactions, companyInfo } = useAppContext();
@@ -130,6 +133,65 @@ const DRE = () => {
     return ((value / total) * 100).toFixed(2) + '%';
   };
 
+  const handleExportCSV = () => {
+    const exportData = [
+      { Conta: t('dre.grossRevenue', 'Receita Bruta Total (Faturado) (+)'), Valor: receitaBruta, Percentual: '100.00%' },
+      { Conta: t('dre.taxableBase', 'Base Tributável'), Valor: baseTributavel, Percentual: formatPercent(baseTributavel, receitaBruta) },
+      { Conta: `${t('dre.iva', 'IVA')} (${ivaRate === 0 ? t('dre.exempt', 'Isento') : `${ivaRate}%`}) (-)`, Valor: -impostosSobreVendas, Percentual: formatPercent(impostosSobreVendas, receitaBruta) },
+      { Conta: t('dre.netRevenue', 'Receita Líquida (=)'), Valor: receitaLiquida, Percentual: formatPercent(receitaLiquida, receitaBruta) },
+      { Conta: t('dre.cogs', 'Custos de Mercadoria/Serviços (CMV) (-)'), Valor: -cmv, Percentual: formatPercent(cmv, receitaBruta) },
+      { Conta: t('dre.contributionMargin', 'Margem de Contribuição (=)'), Valor: margemContribuicao, Percentual: formatPercent(margemContribuicao, receitaBruta) },
+      { Conta: t('dre.adminExpenses', 'Despesas Administrativas (-)'), Valor: -despesasAdmin, Percentual: formatPercent(despesasAdmin, receitaBruta) },
+      { Conta: t('dre.payroll', 'Folha de Pagamento & Encargos (-)'), Valor: -folhaPagamento, Percentual: formatPercent(folhaPagamento, receitaBruta) },
+      { Conta: t('dre.marketing', 'Marketing & Vendas (-)'), Valor: -marketingVendas, Percentual: formatPercent(marketingVendas, receitaBruta) },
+      { Conta: t('dre.otherTaxes', 'Outros Impostos (Registados) (-)'), Valor: -impostosRegistados, Percentual: formatPercent(impostosRegistados, receitaBruta) },
+      { Conta: t('dre.netIncome', 'Resultado Líquido (=)'), Valor: ebitda, Percentual: formatPercent(ebitda, receitaBruta) },
+    ];
+    exportToCSV(exportData, `DRE_${dateFilter}.csv`);
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text(t('sidebar.dre'), 14, 22);
+    
+    // Add period
+    doc.setFontSize(11);
+    doc.text(`${t('dre.period', 'Período')}: ${t(`dashboard.filters.${dateFilter}`).toUpperCase()}`, 14, 30);
+
+    // Add table
+    const tableData = [
+      [t('dre.grossRevenue', 'Receita Bruta Total (Faturado) (+)'), formatCurrency(receitaBruta), '100.00%'],
+      [t('dre.taxableBase', 'Base Tributável'), formatCurrency(baseTributavel), formatPercent(baseTributavel, receitaBruta)],
+      [`${t('dre.iva', 'IVA')} (${ivaRate === 0 ? t('dre.exempt', 'Isento') : `${ivaRate}%`}) (-)`, `(${formatCurrency(impostosSobreVendas)})`, formatPercent(impostosSobreVendas, receitaBruta)],
+      [t('dre.netRevenue', 'Receita Líquida (=)'), formatCurrency(receitaLiquida), formatPercent(receitaLiquida, receitaBruta)],
+      [t('dre.cogs', 'Custos de Mercadoria/Serviços (CMV) (-)'), `(${formatCurrency(cmv)})`, formatPercent(cmv, receitaBruta)],
+      [t('dre.contributionMargin', 'Margem de Contribuição (=)'), formatCurrency(margemContribuicao), formatPercent(margemContribuicao, receitaBruta)],
+      [t('dre.adminExpenses', 'Despesas Administrativas (-)'), `(${formatCurrency(despesasAdmin)})`, formatPercent(despesasAdmin, receitaBruta)],
+      [t('dre.payroll', 'Folha de Pagamento & Encargos (-)'), `(${formatCurrency(folhaPagamento)})`, formatPercent(folhaPagamento, receitaBruta)],
+      [t('dre.marketing', 'Marketing & Vendas (-)'), `(${formatCurrency(marketingVendas)})`, formatPercent(marketingVendas, receitaBruta)],
+      [t('dre.otherTaxes', 'Outros Impostos (Registados) (-)'), `(${formatCurrency(impostosRegistados)})`, formatPercent(impostosRegistados, receitaBruta)],
+      [t('dre.netIncome', 'Resultado Líquido (=)'), formatCurrency(ebitda), formatPercent(ebitda, receitaBruta)],
+    ];
+
+    (doc as any).autoTable({
+      startY: 40,
+      head: [[t('dre.accountDescription', 'Descrição da Conta'), `${t('dre.value', 'Valor')} (${t('common.currency', 'MZN')})`, `% ${t('dre.grossRev', 'Rec. Bruta')}`]],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 108, 71] }, // Primary color
+      columnStyles: {
+        0: { cellWidth: 'auto' },
+        1: { halign: 'right', cellWidth: 40 },
+        2: { halign: 'right', cellWidth: 30 },
+      },
+    });
+
+    doc.save(`DRE_${dateFilter}.pdf`);
+  };
+
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto w-full">
       {/* Header Section with Period Selector */}
@@ -167,13 +229,29 @@ const DRE = () => {
               </button>
             ))}
           </div>
-          <button 
-            onClick={() => window.print()}
-            className="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded font-bold text-sm hover:opacity-90 transition-all print:hidden"
-          >
-            <span className="material-symbols-outlined text-sm">download</span>
-            {t('dashboard.print')}
-          </button>
+          <div className="flex gap-2 print:hidden">
+            <button 
+              onClick={handleExportCSV}
+              className="flex items-center gap-2 bg-surface-container-highest text-on-surface px-4 py-2 rounded font-bold text-sm hover:bg-surface-variant transition-all"
+            >
+              <span className="material-symbols-outlined text-sm">download</span>
+              CSV
+            </button>
+            <button 
+              onClick={handleExportPDF}
+              className="flex items-center gap-2 bg-surface-container-highest text-on-surface px-4 py-2 rounded font-bold text-sm hover:bg-surface-variant transition-all"
+            >
+              <span className="material-symbols-outlined text-sm">picture_as_pdf</span>
+              PDF
+            </button>
+            <button 
+              onClick={() => window.print()}
+              className="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded font-bold text-sm hover:opacity-90 transition-all"
+            >
+              <span className="material-symbols-outlined text-sm">print</span>
+              {t('dashboard.print')}
+            </button>
+          </div>
         </div>
       </section>
 

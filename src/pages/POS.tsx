@@ -9,6 +9,8 @@ const POS = () => {
   const { t } = useTranslation();
 
   const [cart, setCart] = useState<any[]>([]);
+  const [heldSales, setHeldSales] = useState<{id: string, cart: any[], customerId: string, discount: string, timestamp: Date}[]>([]);
+  const [showHeldSales, setShowHeldSales] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [customerId, setCustomerId] = useState('');
@@ -25,6 +27,8 @@ const POS = () => {
 
   const barcodeInputRef = useRef<HTMLInputElement>(null);
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   // Keep focus on barcode input when not interacting with other elements
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -35,11 +39,18 @@ const POS = () => {
         setCustomerId('');
         setDiscount('');
         setAmountPaid('');
+        if (barcodeInputRef.current) barcodeInputRef.current.focus();
+      } else if (e.key === 'F2') {
+        e.preventDefault();
+        handleCheckout();
+      } else if (e.key === 'F4') {
+        e.preventDefault();
+        if (searchInputRef.current) searchInputRef.current.focus();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [cart, customerId, paymentMethod, discount, amountPaid, ivaRate]);
 
   const handleBarcodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +161,37 @@ const POS = () => {
     if (barcodeInputRef.current) barcodeInputRef.current.focus();
   };
 
+  const handleHoldSale = () => {
+    if (cart.length === 0) return;
+    
+    const newHeldSale = {
+      id: Math.random().toString(36).substr(2, 9),
+      cart: [...cart],
+      customerId,
+      discount,
+      timestamp: new Date()
+    };
+    
+    setHeldSales(prev => [...prev, newHeldSale]);
+    toast.success('Venda colocada em espera');
+    
+    // Reset
+    setCart([]);
+    setCustomerId('');
+    setDiscount('');
+    setAmountPaid('');
+    if (barcodeInputRef.current) barcodeInputRef.current.focus();
+  };
+
+  const restoreHeldSale = (heldSale: any) => {
+    setCart(heldSale.cart);
+    setCustomerId(heldSale.customerId);
+    setDiscount(heldSale.discount);
+    setHeldSales(prev => prev.filter(s => s.id !== heldSale.id));
+    setShowHeldSales(false);
+    toast.success('Venda restaurada');
+  };
+
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -185,6 +227,7 @@ const POS = () => {
           <div className="relative flex-1">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
             <input
+              ref={searchInputRef}
               type="text"
               placeholder={t('pos.searchPlaceholder')}
               className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary outline-none"
@@ -221,13 +264,49 @@ const POS = () => {
       </div>
 
       {/* Right Panel - Cart & Checkout */}
-      <div className="w-96 bg-surface-container-low flex flex-col shadow-[-4px_0_24px_rgba(0,0,0,0.05)] z-10">
-        <div className="p-4 border-b border-outline-variant/20 bg-surface-container-lowest">
+      <div className="w-96 bg-surface-container-low flex flex-col shadow-[-4px_0_24px_rgba(0,0,0,0.05)] z-10 relative">
+        <div className="p-4 border-b border-outline-variant/20 bg-surface-container-lowest flex justify-between items-center">
           <h2 className="text-xl font-headline font-extrabold text-primary flex items-center gap-2">
             <span className="material-symbols-outlined">shopping_cart</span>
             {t('pos.cart')}
           </h2>
+          {heldSales.length > 0 && (
+            <button 
+              onClick={() => setShowHeldSales(!showHeldSales)}
+              className="flex items-center gap-1 bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-full text-xs font-bold hover:brightness-110 transition-all"
+            >
+              <span className="material-symbols-outlined text-sm">pause_circle</span>
+              {heldSales.length} em espera
+            </button>
+          )}
         </div>
+
+        {/* Held Sales Dropdown */}
+        {showHeldSales && heldSales.length > 0 && (
+          <div className="absolute top-[72px] right-4 left-4 bg-surface-container-lowest shadow-xl rounded-xl border border-outline-variant/20 z-50 max-h-64 overflow-y-auto">
+            <div className="p-3 border-b border-outline-variant/10 bg-surface-container-low flex justify-between items-center">
+              <h3 className="font-bold text-sm">Vendas em Espera</h3>
+              <button onClick={() => setShowHeldSales(false)} className="text-on-surface-variant hover:text-on-surface">
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
+            </div>
+            <div className="p-2 space-y-2">
+              {heldSales.map(sale => (
+                <div key={sale.id} className="p-3 rounded-lg border border-outline-variant/20 hover:bg-surface-container-low transition-colors cursor-pointer flex justify-between items-center" onClick={() => restoreHeldSale(sale)}>
+                  <div>
+                    <div className="font-bold text-sm">{sale.cart.length} itens</div>
+                    <div className="text-xs text-on-surface-variant">
+                      {sale.timestamp.toLocaleTimeString()} {sale.customerId ? `- ${customers.find(c => c.id === sale.customerId)?.name}` : ''}
+                    </div>
+                  </div>
+                  <div className="font-bold text-primary">
+                    {formatCurrency(sale.cart.reduce((sum, item) => sum + item.subtotal, 0))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {cart.length === 0 ? (
@@ -343,14 +422,24 @@ const POS = () => {
               </div>
             )}
 
-            <button
-              onClick={handleCheckout}
-              disabled={cart.length === 0 || (paymentMethod === 'Numerário' && (parseFloat(amountPaid) || 0) < finalTotal)}
-              className="w-full bg-primary text-on-primary py-4 rounded-xl font-bold text-lg hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
-            >
-              <span className="material-symbols-outlined">payments</span>
-              {t('pos.checkout')}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleHoldSale}
+                disabled={cart.length === 0}
+                className="flex-1 bg-surface-variant text-on-surface-variant py-4 rounded-xl font-bold text-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+              >
+                <span className="material-symbols-outlined">pause</span>
+                Pausar
+              </button>
+              <button
+                onClick={handleCheckout}
+                disabled={cart.length === 0 || (paymentMethod === 'Numerário' && (parseFloat(amountPaid) || 0) < finalTotal)}
+                className="flex-[2] bg-primary text-on-primary py-4 rounded-xl font-bold text-lg hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
+              >
+                <span className="material-symbols-outlined">payments</span>
+                {t('pos.checkout')}
+              </button>
+            </div>
           </div>
         </div>
       </div>

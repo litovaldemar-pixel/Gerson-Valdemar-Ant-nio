@@ -3,6 +3,8 @@ import { useAppContext } from '../context/AppContext';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
 import { exportToCSV } from '../lib/exportUtils';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 const Suppliers = () => {
   const { suppliers, addSupplier, deleteSupplier, updateSupplier, products, transactions, globalSearchTerm } = useAppContext();
@@ -141,7 +143,7 @@ const Suppliers = () => {
     setCategory('Infraestrutura');
   };
 
-  const handleExport = () => {
+  const handleExportCSV = () => {
     const exportData = filteredSuppliers.map(s => ({
       ID: s.id,
       Nome: s.name,
@@ -150,6 +152,32 @@ const Suppliers = () => {
       Categoria: s.category
     }));
     exportToCSV(exportData, 'fornecedores.csv');
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text(t('sidebar.suppliers'), 14, 22);
+    
+    // Add table
+    const tableData = filteredSuppliers.map(s => [
+      s.name,
+      s.email || '-',
+      s.document || '-',
+      s.category || '-'
+    ]);
+
+    (doc as any).autoTable({
+      startY: 30,
+      head: [[t('suppliers.nameLabel'), t('suppliers.emailLabel'), t('suppliers.documentLabel'), t('suppliers.categoryLabel')]],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 108, 71] }, // Primary color
+    });
+
+    doc.save('fornecedores.pdf');
   };
 
   return (
@@ -174,11 +202,18 @@ const Suppliers = () => {
             {t('dashboard.print')}
           </button>
           <button 
-            onClick={handleExport}
+            onClick={handleExportCSV}
             className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
           >
             <span className="material-symbols-outlined text-lg">download</span>
-            Exportar CSV
+            CSV
+          </button>
+          <button 
+            onClick={handleExportPDF}
+            className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
+            PDF
           </button>
         </div>
       </section>

@@ -4,6 +4,8 @@ import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
 import { exportToCSV } from '../lib/exportUtils';
 import KardexModal from '../components/KardexModal';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 const Products = () => {
   const { products, addProduct, deleteProduct, updateProduct, globalSearchTerm } = useAppContext();
@@ -139,7 +141,7 @@ const Products = () => {
       p.category.toLowerCase().includes(term);
   });
 
-  const handleExport = () => {
+  const handleExportCSV = () => {
     const exportData = filteredProducts.map(p => ({
       ID: p.id,
       Nome: p.name,
@@ -153,6 +155,35 @@ const Products = () => {
       Fornecedor: suppliers.find(s => s.id === p.supplierId)?.name || ''
     }));
     exportToCSV(exportData, 'mercadorias.csv');
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF('landscape');
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text(t('sidebar.products'), 14, 22);
+    
+    // Add table
+    const tableData = filteredProducts.map(p => [
+      p.name,
+      p.sku,
+      p.category,
+      new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(p.price),
+      new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(p.cost),
+      `${p.stock} ${p.unit || 'un'}`,
+      suppliers.find(s => s.id === p.supplierId)?.name || '-'
+    ]);
+
+    (doc as any).autoTable({
+      startY: 30,
+      head: [[t('products.nameLabel'), t('products.skuLabel'), t('products.categoryLabel'), t('products.priceLabel'), t('products.costLabel'), t('products.stockLabel'), t('products.supplierLabel')]],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 108, 71] }, // Primary color
+    });
+
+    doc.save('mercadorias.pdf');
   };
 
   return (
@@ -191,11 +222,18 @@ const Products = () => {
             {t('dashboard.print')}
           </button>
           <button 
-            onClick={handleExport}
+            onClick={handleExportCSV}
             className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
           >
             <span className="material-symbols-outlined text-lg">download</span>
-            Exportar CSV
+            CSV
+          </button>
+          <button 
+            onClick={handleExportPDF}
+            className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
+            PDF
           </button>
         </div>
       </section>
