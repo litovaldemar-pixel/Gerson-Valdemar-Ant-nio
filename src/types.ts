@@ -21,6 +21,7 @@ export interface CompanyInfo {
   constitution?: string;
   nuel?: string;
   partners?: string;
+  monthlySalesGoal?: number;
 }
 
 export type TransactionType = 'receita' | 'despesa' | 'cotacao';
@@ -96,6 +97,8 @@ export interface Product {
   supplierId?: string;
   expiryDate?: string;
   batchNumber?: string;
+  wholesalePrice?: number;
+  wholesaleMinQuantity?: number;
 }
 
 export const getCategoryTranslationKey = (category: string): string => {

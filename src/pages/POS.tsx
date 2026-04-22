@@ -3,6 +3,8 @@ import { useAppContext } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import CashRegisterCloseModal from '../components/CashRegisterCloseModal';
+import { useExchangeRates } from '../hooks/useExchangeRates';
 
 const POS = () => {
   const { products, customers, addTransaction, companyInfo } = useAppContext();
@@ -18,6 +20,9 @@ const POS = () => {
   const [discount, setDiscount] = useState<string>('');
   const [amountPaid, setAmountPaid] = useState<string>('');
   const [ivaRate, setIvaRate] = useState<number>(companyInfo?.ivaRate || 0);
+  const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
+  
+  const { rates } = useExchangeRates();
 
   useEffect(() => {
     if (companyInfo?.ivaRate !== undefined) {
@@ -73,23 +78,35 @@ const POS = () => {
 
     setCart(prev => {
       const existing = prev.find(item => item.productId === product.id);
+      
       if (existing) {
-        if (existing.quantity >= product.stock) {
+        const newQuantity = existing.quantity + 1;
+        if (newQuantity > product.stock) {
           toast.error(t('pos.insufficientStock'));
           return prev;
         }
+        
+        // Check for wholesale pricing
+        const isWholesale = product.wholesaleMinQuantity && newQuantity >= product.wholesaleMinQuantity;
+        const currentPrice = isWholesale && product.wholesalePrice ? product.wholesalePrice : product.price;
+
         return prev.map(item => 
           item.productId === product.id 
-            ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * item.unitPrice }
+            ? { ...item, quantity: newQuantity, unitPrice: currentPrice, subtotal: newQuantity * currentPrice }
             : item
         );
       }
+      
+      // Default price or wholesale price if minimum is 1
+      const isWholesale = product.wholesaleMinQuantity && 1 >= product.wholesaleMinQuantity;
+      const initialPrice = isWholesale && product.wholesalePrice ? product.wholesalePrice : product.price;
+      
       return [...prev, {
         productId: product.id,
         name: product.name,
         quantity: 1,
-        unitPrice: product.price,
-        subtotal: product.price,
+        unitPrice: initialPrice,
+        subtotal: initialPrice,
         unit: product.unit || 'un'
       }];
     });
@@ -108,16 +125,24 @@ const POS = () => {
     setCart(prev => {
       const item = prev[index];
       const product = products.find(p => p.id === item.productId);
-      if (product && newQty > product.stock) {
+      
+      if (!product) return prev;
+      
+      if (newQty > product.stock) {
         toast.error(t('pos.insufficientStock'));
         return prev;
       }
+      
+      // Check for wholesale pricing
+      const isWholesale = product.wholesaleMinQuantity && newQty >= product.wholesaleMinQuantity;
+      const currentPrice = isWholesale && product.wholesalePrice ? product.wholesalePrice : product.price;
       
       const newCart = [...prev];
       newCart[index] = {
         ...item,
         quantity: newQty,
-        subtotal: newQty * item.unitPrice
+        unitPrice: currentPrice,
+        subtotal: newQty * currentPrice
       };
       return newCart;
     });
@@ -235,6 +260,13 @@ const POS = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          <button 
+            onClick={() => setIsCloseModalOpen(true)}
+            className="bg-slate-800 text-white px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-slate-700 transition shadow-sm"
+          >
+            <span className="material-symbols-outlined text-lg">receipt_long</span>
+            <span className="hidden md:inline">Fecho de Caixa</span>
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto pr-2">
@@ -396,10 +428,20 @@ const POS = () => {
           </div>
 
           <div className="pt-3 border-t border-outline-variant/20">
-            <div className="flex justify-between items-end mb-4">
+            <div className="flex justify-between items-end mb-1">
               <span className="text-lg font-bold text-on-surface">{t('pos.total')}</span>
               <span className="text-3xl font-headline font-extrabold text-primary">{formatCurrency(finalTotal)}</span>
             </div>
+            
+            {rates && finalTotal > 0 && (
+              <div className="flex justify-end gap-3 text-xs text-on-surface-variant mb-4 font-mono font-bold">
+                <span>🇺🇸 ${(finalTotal * rates.USD).toFixed(2)}</span>
+                <span>🇪🇺 €{(finalTotal * rates.EUR).toFixed(2)}</span>
+                <span>🇿🇦 R{(finalTotal * rates.ZAR).toFixed(2)}</span>
+              </div>
+            )}
+            
+            {(!rates || finalTotal === 0) && <div className="mb-4"></div>}
 
             {paymentMethod === 'Numerário' && (
               <div className="space-y-2 mb-4">
@@ -443,6 +485,10 @@ const POS = () => {
           </div>
         </div>
       </div>
+      <CashRegisterCloseModal 
+        isOpen={isCloseModalOpen}
+        onClose={() => setIsCloseModalOpen(false)}
+      />
     </div>
   );
 };

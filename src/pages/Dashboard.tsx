@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { getCategoryTranslationKey } from '../types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, RadialBarChart, RadialBar } from 'recharts';
 import { motion } from 'motion/react';
 import PrintHeader from '../components/PrintHeader';
+import CurrencyConverter from '../components/CurrencyConverter';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { exportToCSV } from '../lib/exportUtils';
@@ -123,6 +124,47 @@ const Dashboard = () => {
       currency: t('common.currency', 'MZN'),
     }).format(value);
   };
+
+  // Curva ABC
+  const productSales = filteredTransactions
+    .filter(t => t.type === 'receita' && t.items)
+    .flatMap(t => t.items || [])
+    .reduce((acc, item) => {
+      if (!acc[item.productId]) {
+        acc[item.productId] = { id: item.productId, name: item.name, total: 0, quantity: 0 };
+      }
+      acc[item.productId].total += item.subtotal;
+      acc[item.productId].quantity += item.quantity;
+      return acc;
+    }, {} as Record<string, { id: string, name: string, total: number, quantity: number }>);
+
+  const sortedProducts = Object.values(productSales).sort((a, b) => b.total - a.total);
+  const totalSalesValue = sortedProducts.reduce((sum, p) => sum + p.total, 0);
+
+  let cumulativeValue = 0;
+  const abcAnalysis = sortedProducts.map(p => {
+    cumulativeValue += p.total;
+    const percentage = totalSalesValue > 0 ? (cumulativeValue / totalSalesValue) * 100 : 0;
+    let classe = 'C';
+    if (percentage <= 80) classe = 'A';
+    else if (percentage <= 95) classe = 'B';
+    return { ...p, percentage, classe };
+  });
+
+  const produtosClasseA = abcAnalysis.filter(p => p.classe === 'A');
+  const idsComVenda = new Set(abcAnalysis.map(p => p.id));
+  const produtosEncalhados = products.filter(p => !idsComVenda.has(p.id));
+
+  // Metas de vendas (Sempre baseada no mês atual, independente do dateFilter)
+  const metaVendas = companyInfo?.monthlySalesGoal || 0;
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+  const totalReceitasMesAtual = transactions
+    .filter(t => t.type === 'receita' && t.date >= startOfMonth && t.date <= endOfMonth)
+    .reduce((sum, t) => sum + t.value, 0);
+  const progressoMeta = metaVendas > 0 ? Math.min((totalReceitasMesAtual / metaVendas) * 100, 100) : 0;
+  const metaData = [{ name: 'Meta', value: progressoMeta, fill: '#006c47' }];
 
   // Process data for the chart (Group by Date)
   const chartDataMap = filteredTransactions.reduce((acc, curr) => {
@@ -454,6 +496,158 @@ const Dashboard = () => {
         </motion.div>
       </section>
 
+      {/* Business Intelligence Sections */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Metas de Vendas */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.35 }}
+           className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10 flex flex-col justify-between"
+        >
+          <div>
+            <h3 className="text-lg font-bold font-headline text-primary mb-1">Meta de Vendas</h3>
+            <p className="text-xs text-on-surface-variant font-medium">Mês Atual ({new Date().toLocaleDateString(t('common.locale', 'pt-MZ'), { month: 'long', year: 'numeric' })})</p>
+          </div>
+          
+          {metaVendas > 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center relative">
+              <div className="h-48 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadialBarChart 
+                    cx="50%" 
+                    cy="50%" 
+                    innerRadius="70%" 
+                    outerRadius="100%" 
+                    barSize={15} 
+                    data={metaData}
+                    startAngle={90}
+                    endAngle={-270}
+                  >
+                    <RadialBar
+                      background={{ fill: '#e1e3e4' }}
+                      dataKey="value"
+                      cornerRadius={10}
+                    />
+                  </RadialBarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <h4 className="text-2xl font-extrabold font-headline text-primary">{progressoMeta.toFixed(1)}%</h4>
+                <p className="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">Atingido</p>
+              </div>
+              <div className="w-full mt-4 flex justify-between text-xs font-bold text-on-surface-variant">
+                <span>Total: {formatCurrency(totalReceitasMesAtual)}</span>
+                <span>Meta: {formatCurrency(metaVendas)}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-surface-variant/20 rounded-lg mt-4 border border-dashed border-outline-variant/30">
+              <span className="material-symbols-outlined text-4xl text-on-surface-variant/50 mb-2">flag</span>
+              <p className="text-sm font-medium text-on-surface-variant">Meta mensal não definida.</p>
+              <button 
+                onClick={() => document.getElementById('company-settings-btn')?.click()}
+                className="mt-3 text-xs bg-primary/10 text-primary px-3 py-1.5 rounded font-bold hover:bg-primary/20 transition-colors"
+                title="Vá para as Configurações da Empresa para definir uma meta"
+              >
+                Definir Meta
+              </button>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Curva ABC - Classe A */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.36 }}
+          className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10 flex flex-col"
+        >
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-bold font-headline text-primary">Estrelas de Venda</h3>
+              <p className="text-xs text-on-surface-variant font-medium mt-1">Curva ABC - Classe A (Curva dos 80%)</p>
+            </div>
+            <div className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-extrabold flex items-center gap-1 border border-primary/20">
+              <span className="material-symbols-outlined text-[14px]">star</span>
+              TOP
+            </div>
+          </div>
+          
+          {produtosClasseA.length > 0 ? (
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3 max-h-[200px]">
+              {produtosClasseA.slice(0, 5).map((produto, index) => (
+                <div key={produto.id} className="flex justify-between items-center p-3 rounded-lg bg-surface-variant/20 border border-outline-variant/20">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-extrabold text-on-surface-variant opacity-50 w-4">{index + 1}</span>
+                    <div>
+                      <p className="text-sm font-bold text-on-surface truncate max-w-[120px]" title={produto.name}>{produto.name}</p>
+                      <p className="text-[10px] text-on-surface-variant">{produto.quantity} unidades</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-primary">{formatCurrency(produto.total)}</p>
+                  </div>
+                </div>
+              ))}
+              {produtosClasseA.length > 5 && (
+                <p className="text-xs text-center text-on-surface-variant mt-2 italic">+ {produtosClasseA.length - 5} produtos na Classe A</p>
+              )}
+            </div>
+          ) : (
+             <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-surface-variant/20 rounded-lg">
+              <p className="text-sm font-medium text-on-surface-variant">Sem vendas no período.</p>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Curva ABC - Encalhados */}
+        <motion.div 
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.4, delay: 0.37 }}
+           className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10 flex flex-col"
+        >
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-bold font-headline text-error">Produtos Parados</h3>
+              <p className="text-xs text-on-surface-variant font-medium mt-1">Zero vendas no período selecionado</p>
+            </div>
+            <div className="bg-error/10 text-error px-2 py-1 rounded text-xs font-extrabold flex items-center gap-1 border border-error/20">
+              <span className="material-symbols-outlined text-[14px]">warning</span>
+              ALERTA
+            </div>
+          </div>
+
+          {produtosEncalhados.length > 0 ? (
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3 max-h-[200px]">
+              {produtosEncalhados.slice(0, 5).map((produto) => (
+                <div key={produto.id} className="flex justify-between items-center p-3 rounded-lg bg-error/5 border border-error/10">
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-error/60 text-lg">inventory_2</span>
+                    <div>
+                      <p className="text-sm font-bold text-on-surface truncate max-w-[120px]" title={produto.name}>{produto.name}</p>
+                      <p className="text-[10px] text-error/80 font-medium">Estoque: {produto.stock}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-error uppercase px-2 py-0.5 bg-error/10 rounded">Enc.</p>
+                  </div>
+                </div>
+              ))}
+               {produtosEncalhados.length > 5 && (
+                <p className="text-xs text-center text-error/80 mt-2 italic">+ {produtosEncalhados.length - 5} produtos parados</p>
+              )}
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-surface-variant/20 rounded-lg">
+              <span className="material-symbols-outlined text-3xl text-secondary mb-2">check_circle</span>
+              <p className="text-sm font-medium text-on-surface-variant">Excelente! Todo o stock tem movimento.</p>
+            </div>
+          )}
+        </motion.div>
+      </section>
+
       {/* Charts and Secondary Metrics */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Fluxo de Caixa (Bar Chart) */}
@@ -629,6 +823,14 @@ const Dashboard = () => {
             <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">{t('dashboard.lowStockAlert').replace('Atenção: ', '').replace('Warning: ', '').replace('警告：', '').replace('Attention : ', '')}</p>
           </div>
         </motion.div>
+      </section>
+
+      <section className="mt-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <CurrencyConverter />
+          </div>
+        </div>
       </section>
     </motion.div>
   );

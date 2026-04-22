@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { TransactionType, Transaction, TransactionItem, getCategoryTranslationKey } from '../types';
 import ReceiptModal from '../components/ReceiptModal';
+import A4DocumentModal from '../components/A4DocumentModal';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -50,6 +51,7 @@ const Transactions = () => {
   const [supplierId, setSupplierId] = useState('');
   const [cartItems, setCartItems] = useState<TransactionItem[]>([]);
   const [selectedReceiptTransaction, setSelectedReceiptTransaction] = useState<Transaction | null>(null);
+  const [selectedA4Transaction, setSelectedA4Transaction] = useState<Transaction | null>(null);
 
   // Payment
   const [paymentMethod, setPaymentMethod] = useState('Numerário');
@@ -1292,6 +1294,9 @@ const Transactions = () => {
                             <span className="material-symbols-outlined text-lg">point_of_sale</span>
                           </button>
                         )}
+                        <button onClick={() => setSelectedA4Transaction(transaction)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-slate-800 hover:bg-slate-200 transition-all" title="Ver Cotação/Fatura A4">
+                          <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
+                        </button>
                         <button onClick={() => setSelectedReceiptTransaction(transaction)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-secondary hover:bg-secondary-container/20 transition-all" title={t('transactions.viewReceipt')}>
                           <span className="material-symbols-outlined text-lg">receipt_long</span>
                         </button>
@@ -1357,6 +1362,11 @@ const Transactions = () => {
         isOpen={!!selectedReceiptTransaction} 
         onClose={() => setSelectedReceiptTransaction(null)} 
         transaction={selectedReceiptTransaction} 
+      />
+      <A4DocumentModal
+        isOpen={!!selectedA4Transaction}
+        onClose={() => setSelectedA4Transaction(null)}
+        transaction={selectedA4Transaction}
       />
     </div>
   );

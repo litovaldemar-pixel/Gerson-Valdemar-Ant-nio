@@ -30,7 +30,8 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
     description: '',
     constitution: '',
     nuel: '',
-    partners: ''
+    partners: '',
+    monthlySalesGoal: 0
   });
 
   useEffect(() => {
@@ -45,7 +46,7 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
 
   useEffect(() => {
     if (isOpen && isCreating) {
-      setFormData({ name: '', nuit: '', contact: '', location: '', pin: '', sector: 'comercio', logoUrl: '', ivaRate: 3, description: '', constitution: '', nuel: '', partners: '' });
+      setFormData({ name: '', nuit: '', contact: '', location: '', pin: '', sector: 'comercio', logoUrl: '', ivaRate: 3, description: '', constitution: '', nuel: '', partners: '', monthlySalesGoal: 0 });
     }
   }, [isOpen, isCreating]);
 
@@ -60,7 +61,8 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
         description: companyInfo.description || '',
         constitution: companyInfo.constitution || '',
         nuel: companyInfo.nuel || '',
-        partners: companyInfo.partners || ''
+        partners: companyInfo.partners || '',
+        monthlySalesGoal: companyInfo.monthlySalesGoal || 0
       });
     }
   }, [isOpen, isCreating, companyInfo]);
@@ -367,7 +369,23 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                 </div>
 
                 <div className="md:col-span-2">
-                  <h4 className="text-sm font-bold text-primary mt-4 mb-2 border-b border-outline-variant/20 pb-1">Configurações Fiscais e Segurança</h4>
+                  <h4 className="text-sm font-bold text-primary mt-4 mb-2 border-b border-outline-variant/20 pb-1">Configurações Fiscais e Metas</h4>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-on-surface-variant mb-1">Meta de Vendas Mensal (MZN)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1000"
+                    value={formData.monthlySalesGoal}
+                    onChange={(e) => setFormData({ ...formData, monthlySalesGoal: Number(e.target.value) })}
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                    placeholder="Ex: 500000"
+                  />
+                  <p className="text-xs text-on-surface-variant mt-1">
+                    Esta meta aparecerá no Dashboard para motivar o seu atingimento.
+                  </p>
                 </div>
 
                 <div className="md:col-span-2">

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
 import { exportToCSV } from '../lib/exportUtils';
 import { jsPDF } from 'jspdf';
+import { useFinancials } from '../hooks/useFinancials';
 import 'jspdf-autotable';
 
 const DRE = () => {
@@ -20,92 +21,49 @@ const DRE = () => {
     }
   }, [companyInfo?.ivaRate]);
 
-  const filterByDate = (dateString: string) => {
-    if (dateFilter === 'todos') return true;
-    
+  const { startDate, endDate } = useMemo(() => {
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
-    
+
     if (dateFilter === 'hoje') {
-      return dateString === todayStr;
+      return { startDate: todayStr, endDate: todayStr };
     }
     if (dateFilter === 'semana') {
       const startOfWeek = new Date(now);
       startOfWeek.setDate(now.getDate() - now.getDay());
-      const startStr = startOfWeek.toISOString().split('T')[0];
-      return dateString >= startStr && dateString <= todayStr;
+      return { startDate: startOfWeek.toISOString().split('T')[0], endDate: todayStr };
     }
     if (dateFilter === 'mes') {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
       const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
-      return dateString >= startOfMonth && dateString <= endOfMonth;
+      return { startDate: startOfMonth, endDate: endOfMonth };
     }
     if (dateFilter === 'ano') {
       const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
       const endOfYear = new Date(now.getFullYear(), 11, 31).toISOString().split('T')[0];
-      return dateString >= startOfYear && dateString <= endOfYear;
+      return { startDate: startOfYear, endDate: endOfYear };
     }
-    return true;
-  };
+    return { startDate: '', endDate: '' };
+  }, [dateFilter]);
 
-  // Filter transactions by selected period
-  const filteredTransactions = React.useMemo(() => {
-    return transactions.filter(t => filterByDate(t.date));
-  }, [transactions, dateFilter]);
+  const { dreDetails, filteredTransactions } = useFinancials(startDate, endDate);
 
-  // Calculate values based on filtered transactions
-  const receitaBruta = filteredTransactions
-    .filter(t => t.type === 'receita')
-    .reduce((acc, curr) => acc + curr.value, 0);
+  const {
+    receitaBruta,
+    baseTributavel,
+    impostosSobreVendas,
+    receitaLiquida,
+    cmv,
+    margemContribuicao,
+    despesasAdmin,
+    folhaPagamento,
+    marketingVendas,
+    impostosRegistados,
+    ebitda,
+    pontoEquilibrio,
+    margemSeguranca,
+  } = dreDetails;
 
-  // Calcula a Base Tributável e o IVA
-  // Base Tributável = Valor Total da Fatura / (1 + (% IVA / 100))
-  // IVA = Base Tributável * (% IVA / 100)
-  const baseTributavel = ivaRate > 0 ? receitaBruta / (1 + (ivaRate / 100)) : receitaBruta;
-  const impostosSobreVendas = ivaRate > 0 ? baseTributavel * (ivaRate / 100) : 0;
-
-  const impostosRegistados = filteredTransactions
-    .filter(t => t.type === 'despesa' && (t.category === 'Impostos' || t.category === 'Estado'))
-    .reduce((acc, curr) => acc + curr.value, 0);
-    
-  const cmv = filteredTransactions
-    .filter(t => t.type === 'despesa' && (t.category === 'Produto' || t.category === 'Fornecedores' || t.category === 'CMV' || t.supplierId || (t.items && t.items.length > 0)))
-    .reduce((acc, curr) => acc + curr.value, 0);
-    
-  const receitaLiquida = receitaBruta - impostosSobreVendas;
-  const margemContribuicao = receitaLiquida - cmv;
-
-  const folhaPagamento = filteredTransactions
-    .filter(t => t.type === 'despesa' && (t.category === 'Pessoal' || t.category === 'Salário' || t.category === 'Assistência Médica'))
-    .reduce((acc, curr) => acc + curr.value, 0);
-
-  const marketingVendas = filteredTransactions
-    .filter(t => t.type === 'despesa' && t.category === 'Marketing')
-    .reduce((acc, curr) => acc + curr.value, 0);
-
-  const despesasAdmin = filteredTransactions
-    .filter(t => t.type === 'despesa' && 
-      !(t.category === 'Impostos' || t.category === 'Estado') &&
-      !(t.category === 'Produto' || t.category === 'Fornecedores' || t.category === 'CMV' || t.supplierId || (t.items && t.items.length > 0)) &&
-      !(t.category === 'Pessoal' || t.category === 'Salário' || t.category === 'Assistência Médica') &&
-      !(t.category === 'Marketing')
-    )
-    .reduce((acc, curr) => acc + curr.value, 0);
-
-  const ebitda = margemContribuicao - despesasAdmin - folhaPagamento - marketingVendas - impostosRegistados;
-
-  // Calculate Breakeven Point (Ponto de Equilíbrio)
-  // PE = Fixed Costs / Contribution Margin Ratio
-  const fixedCosts = despesasAdmin + folhaPagamento + marketingVendas;
-  const contributionMarginRatio = receitaBruta > 0 ? margemContribuicao / receitaBruta : 0;
-  const pontoEquilibrio = contributionMarginRatio > 0 ? fixedCosts / contributionMarginRatio : 0;
-
-  // Calculate Margin of Safety (Margem de Segurança)
-  // MS = (Actual Sales - Breakeven Sales) / Actual Sales
-  const margemSeguranca = receitaBruta > 0 ? ((receitaBruta - pontoEquilibrio) / receitaBruta) * 100 : 0;
-
-  // Calculate Operating Leverage (Alavancagem Operacional)
-  // DOL = Contribution Margin / Operating Income (EBITDA in this simplified case)
   const alavancagemOperacional = ebitda > 0 ? margemContribuicao / ebitda : 0;
 
   // Apuramento de IVA

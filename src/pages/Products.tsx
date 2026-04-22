@@ -25,6 +25,8 @@ const Products = () => {
   const [supplierId, setSupplierId] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [batchNumber, setBatchNumber] = useState('');
+  const [wholesalePrice, setWholesalePrice] = useState('');
+  const [wholesaleMinQuantity, setWholesaleMinQuantity] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
   const [showColumnMenu, setShowColumnMenu] = useState(false);
@@ -63,6 +65,8 @@ const Products = () => {
     setSupplierId(p.supplierId || '');
     setExpiryDate(p.expiryDate || '');
     setBatchNumber(p.batchNumber || '');
+    setWholesalePrice(p.wholesalePrice?.toString() || '');
+    setWholesaleMinQuantity(p.wholesaleMinQuantity?.toString() || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -81,6 +85,8 @@ const Products = () => {
     setSupplierId('');
     setExpiryDate('');
     setBatchNumber('');
+    setWholesalePrice('');
+    setWholesaleMinQuantity('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -101,6 +107,8 @@ const Products = () => {
       supplierId: supplierId || null,
       expiryDate: expiryDate || null,
       batchNumber: batchNumber || null,
+      wholesalePrice: wholesalePrice ? parseFloat(wholesalePrice) : undefined,
+      wholesaleMinQuantity: wholesaleMinQuantity ? parseFloat(wholesaleMinQuantity) : undefined,
     };
 
     if (editingId) {
@@ -123,6 +131,8 @@ const Products = () => {
     setSupplierId('');
     setExpiryDate('');
     setBatchNumber('');
+    setWholesalePrice('');
+    setWholesaleMinQuantity('');
   };
 
   const [searchParams, setSearchParams] = useState(new URLSearchParams(window.location.search));
@@ -404,6 +414,27 @@ const Products = () => {
               onChange={(e) => setBatchNumber(e.target.value)}
             />
           </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-teal-700 ml-1">Preço Grosso (Atacado)</label>
+            <input
+              className="w-full bg-surface-container-lowest border border-teal-600/30 rounded-lg p-3 text-sm focus:ring-2 focus:ring-teal-600 outline-none"
+              placeholder="0.00"
+              type="number"
+              step="0.01"
+              value={wholesalePrice}
+              onChange={(e) => setWholesalePrice(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-teal-700 ml-1">Qtd. Mínima Grosso</label>
+            <input
+              className="w-full bg-surface-container-lowest border border-teal-600/30 rounded-lg p-3 text-sm focus:ring-2 focus:ring-teal-600 outline-none"
+              placeholder="Ex: 10"
+              type="number"
+              value={wholesaleMinQuantity}
+              onChange={(e) => setWholesaleMinQuantity(e.target.value)}
+            />
+          </div>
           <div className="flex gap-2 w-full md:col-span-2 lg:col-span-4">
             {editingId && (
               <button type="button" onClick={handleCancelEdit} className="w-full bg-surface-variant text-on-surface-variant py-3 rounded-lg font-bold text-sm hover:bg-outline-variant transition-colors">
@@ -516,7 +547,12 @@ const Products = () => {
                   </td>}
                   {visibleColumns.supplier && <td className="px-6 py-4 text-sm text-on-surface-variant">{supplier ? supplier.name : '-'}</td>}
                   {visibleColumns.price && <td className="px-6 py-4 text-sm font-mono text-right text-primary">
-                    {new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(p.price)}
+                    <div>{new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(p.price)}</div>
+                    {p.wholesalePrice && p.wholesaleMinQuantity && (
+                      <div className="text-[10px] text-teal-600 mt-1">
+                        Atacado (≥{p.wholesaleMinQuantity}): {new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(p.wholesalePrice)}
+                      </div>
+                    )}
                   </td>}
                   {visibleColumns.cost && <td className="px-6 py-4 text-sm font-mono text-right text-error">
                     {new Intl.NumberFormat(t('common.locale', 'pt-MZ'), { style: 'currency', currency: t('common.currency', 'MZN') }).format(p.cost)}
