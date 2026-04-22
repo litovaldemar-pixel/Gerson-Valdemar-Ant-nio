@@ -39,11 +39,26 @@ const FinancialReport = () => {
 
   const getSituationText = () => {
     if (balance > 0) {
-      return `No período selecionado, a empresa operou com superávit, registrando um lucro líquido de ${balance.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}, indicando uma situação financeira saudável e sustentável.`;
+      return [
+        `Com base nos dados do período selecionado, a empresa encontra-se em situação de lucro, apresentando desempenho financeiro positivo. A análise indica que as receitas geradas (${totalRevenue.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}) superam as despesas totais (${totalExpense.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}), sugerindo eficiência na gestão de custos e boa capacidade de geração de faturamento. Observa-se também um forte volume de transações que contribui para o resultado atual de superávit na ordem de ${balance.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}.`,
+        `Diante deste cenário, recomenda-se a manutenção das boas práticas e investimento no crescimento contínuo. Entre as ações sugeridas, destacam-se a consolidação do caixa, a análise de oportunidades de expansão ou novos investimentos, a fidelização da atual base de clientes e a criação de programas de recompensa para o público-alvo.`,
+        `Adicionalmente, o sistema identifica baixo risco na saúde financeira atual do negócio, indicando um cenário propício para reinvestimentos conscientes nos próximos meses. Caso o comportamento atual de receitas e despesas se mantenha, há forte probabilidade de fortalecimento contínuo do fluxo de caixa.`,
+        `O índice geral de saúde do negócio encontra-se em nível elevado, confirmando a sustentabilidade da operação e a eficácia das estratégias atualmente em curso.`
+      ];
     } else if (balance < 0) {
-      return `No período selecionado, a empresa operou com déficit, registrando um prejuízo de ${Math.abs(balance).toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}. Recomenda-se atenção redobrada à gestão de custos e estratégias de aumento de receitas.`;
+      return [
+        `Com base nos dados do período selecionado, a empresa encontra-se em situação de prejuízo, apresentando desempenho financeiro negativo. A análise indica que as despesas totais (${totalExpense.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}) superam as receitas (${totalRevenue.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}), sugerindo desequilíbrio na gestão de custos e/ou baixa geração de faturamento. Observa-se também possível impacto de redução no volume de receitas ou perda de clientes ativos, o que contribui para o resultado atual com déficit de ${Math.abs(balance).toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}.`,
+        `Diante deste cenário, recomenda-se a adoção imediata de medidas corretivas. Entre as principais ações sugeridas, destacam-se o ajuste de preços entre 5% e 10% para melhoria da margem de lucro, a redução de custos nas categorias com maior peso financeiro, a implementação de estratégias para recuperação de clientes inativos e a criação de serviços ou ofertas de maior valor agregado, com o objetivo de aumentar a receita.`,
+        `Adicionalmente, o sistema identifica risco elevado na saúde financeira do negócio, recomendando prioridade alta na tomada de decisões nos próximos 30 dias. Caso o comportamento atual de receitas e despesas se mantenha, há possibilidade de comprometimento do fluxo de caixa no curto prazo.`,
+        `O índice geral de saúde do negócio encontra-se em nível reduzido, indicando a necessidade de acompanhamento contínuo e ajustes estratégicos para restabelecer o equilíbrio financeiro e garantir a sustentabilidade da operação.`
+      ];
     } else {
-      return `No período selecionado, a empresa operou no ponto de equilíbrio, sem lucro ou prejuízo registrado.`;
+      return [
+        `Com base nos dados do período selecionado, a empresa encontra-se em situação de ponto de equilíbrio, apresentando um desempenho financeiro neutro onde não há lucro nem prejuízo registrado. A análise indica que as receitas geradas cobrem exatamente as despesas totais, sugerindo uma gestão de custos estrita mas com estagnação na geração de faturamento extra.`,
+        `Diante deste cenário, recomenda-se cautela redobrada e ação para impulsionar os ganhos. Entre as ações sugeridas, destacam-se a leve otimização de preços de venda, cortes de despesas não essenciais para tentar elevar a margem de contribuição, e campanhas pontuais de atração e recuperação de clientes para alavancar a receita.`,
+        `Adicionalmente, o sistema identifica risco moderado na saúde financeira do negócio, sendo necessária atenção especializada nos próximos 30 dias. Uma ligeira quebra de receitas ou um custo imprevisto pode atirar o fluxo de caixa para a margem negativa.`,
+        `O índice geral de saúde do negócio encontra-se em nível de alerta (médio), indicando a urgência de aplicar táticas de crescimento comercial para criar maior folga financeira e consolidar a sustentabilidade da operação.`
+      ];
     }
   };
 
@@ -234,12 +249,14 @@ const FinancialReport = () => {
         </div>
 
         {/* Conclusion / Status */}
-        <div className="mb-12">
-          <h3 className="text-lg font-bold uppercase border-b border-slate-300 pb-2 mb-4">4. Situação da Empresa</h3>
-          <div className="p-6 bg-slate-50 border border-slate-200 rounded-lg">
-            <p className="text-slate-800 leading-relaxed text-justify">
-              {getSituationText()}
-            </p>
+        <div className="mb-12 print:break-inside-avoid">
+          <h3 className="text-lg font-bold uppercase border-b border-slate-300 pb-2 mb-4">4. Análise e Situação da Empresa</h3>
+          <div className="p-6 bg-slate-50 border border-slate-200 rounded-lg space-y-4">
+            {getSituationText().map((paragraph, idx) => (
+              <p key={idx} className="text-slate-800 leading-relaxed text-justify">
+                {paragraph}
+              </p>
+            ))}
           </div>
         </div>
 
