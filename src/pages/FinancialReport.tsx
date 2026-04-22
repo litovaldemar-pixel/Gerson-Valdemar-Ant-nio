@@ -47,10 +47,10 @@ const FinancialReport = () => {
       ];
     } else if (balance < 0) {
       return [
-        `Com base nos dados do período selecionado, a empresa encontra-se em situação de prejuízo, apresentando desempenho financeiro negativo. A análise indica que as despesas totais (${totalExpense.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}) superam as receitas (${totalRevenue.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}), sugerindo desequilíbrio na gestão de custos e/ou baixa geração de faturamento. Observa-se também possível impacto de redução no volume de receitas ou perda de clientes ativos, o que contribui para o resultado atual com déficit de ${Math.abs(balance).toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}.`,
-        `Diante deste cenário, recomenda-se a adoção imediata de medidas corretivas. Entre as principais ações sugeridas, destacam-se o ajuste de preços entre 5% e 10% para melhoria da margem de lucro, a redução de custos nas categorias com maior peso financeiro, a implementação de estratégias para recuperação de clientes inativos e a criação de serviços ou ofertas de maior valor agregado, com o objetivo de aumentar a receita.`,
-        `Adicionalmente, o sistema identifica risco elevado na saúde financeira do negócio, recomendando prioridade alta na tomada de decisões nos próximos 30 dias. Caso o comportamento atual de receitas e despesas se mantenha, há possibilidade de comprometimento do fluxo de caixa no curto prazo.`,
-        `O índice geral de saúde do negócio encontra-se em nível reduzido, indicando a necessidade de acompanhamento contínuo e ajustes estratégicos para restabelecer o equilíbrio financeiro e garantir a sustentabilidade da operação.`
+        `A empresa apresenta prejuízo no período analisado, pois as despesas (${totalExpense.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}) estão maiores que as receitas (${totalRevenue.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}). Isso indica falta de controlo nos custos e/ou queda no faturamento, possivelmente ligada à perda de clientes. O déficit registado é de ${Math.abs(balance).toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}.`,
+        `Para melhorar a situação, recomenda-se agir rapidamente: aumentar preços entre 5% e 10%, reduzir despesas principais, recuperar clientes inativos e criar novas formas de gerar receita.`,
+        `O sistema alerta para risco financeiro elevado, sendo necessário tomar decisões nos próximos 30 dias para evitar falta de dinheiro em caixa.`,
+        `A saúde do negócio está baixa, sendo importante acompanhar de perto e fazer ajustes para voltar ao equilíbrio.`
       ];
     } else {
       return [
