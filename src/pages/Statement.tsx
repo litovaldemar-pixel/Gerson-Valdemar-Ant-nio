@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import PrintHeader from '../components/PrintHeader';
 import { useTranslation } from 'react-i18next';
-import { useFinancials } from '../hooks/useFinancials';
+import { useFinancials, AccountBalance } from '../hooks/useFinancials';
 
 const Statement = () => {
   const { t } = useTranslation();

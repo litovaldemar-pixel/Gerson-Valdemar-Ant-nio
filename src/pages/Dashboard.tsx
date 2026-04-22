@@ -138,7 +138,7 @@ const Dashboard = () => {
       return acc;
     }, {} as Record<string, { id: string, name: string, total: number, quantity: number }>);
 
-  const sortedProducts = Object.values(productSales).sort((a, b) => b.total - a.total);
+  const sortedProducts = Object.values(productSales).sort((a: any, b: any) => b.total - a.total) as Array<{ id: string, name: string, total: number, quantity: number }>;
   const totalSalesValue = sortedProducts.reduce((sum, p) => sum + p.total, 0);
 
   let cumulativeValue = 0;

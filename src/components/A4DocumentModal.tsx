@@ -178,7 +178,7 @@ const A4DocumentModal = ({ isOpen, onClose, transaction }: A4DocumentModalProps)
                 ))
               ) : (
                 <tr>
-                  <td className="py-3 px-2 text-sm font-medium text-slate-800">{transaction.description} {product ? `(${product.name})` : ''}</td>
+                  <td className="py-3 px-2 text-sm font-medium text-slate-800">{transaction.description}</td>
                   <td className="py-3 px-2 text-sm text-slate-600 text-right">{quantity}</td>
                   <td className="py-3 px-2 text-sm text-slate-600 text-right">{formatCurrency(unitPrice)}</td>
                   <td className="py-3 px-2 text-sm font-bold text-slate-800 text-right">{formatCurrency(subtotal)}</td>

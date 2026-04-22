@@ -112,7 +112,7 @@ const CashRegisterCloseModal = ({ isOpen, onClose }: CashRegisterCloseModalProps
               {Object.entries(totalsByMethod).filter(([_, val]) => val !== 0).map(([method, val]) => (
                 <div key={method} className="flex justify-between text-sm py-1">
                   <span>{method}</span>
-                  <span className="font-bold">{formatCurrency(val)}</span>
+                  <span className="font-bold">{formatCurrency((val as number))}</span>
                 </div>
               ))}
             </div>

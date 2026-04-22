@@ -70,7 +70,7 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: ReceiptModalProps) => {
     if (isMultiItem) {
       transaction.items?.forEach(item => {
         text += `${item.quantity}x ${item.name}\n`;
-        text += `${formatCurrency(item.unitPrice)} = ${formatCurrency(item.total)}\n`;
+        text += `${formatCurrency(item.unitPrice)} = ${formatCurrency(item.subtotal)}\n`;
       });
     } else {
       text += `${quantity}x ${transaction.description}\n`;
