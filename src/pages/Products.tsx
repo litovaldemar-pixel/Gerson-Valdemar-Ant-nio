@@ -6,8 +6,10 @@ import { exportToCSV } from '../lib/exportUtils';
 import KardexModal from '../components/KardexModal';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { ExcelImportModal } from '../components/ExcelImportModal';
 
 const Products = () => {
+  const [isExcelImportOpen, setIsExcelImportOpen] = useState(false);
   const { products, addProduct, deleteProduct, updateProduct, globalSearchTerm } = useAppContext();
   const { t } = useTranslation();
   
@@ -224,6 +226,13 @@ const Products = () => {
           </div>
         </div>
         <div className="flex gap-3">
+          <button 
+            onClick={() => setIsExcelImportOpen(true)}
+            className="px-5 py-2.5 bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-green-500/20 transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">upload_file</span>
+            Importar
+          </button>
           <button 
             onClick={() => window.print()}
             className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
@@ -602,6 +611,11 @@ const Products = () => {
           setSelectedProductForKardex(null);
         }}
         product={selectedProductForKardex}
+      />
+      
+      <ExcelImportModal 
+        isOpen={isExcelImportOpen} 
+        onClose={() => setIsExcelImportOpen(false)} 
       />
     </div>
   );

@@ -73,11 +73,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ embedded = false }) => {
     setLoading(true);
     try {
       const companiesSnapshot = await getDocs(collection(db, 'companies'));
-      const companiesData = companiesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CompanyInfo));
+      const companiesData = companiesSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as CompanyInfo));
       setCompanies(companiesData);
 
       const usersSnapshot = await getDocs(collection(db, 'users'));
-      const usersData = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AppUser));
+      const usersData = usersSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AppUser));
       setUsers(usersData);
     } catch (err: any) {
       console.error('Error fetching data:', err);

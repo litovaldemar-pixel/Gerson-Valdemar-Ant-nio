@@ -7,8 +7,10 @@ import { useTranslation } from 'react-i18next';
 import { exportToCSV } from '../lib/exportUtils';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { ExcelImportModal } from '../components/ExcelImportModal';
 
 const Customers = () => {
+  const [isExcelImportOpen, setIsExcelImportOpen] = useState(false);
   const { customers, addCustomer, deleteCustomer, updateCustomer, globalSearchTerm } = useAppContext();
   const { t } = useTranslation();
   
@@ -139,6 +141,13 @@ const Customers = () => {
           <p className="text-on-surface-variant font-medium mt-1">{t('customers.subtitle')}</p>
         </div>
         <div className="flex gap-3">
+          <button 
+            onClick={() => setIsExcelImportOpen(true)}
+            className="px-5 py-2.5 bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-green-500/20 transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">upload_file</span>
+            Importar
+          </button>
           <button 
             onClick={() => window.print()}
             className="px-5 py-2.5 bg-surface-container-highest text-on-surface border border-outline-variant/20 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-variant transition-colors"
@@ -333,6 +342,11 @@ const Customers = () => {
         isOpen={isStatementOpen}
         onClose={() => setIsStatementOpen(false)}
         customer={selectedCustomer}
+      />
+      
+      <ExcelImportModal 
+        isOpen={isExcelImportOpen} 
+        onClose={() => setIsExcelImportOpen(false)} 
       />
     </div>
   );

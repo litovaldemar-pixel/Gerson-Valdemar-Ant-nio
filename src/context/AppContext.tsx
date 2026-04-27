@@ -141,7 +141,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const unsubCompanies = onSnapshot(
       isAdmin ? query(collection(db, 'companies')) : query(collection(db, 'companies'), where('userId', '==', user.uid)),
       (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CompanyInfo));
+        const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as CompanyInfo));
         setCompanies(data);
       },
       (error) => handleFirestoreError(error, OperationType.LIST, 'companies')
@@ -150,7 +150,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const unsubTransactions = onSnapshot(
       isAdmin ? query(collection(db, 'transactions')) : query(collection(db, 'transactions'), where('userId', '==', user.uid)),
       (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
+        const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Transaction));
         setAllTransactions(data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       },
       (error) => handleFirestoreError(error, OperationType.LIST, 'transactions')
@@ -159,7 +159,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const unsubCustomers = onSnapshot(
       isAdmin ? query(collection(db, 'customers')) : query(collection(db, 'customers'), where('userId', '==', user.uid)),
       (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer));
+        const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Customer));
         setAllCustomers(data.sort((a, b) => a.name.localeCompare(b.name)));
       },
       (error) => handleFirestoreError(error, OperationType.LIST, 'customers')
@@ -168,7 +168,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const unsubSuppliers = onSnapshot(
       isAdmin ? query(collection(db, 'suppliers')) : query(collection(db, 'suppliers'), where('userId', '==', user.uid)),
       (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Supplier));
+        const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Supplier));
         setAllSuppliers(data.sort((a, b) => a.name.localeCompare(b.name)));
       },
       (error) => handleFirestoreError(error, OperationType.LIST, 'suppliers')
@@ -177,7 +177,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const unsubProducts = onSnapshot(
       isAdmin ? query(collection(db, 'products')) : query(collection(db, 'products'), where('userId', '==', user.uid)),
       (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Product));
         setAllProducts(data.sort((a, b) => a.name.localeCompare(b.name)));
       },
       (error) => handleFirestoreError(error, OperationType.LIST, 'products')
