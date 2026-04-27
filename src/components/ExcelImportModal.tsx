@@ -51,31 +51,52 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
 
   const findColumn = (row: any, aliases: string[]) => {
     const keys = Object.keys(row);
+    
+    // First pass: look for exact or very similar match (stripping spaces/special chars)
     for (const alias of aliases) {
       const match = keys.find(k => isSimilar(k, alias));
-      if (match) return row[match];
+      if (match && row[match] !== undefined && String(row[match]).trim() !== '') return row[match];
     }
+    
+    // Second pass: look for partial match (e.g., column "Preço de Venda" matches alias "preço")
+    for (const alias of aliases) {
+      const match = keys.find(k => {
+        const cleanK = k.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '');
+        const cleanAlias = alias.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '');
+        return cleanK.includes(cleanAlias) || cleanAlias.includes(cleanK);
+      });
+      if (match && row[match] !== undefined && String(row[match]).trim() !== '') return row[match];
+    }
+    
     return undefined;
   };
 
   const guessType = (sheetName: string, sampleRow: any): 'products' | 'customers' | 'suppliers' | 'unknown' => {
-    const sName = sheetName.toLowerCase();
-    const isProdByName = sName.includes('prod') || sName.includes('artigo') || sName.includes('item') || sName.includes('stock');
-    const isCustByName = sName.includes('client') || sName.includes('customer');
-    const isSuppByName = sName.includes('fornec') || sName.includes('supplier');
-
-    if (isProdByName) return 'products';
-    if (isCustByName) return 'customers';
-    if (isSuppByName) return 'suppliers';
+    const sName = sheetName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    
+    if (sName.includes('prod') || sName.includes('artigo') || sName.includes('item') || sName.includes('stock') || sName.includes('estoque') || sName.includes('invent') || sName.includes('mercadori')) return 'products';
+    if (sName.includes('client') || sName.includes('customer') || sName.includes('comprador')) return 'customers';
+    if (sName.includes('fornec') || sName.includes('supplier') || sName.includes('vend') || sName.includes('parceir')) return 'suppliers';
 
     // Guess by columns
-    const keys = Object.keys(sampleRow || {}).map(k => k.toLowerCase());
-    const hasPrice = keys.some(k => k.includes('pre') || k.includes('price') || k.includes('pvp') || k.includes('custo') || k.includes('cost'));
-    const hasStock = keys.some(k => k.includes('stock') || k.includes('estoqu') || k.includes('qtd') || k.includes('quant'));
+    const keys = Object.keys(sampleRow || {}).map(k => k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+    const hasPrice = keys.some(k => k.includes('pre') || k.includes('price') || k.includes('pvp') || k.includes('custo') || k.includes('cost') || k.includes('valor'));
+    const hasStock = keys.some(k => k.includes('stock') || k.includes('estoqu') || k.includes('qtd') || k.includes('quant') || k.includes('saldo'));
+    const hasSKU = keys.some(k => k.includes('sku') || k.includes('cod') || k.includes('ref'));
     
-    if (hasPrice || hasStock) return 'products';
+    const hasEmail = keys.some(k => k.includes('email') || k.includes('mail') || k.includes('contato') || k.includes('contacto'));
+    const hasDoc = keys.some(k => k.includes('nuit') || k.includes('nif') || k.includes('cpf') || k.includes('cnpj') || k.includes('doc'));
+    const hasCompany = keys.some(k => k.includes('empresa') || k.includes('razao') || k.includes('entidade'));
+
+    if ((hasPrice || hasStock || hasSKU) && !hasCompany && !hasEmail) return 'products';
+    if (hasEmail || hasDoc || hasCompany) {
+        const isLikelySupplier = keys.some(k => k.includes('categoria') || k.includes('fornecedor'));
+        return isLikelySupplier ? 'suppliers' : 'customers';
+    }
     
-    // Default fallback if we can't tell, keep it unknown
+    const hasName = keys.some(k => k.includes('nome') || k.includes('name') || k.includes('desc'));
+    if (hasName) return 'products';
+    
     return 'unknown';
   };
 
@@ -103,7 +124,7 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
           // Count how many we think we can map
           let mappedCount = 0;
           rawData.forEach((row: any) => {
-            const name = findColumn(row, ['nome', 'name', 'desc', 'produto', 'cliente', 'fornecedor', 'razao social', 'artigo']);
+            const name = findColumn(row, ['nome', 'name', 'desc', 'produto', 'cliente', 'fornecedor', 'razao social', 'artigo', 'item', 'mercadoria', 'empresa', 'entidade']);
             if (name) mappedCount++;
           });
 
@@ -135,14 +156,14 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
       if (preview.type === 'products') {
         for (const row of preview.data) {
           try {
-            const name = findColumn(row, ['nome', 'name', 'descrição', 'descricao', 'produto', 'artigo']);
+            const name = findColumn(row, ['nome', 'name', 'descrição', 'descricao', 'produto', 'artigo', 'item', 'mercadoria']);
             if (!name) { errors++; continue; }
 
-            const priceVal = findColumn(row, ['preço', 'preco', 'price', 'pvp', 'venda']);
-            const costVal = findColumn(row, ['custo', 'cost', 'compra']);
-            const stockVal = findColumn(row, ['stock', 'estoque', 'quantidade', 'qtd', 'quant']);
-            const skuVal = findColumn(row, ['sku', 'codigo', 'code', 'ref']);
-            const catVal = findColumn(row, ['categoria', 'category', 'grupo', 'familia']);
+            const priceVal = findColumn(row, ['preço', 'preco', 'price', 'pvp', 'venda', 'valor']);
+            const costVal = findColumn(row, ['custo', 'cost', 'compra', 'valor compra']);
+            const stockVal = findColumn(row, ['stock', 'estoque', 'quantidade', 'qtd', 'quant', 'saldo']);
+            const skuVal = findColumn(row, ['sku', 'codigo', 'código', 'code', 'ref', 'referencia', 'referência']);
+            const catVal = findColumn(row, ['categoria', 'category', 'grupo', 'familia', 'família', 'tipo', 'classificacao', 'classificação']);
 
             await addProduct({
               name: String(name),
@@ -162,11 +183,11 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
       } else if (preview.type === 'customers') {
         for (const row of preview.data) {
           try {
-            const name = findColumn(row, ['nome', 'name', 'cliente', 'razao social']);
+            const name = findColumn(row, ['nome', 'name', 'cliente', 'razao social', 'razão social', 'empresa', 'entidade']);
             if (!name) { errors++; continue; }
 
-            const email = findColumn(row, ['email', 'e-mail']);
-            const doc = findColumn(row, ['documento', 'nuit', 'nif', 'cpf', 'cnpj', 'doc']);
+            const email = findColumn(row, ['email', 'e-mail', 'mail', 'correio', 'contato', 'contacto']);
+            const doc = findColumn(row, ['documento', 'nuit', 'nif', 'cpf', 'cnpj', 'doc', 'bi', 'identificacao', 'identificação']);
 
             await addCustomer({
               name: String(name),
@@ -182,12 +203,12 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
       } else if (preview.type === 'suppliers') {
         for (const row of preview.data) {
           try {
-            const name = findColumn(row, ['nome', 'name', 'fornecedor', 'razao social']);
+            const name = findColumn(row, ['nome', 'name', 'fornecedor', 'razao social', 'razão social', 'empresa', 'entidade']);
             if (!name) { errors++; continue; }
 
-            const email = findColumn(row, ['email', 'e-mail']);
-            const doc = findColumn(row, ['documento', 'nuit', 'nif', 'cpf', 'cnpj', 'doc']);
-            const cat = findColumn(row, ['categoria', 'category', 'tipo']);
+            const email = findColumn(row, ['email', 'e-mail', 'mail', 'correio', 'contato', 'contacto']);
+            const doc = findColumn(row, ['documento', 'nuit', 'nif', 'cpf', 'cnpj', 'doc', 'bi', 'identificacao', 'identificação']);
+            const cat = findColumn(row, ['categoria', 'category', 'tipo', 'segmento', 'ramo']);
 
             await addSupplier({
               name: String(name),
