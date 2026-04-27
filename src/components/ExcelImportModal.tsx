@@ -321,13 +321,15 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
                 <div className="space-y-4">
                   <h4 className="font-bold text-slate-800 dark:text-slate-200">Abas encontradas no ficheiro:</h4>
                   {previews.map((preview, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-surface rounded-xl border border-outline-variant/20 shadow-sm overflow-hidden flex-wrap gap-4">
-                      <div className="flex items-center gap-4">
+                    <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-surface rounded-xl border border-outline-variant/20 shadow-sm gap-4">
+                      <div className="flex items-start sm:items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex flex-col items-center justify-center text-primary shrink-0">
                           <span className="material-symbols-outlined text-xl">{getTargetIcon(preview.type)}</span>
                         </div>
-                        <div>
-                          <p className="font-medium text-sm text-slate-800 dark:text-slate-200 line-clamp-1" title={preview.sheetName}>Aba: {preview.sheetName}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm text-slate-800 dark:text-slate-200 truncate" title={preview.sheetName}>
+                            Aba: {preview.sheetName}
+                          </p>
                           <select 
                             value={preview.type}
                             onChange={(e) => {
@@ -335,7 +337,7 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
                               newPreviews[idx].type = e.target.value as any;
                               setPreviews(newPreviews);
                             }}
-                            className="mt-1 text-sm bg-surface-container border border-outline-variant/50 rounded-md py-1 px-2 focus:ring-2 focus:ring-primary outline-none"
+                            className="mt-2 text-sm bg-surface-container border border-outline-variant/30 rounded-lg py-1.5 px-3 focus:ring-2 focus:ring-primary outline-none w-full sm:w-auto"
                           >
                             <option value="unknown">Ignorar (Não importar)</option>
                             <option value="products">Importar como Produtos</option>
@@ -344,9 +346,12 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
                           </select>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-lg text-slate-800 dark:text-slate-200">{preview.count}</p>
-                        <p className="text-[10px] text-slate-400 uppercase tracking-widest">linhas identificadas</p>
+                      <div className="sm:text-right border-t sm:border-t-0 border-outline-variant/10 pt-3 sm:pt-0 flex sm:block justify-between items-center">
+                        <p className="text-xs text-slate-500 uppercase tracking-widest sm:hidden">Linhas</p>
+                        <div>
+                          <p className="font-bold text-lg text-slate-800 dark:text-slate-200">{preview.count}</p>
+                          <p className="text-[10px] text-slate-400 uppercase tracking-widest hidden sm:block">linhas encontradas</p>
+                        </div>
                       </div>
                     </div>
                   ))}
