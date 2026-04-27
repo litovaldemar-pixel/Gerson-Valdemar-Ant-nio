@@ -120,22 +120,20 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
 
         const type = guessType(sheetName, rawData[0]);
         
-        if (type !== 'unknown') {
-          // Count how many we think we can map
-          let mappedCount = 0;
-          rawData.forEach((row: any) => {
-            const name = findColumn(row, ['nome', 'name', 'desc', 'produto', 'cliente', 'fornecedor', 'razao social', 'artigo', 'item', 'mercadoria', 'empresa', 'entidade']);
-            if (name) mappedCount++;
-          });
+        // Count how many we think we can map
+        let mappedCount = 0;
+        rawData.forEach((row: any) => {
+          const name = findColumn(row, ['nome', 'name', 'desc', 'produto', 'cliente', 'fornecedor', 'razao social', 'artigo', 'item', 'mercadoria', 'empresa', 'entidade']);
+          if (name) mappedCount++;
+        });
 
-          newPreviews.push({
-            sheetName,
-            type,
-            count: rawData.length,
-            data: rawData,
-            mappedCount
-          });
-        }
+        newPreviews.push({
+          sheetName,
+          type,
+          count: rawData.length,
+          data: rawData,
+          mappedCount
+        });
       }
 
       setPreviews(newPreviews);
@@ -321,35 +319,54 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
 
               {previews.length > 0 ? (
                 <div className="space-y-4">
-                  <h4 className="font-bold text-slate-800 dark:text-slate-200">Encontrado no ficheiro:</h4>
+                  <h4 className="font-bold text-slate-800 dark:text-slate-200">Abas encontradas no ficheiro:</h4>
                   {previews.map((preview, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-surface rounded-xl border border-outline-variant/20 shadow-sm">
+                    <div key={idx} className="flex items-center justify-between p-4 bg-surface rounded-xl border border-outline-variant/20 shadow-sm overflow-hidden flex-wrap gap-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex flex-col items-center justify-center text-primary">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex flex-col items-center justify-center text-primary shrink-0">
                           <span className="material-symbols-outlined text-xl">{getTargetIcon(preview.type)}</span>
                         </div>
                         <div>
-                          <p className="font-medium text-sm text-slate-800 dark:text-slate-200">Aba: {preview.sheetName}</p>
-                          <p className="text-xs text-slate-500">Detectado como <strong className="text-primary">{getTypeLabel(preview.type)}</strong></p>
+                          <p className="font-medium text-sm text-slate-800 dark:text-slate-200 line-clamp-1" title={preview.sheetName}>Aba: {preview.sheetName}</p>
+                          <select 
+                            value={preview.type}
+                            onChange={(e) => {
+                              const newPreviews = [...previews];
+                              newPreviews[idx].type = e.target.value as any;
+                              setPreviews(newPreviews);
+                            }}
+                            className="mt-1 text-sm bg-surface-container border border-outline-variant/50 rounded-md py-1 px-2 focus:ring-2 focus:ring-primary outline-none"
+                          >
+                            <option value="unknown">Ignorar (Não importar)</option>
+                            <option value="products">Importar como Produtos</option>
+                            <option value="customers">Importar como Clientes</option>
+                            <option value="suppliers">Importar como Fornecedores</option>
+                          </select>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-lg text-slate-800 dark:text-slate-200">{preview.count}</p>
-                        <p className="text-[10px] text-slate-400">linhas</p>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-widest">linhas identificadas</p>
                       </div>
                     </div>
                   ))}
                   
-                  <div className="bg-secondary-container text-on-secondary-container p-4 rounded-xl text-sm flex gap-3 text-justify">
-                    <span className="material-symbols-outlined text-secondary">info</span>
-                    <p>Ao confirmar, o sistema irá importar todos os registros válidos. Atenção para não importar listas duplicadas caso já existam no sistema.</p>
-                  </div>
+                  {previews.some(p => p.type !== 'unknown') ? (
+                    <div className="bg-secondary-container text-on-secondary-container p-4 rounded-xl text-sm flex gap-3 text-justify mt-4">
+                      <span className="material-symbols-outlined text-secondary">info</span>
+                      <p>As abas selecionadas serão importadas. O sistema fará o possível para encaixar as colunas (Nome, Preço etc).</p>
+                    </div>
+                  ) : (
+                    <div className="bg-error-container text-on-error-container p-4 rounded-xl text-sm flex gap-3 text-justify mt-4">
+                      <span className="material-symbols-outlined text-error">warning</span>
+                      <p>Todas as abas estão marcadas para <b>Ignorar</b>. Seleccione "Importar como Produtos/Clientes/Fornecedores" nas abas que desejar para prosseguir.</p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center p-8 bg-error-container text-on-error-container rounded-xl">
                   <span className="material-symbols-outlined text-4xl mb-2">error</span>
-                  <p>Não foi possível identificar dados compatíveis com Produtos, Clientes ou Fornecedores nas abas deste ficheiro Excel.</p>
-                  <p className="text-sm mt-2 opacity-80">Experimente verificar os nomes das colunas (Nome, Preço, Custo, Categoria, Cliente, Fornecedor).</p>
+                  <p>O ficheiro encontra-se vazio ou não foi lido correctamente.</p>
                 </div>
               )}
 
@@ -361,7 +378,7 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
                 >
                   Cancelar
                 </button>
-                {previews.length > 0 && (
+                {previews.filter(p => p.type !== 'unknown').length > 0 && (
                   <button
                     onClick={executeImport}
                     disabled={isImporting}

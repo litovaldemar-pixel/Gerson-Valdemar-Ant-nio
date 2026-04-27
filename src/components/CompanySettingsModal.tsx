@@ -69,16 +69,24 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
 
   if (!isOpen) return null;
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isCreating || companies.length === 0) {
-      await addCompany(formData);
-      setIsCreating(false);
-    } else {
-      updateCompanyInfo(formData as CompanyInfo);
-    }
-    if (companies.length > 0) {
-      onClose();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      if (isCreating || companies.length === 0) {
+        await addCompany(formData);
+        setIsCreating(false);
+      } else {
+        updateCompanyInfo(formData as CompanyInfo);
+      }
+      if (companies.length > 0) {
+        onClose();
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -451,9 +459,10 @@ const CompanySettingsModal = ({ isOpen, onClose, defaultIsCreating = false }: Co
                 )}
                 <button
                   type="submit"
-                  className="px-5 py-2.5 text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 rounded-lg transition-colors shadow-sm"
+                  disabled={isSubmitting}
+                  className="px-5 py-2.5 text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 rounded-lg transition-colors shadow-sm disabled:opacity-50"
                 >
-                  {isCreating || companies.length === 0 ? t('companySettings.createCompany') : t('companySettings.saveChanges')}
+                  {isSubmitting ? 'Aguarde...' : (isCreating || companies.length === 0 ? t('companySettings.createCompany') : t('companySettings.saveChanges'))}
                 </button>
               </div>
             </form>

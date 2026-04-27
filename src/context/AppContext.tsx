@@ -565,7 +565,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (currentCompanyId) {
       updateCompany(currentCompanyId, info);
     } else {
-      addCompany(info);
+      console.warn("Attempted to update company without currentCompanyId");
     }
   };
 
