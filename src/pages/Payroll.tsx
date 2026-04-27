@@ -82,33 +82,37 @@ export default function Payroll() {
     
     // Base Tributável for IRPS
     const baseForIrps = baseForInss - inssEmployee;
-    const rendimentoAnual = baseForIrps * 12;
+    let irps = 0;
 
-    let taxaIrps = 0;
-    let parcelaAAbater = 0;
+    if (gross > 20000) {
+      const rendimentoAnual = baseForIrps * 12;
 
-    if (rendimentoAnual <= 42000) {
-      taxaIrps = 0.10;
-      parcelaAAbater = 0;
-    } else if (rendimentoAnual <= 168000) {
-      taxaIrps = 0.15;
-      parcelaAAbater = 2100;
-    } else if (rendimentoAnual <= 504000) {
-      taxaIrps = 0.20;
-      parcelaAAbater = 10500;
-    } else if (rendimentoAnual <= 1512000) {
-      taxaIrps = 0.25;
-      parcelaAAbater = 35700;
-    } else {
-      taxaIrps = 0.32;
-      parcelaAAbater = 141540;
+      let taxaIrps = 0;
+      let parcelaAAbater = 0;
+
+      if (rendimentoAnual <= 42000) {
+        taxaIrps = 0.10;
+        parcelaAAbater = 0;
+      } else if (rendimentoAnual <= 168000) {
+        taxaIrps = 0.15;
+        parcelaAAbater = 2100;
+      } else if (rendimentoAnual <= 504000) {
+        taxaIrps = 0.20;
+        parcelaAAbater = 10500;
+      } else if (rendimentoAnual <= 1512000) {
+        taxaIrps = 0.25;
+        parcelaAAbater = 35700;
+      } else {
+        taxaIrps = 0.32;
+        parcelaAAbater = 141540;
+      }
+
+      const irpsAnualBase = (rendimentoAnual * taxaIrps) - parcelaAAbater;
+      let irpsMensalBase = irpsAnualBase / 12;
+
+      irps = irpsMensalBase > 0 ? irpsMensalBase - deducaoDependentes : 0;
+      if (irps < 0) irps = 0;
     }
-
-    const irpsAnualBase = (rendimentoAnual * taxaIrps) - parcelaAAbater;
-    let irpsMensalBase = irpsAnualBase / 12;
-
-    let irps = irpsMensalBase > 0 ? irpsMensalBase - deducaoDependentes : 0;
-    if (irps < 0) irps = 0;
     
     const netSalary = baseForInss - inssEmployee - irps - emp.advances;
     
