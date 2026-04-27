@@ -12,7 +12,7 @@ interface EmployeePayroll {
   name: string;
   isPartner: boolean;
   grossSalary: number;
-  irpsRate: number;
+  dependents: number; // Número de dependentes para dedução do IRPS
   allowances: number; // Subsídios
   absentDays: number; // Número de dias em falta
   advances: number; // Adiantamentos (Vales)
@@ -29,7 +29,7 @@ export default function Payroll() {
   const [employeeName, setEmployeeName] = useState('');
   const [isPartner, setIsPartner] = useState(false);
   const [grossSalary, setGrossSalary] = useState<number | ''>('');
-  const [irpsRate, setIrpsRate] = useState<number>(10);
+  const [dependents, setDependents] = useState<number | ''>('');
   const [allowances, setAllowances] = useState<number | ''>('');
   const [absentDays, setAbsentDays] = useState<number | ''>('');
   const [advances, setAdvances] = useState<number | ''>('');
@@ -43,7 +43,7 @@ export default function Payroll() {
       name: employeeName,
       isPartner,
       grossSalary: Number(grossSalary),
-      irpsRate: Number(irpsRate),
+      dependents: Number(dependents) || 0,
       allowances: Number(allowances) || 0,
       absentDays: Number(absentDays) || 0,
       advances: Number(advances) || 0
@@ -53,7 +53,7 @@ export default function Payroll() {
     setEmployeeName('');
     setIsPartner(false);
     setGrossSalary('');
-    setIrpsRate(10);
+    setDependents('');
     setAllowances('');
     setAbsentDays('');
     setAdvances('');
@@ -71,14 +71,44 @@ export default function Payroll() {
     const dailyRate = gross / 30;
     const absenceValue = dailyRate * (emp.absentDays || 0);
     
+    // As per new instructions (Example), dependents deduções apply. (e.g. 250 MT per dependent)
+    const deducaoDependentes = (emp.dependents || 0) * 250;
+
     const baseForInss = gross + allowances - absenceValue;
     
     const inssEmployee = baseForInss * 0.03;
     const inssEmployer = baseForInss * 0.04;
     const totalInss = inssEmployee + inssEmployer;
     
+    // Base Tributável for IRPS
     const baseForIrps = baseForInss - inssEmployee;
-    const irps = baseForIrps > 20000 ? baseForIrps * (emp.irpsRate / 100) : 0;
+    const rendimentoAnual = baseForIrps * 12;
+
+    let taxaIrps = 0;
+    let parcelaAAbater = 0;
+
+    if (rendimentoAnual <= 42000) {
+      taxaIrps = 0.10;
+      parcelaAAbater = 0;
+    } else if (rendimentoAnual <= 168000) {
+      taxaIrps = 0.15;
+      parcelaAAbater = 2100;
+    } else if (rendimentoAnual <= 504000) {
+      taxaIrps = 0.20;
+      parcelaAAbater = 10500;
+    } else if (rendimentoAnual <= 1512000) {
+      taxaIrps = 0.25;
+      parcelaAAbater = 35700;
+    } else {
+      taxaIrps = 0.32;
+      parcelaAAbater = 141540;
+    }
+
+    const irpsAnualBase = (rendimentoAnual * taxaIrps) - parcelaAAbater;
+    let irpsMensalBase = irpsAnualBase / 12;
+
+    let irps = irpsMensalBase > 0 ? irpsMensalBase - deducaoDependentes : 0;
+    if (irps < 0) irps = 0;
     
     const netSalary = baseForInss - inssEmployee - irps - emp.advances;
     
@@ -92,7 +122,8 @@ export default function Payroll() {
       irps, 
       netSalary, 
       absentDays: emp.absentDays, 
-      advances: emp.advances 
+      advances: emp.advances,
+      dependents: emp.dependents
     };
   };
 
@@ -280,24 +311,21 @@ export default function Payroll() {
               />
             </div>
 
-            {Number(grossSalary) > 20000 && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  {t('payroll.irpsRate')}
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  value={irpsRate}
-                  onChange={(e) => setIrpsRate(Number(e.target.value))}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-                />
-                <p className="text-xs text-slate-500 mt-1">{t('payroll.irpsRateHelp')}</p>
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Nº de Dependentes (IRPS)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={dependents}
+                onChange={(e) => setDependents(e.target.value ? Number(e.target.value) : '')}
+                className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                placeholder="Ex: 2"
+              />
+              <p className="text-xs text-slate-500 mt-1">Cada dependente reduz o IRPS a pagar.</p>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -454,7 +482,7 @@ export default function Payroll() {
                                                 <td class="text-right">${formatCurrency(calc.inssEmployee)}</td>
                                               </tr>
                                               <tr>
-                                                <td>IRPS</td>
+                                                <td>IRPS (${emp.dependents} dependentes)</td>
                                                 <td></td>
                                                 <td class="text-right">${formatCurrency(calc.irps)}</td>
                                               </tr>

@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAppContext } from '../context/AppContext';
 import CompanySettingsModal from './CompanySettingsModal';
+import { ExcelImportModal } from './ExcelImportModal';
 import { useTranslation } from 'react-i18next';
 
 interface SidebarProps {
@@ -16,6 +17,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCreatingMode, setIsCreatingMode] = useState(false);
+  const [isExcelImportOpen, setIsExcelImportOpen] = useState(false);
   const { t } = useTranslation();
 
   const isDeveloper = 
@@ -271,6 +273,20 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             <span>{t('sidebar.lockSession', 'Bloquear Sessão')}</span>
           </button>
         )}
+        
+        {isAdmin && (
+          <button 
+            onClick={() => {
+              setIsExcelImportOpen(true);
+              onClose();
+            }}
+            className="w-full py-3 bg-green-500/10 text-green-700 dark:text-green-400 hover:bg-green-500/20 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 duration-200 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[20px]">table_chart</span>
+            <span>Importar Excel</span>
+          </button>
+        )}
+        
         <button 
           onClick={handleLogout}
           className="w-full py-3 bg-error/10 text-error hover:bg-error/20 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 duration-200 transition-colors"
@@ -304,6 +320,10 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           setIsCreatingMode(false);
         }} 
         defaultIsCreating={isCreatingMode}
+      />
+      <ExcelImportModal 
+        isOpen={isExcelImportOpen} 
+        onClose={() => setIsExcelImportOpen(false)} 
       />
     </aside>
   );
